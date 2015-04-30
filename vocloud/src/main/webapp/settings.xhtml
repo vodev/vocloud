@@ -22,12 +22,16 @@
                     <p:panel id="changepassword" header="Change password" style="max-width: 700px">
                         <h:panelGrid id="chpass" columns="3" columnClasses="label, value, message" styleClass="grid"  >
                             <h:outputText value="Old password:" />
-                            <p:password id="oldpass" required="true" label="Old password" value="#{settingsBean.oldpass}" validator="#{settingsBean.validatePassword}"/>
+                            <p:password id="oldpass" autocomplete="false" required="true" label="Old password" value="#{settingsBean.oldpass}" validator="#{settingsBean.validatePassword}" />
                             <p:message id="passMessage" for="oldpass" />  
 
                             <h:outputText value="New password:" />
-                            <p:password  id="newpass" required="true" feedback="true" label="New password" value="#{settingsBean.newpass}"/>
+                            <p:password  id="newpass" autocomplete="false" required="true" feedback="true" label="New password" value="#{settingsBean.newpass}"/>
                             <p:message id="pass2Message" for="newpass" />  
+ 
+                            <h:outputText value="New password again:" />
+                            <p:password  id="newpassagain" autocomplete="false" required="true" label="New password again" value="#{settingsBean.newpassAgain}"/>
+                            <p:message id="pass3Message" for="newpassagain" />  
 
                             <p:commandButton action="#{settingsBean.changePassword}" ajax="false" value="Submit" />
                         </h:panelGrid>

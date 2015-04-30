@@ -27,13 +27,18 @@ public class SettingsBean implements Serializable {
 
     private String oldpass;
     private String newpass;
+    private String newpassAgain;
 
     public SettingsBean() {
     }
 
     public void changePassword() {
         FacesContext currentInstance = FacesContext.getCurrentInstance();
-
+        //check that newpass and newpassAgain are equals
+        if (!newpass.equals(newpassAgain)){
+            currentInstance.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Password does not match", ""));
+            return;
+        }
         if (usb.getUser().isPassword(oldpass)) {
             //change password
             uaf.changePassword(usb.getUser(), newpass);
@@ -71,5 +76,15 @@ public class SettingsBean implements Serializable {
     public void setOldpass(String oldpass) {
         this.oldpass = oldpass;
     }
+
+    public String getNewpassAgain() {
+        return newpassAgain;
+    }
+
+    public void setNewpassAgain(String newpassAgain) {
+        this.newpassAgain = newpassAgain;
+    }
+    
+    
 
 }
