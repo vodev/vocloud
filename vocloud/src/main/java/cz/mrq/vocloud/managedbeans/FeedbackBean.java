@@ -8,9 +8,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.application.NavigationHandler;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.mail.Message;
@@ -22,13 +19,15 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Named;
 
 /**
  *
  * @author voadmin
  */
-@ManagedBean(name = "feedback")
-@ViewScoped
+@Named
+@RequestScoped
 public class FeedbackBean implements Serializable {
 
     private static final Logger logger = Logger.getLogger(UserAccountFacade.class.getName());
@@ -52,7 +51,7 @@ public class FeedbackBean implements Serializable {
     }
 
     @PostConstruct
-    public void init() {
+    private void init() {
         String username = FacesContext.getCurrentInstance().getExternalContext().getRemoteUser();
         if (username != null) {
             this.user = uaf.findByUsername(username);
@@ -61,7 +60,7 @@ public class FeedbackBean implements Serializable {
         }
     }
 
-    public void send() {
+    public String send() {
         Message emailMessage = new MimeMessage(mailSession);
         try {
             emailMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(feedbackEmail));
@@ -89,15 +88,16 @@ public class FeedbackBean implements Serializable {
             Transport.send(emailMessage);
             logger.log(Level.INFO, "Feedback email has been sent.");
 
-            FacesContext currentInstance = FacesContext.getCurrentInstance();
-            currentInstance.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Thank you for your feedback!", "Your message has been sent to the administrator."));
-
-            NavigationHandler myNav = currentInstance.getApplication().getNavigationHandler();
-
-            myNav.handleNavigation(currentInstance, null, "/index");
+            
+            //set flash to keep messages during redirect
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Thank you for your feedback!", "Your message has been sent to the administrator."));
+            return "index/faces-redirect=true";
 
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "error when sending feedback email", ex);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Feedback sending failed"));
+            return null;
         }
     }
 

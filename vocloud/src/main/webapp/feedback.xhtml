@@ -24,23 +24,23 @@
                 <h:form>
                     <h:panelGrid id="messaa" columns="3" columnClasses="label, value, message" styleClass="grid"  >
                         <h:outputText value="Name:" />
-                        <p:inputText id="name" required="true" label="name" value="#{feedback.name}" />
+                        <p:inputText id="name" required="true" label="name" value="#{feedbackBean.name}" />
                         <p:message id="nameM" for="name" />  
 
                         <h:outputText value="Email:" />
-                        <p:inputText id="email" required="true" label="email" value="#{feedback.email}" />
+                        <p:inputText id="email" required="true" label="email" value="#{feedbackBean.email}" />
                         <p:message id="emailM" for="email" /> 
 
                         <h:outputText value="Topic:" />
-                        <p:inputText  id="topic" required="true" label="topic" value="#{feedback.topic}"/>
+                        <p:inputText  id="topic" required="true" label="topic" value="#{feedbackBean.topic}"/>
                         <p:message id="topicM" for="topic" />  
 
                         <h:outputText value="Message:" />
-                        <p:inputTextarea  cols="80" rows="6"  id="mess" required="true" autoResize="true" label="topic" value="#{feedback.message}">
+                        <p:inputTextarea  cols="80" rows="6"  id="mess" required="true" autoResize="true" label="topic" value="#{feedbackBean.message}">
                         </p:inputTextarea>
                         <p:message id="messM" for="mess" />  
                     </h:panelGrid>   
-                    <h:panelGrid rendered="#{request.remoteUser ==  null}" id="captcha" columns="2" columnClasses="label, value, message" styleClass="grid"  >
+                    <h:panelGrid rendered="#{request.remoteUser == null}" id="captcha" columns="2" columnClasses="label, value, message" styleClass="grid"  >
 
                         <p:spacer height="15" />
                         <h:outputText value=" " />
@@ -56,7 +56,7 @@
                     </h:panelGrid> 
                     <br />
                     <br />
-                    <p:commandButton action="#{feedback.send}" ajax="false" value="Send" />
+                    <p:commandButton action="#{feedbackBean.send}" ajax="false" value="Send feedback" />
                 </h:form>
             </ui:define>
 
