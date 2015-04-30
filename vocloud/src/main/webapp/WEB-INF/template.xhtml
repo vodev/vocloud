@@ -39,9 +39,10 @@
             <ui:insert name="bottom" />
             <h:form>
                 <div align="right">
-                    (c) mrq 2014 - <h:commandLink value="feedback"  action="/feedback" /> -
-                    <a target="_blank" href="https://github.com/mrq-cz/vocloud">github</a>
-                    #{sessionBean.buildNumber}
+                    
+                    <h:commandLink value="feedback"  action="/feedback" /> -
+                    <a target="_blank" href="https://github.com/vodev/vocloud">github</a>
+                    Build time: #{propertiesInfoBean.buildTimestamp} Build id: #{propertiesInfoBean.buildNumber}
                 </div>
             </h:form>
         </div>

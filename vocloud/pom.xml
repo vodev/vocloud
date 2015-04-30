@@ -14,7 +14,7 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git://github.com/mrq-cz/vocloud.git</connection>
+        <connection>scm:git:git://github.com/vodev/vocloud.git</connection>
     </scm>
 
     <dependencies>
@@ -104,7 +104,7 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-            <plugin>
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>2.6</version>
@@ -126,14 +126,19 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>1.3</version>
+                <configuration>
+                    <timestampPropertyName>buildTime</timestampPropertyName>
+                    <buildNumberPropertyName>buildNumber</buildNumberPropertyName>
+                    <shortRevisionLength>10</shortRevisionLength>
+                </configuration>
                 <executions>
                     <execution>
-                        <phase>validate</phase>
+                        <phase>initialize</phase>
                         <goals>
                             <goal>create</goal>
                         </goals>
