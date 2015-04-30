@@ -22,7 +22,7 @@
                     <p>#{jobDetailsBean.selectedJob.notes}</p>
                     <p:dataTable id="atributes" value="#{jobDetailsBean.selectedJob}">
                         <p:column headerText="Type">#{jobDetailsBean.selectedJob.uwsType.shortDescription}</p:column>
-                        <p:column headerText="Id">#{jobDetailsBean.selectedJob.id}</p:column>
+                        <p:column headerText="Id">#{jobDetailsBean.selectedJob.stringId}</p:column>
                         <p:column headerText="Phase">#{jobDetailsBean.selectedJob.phase}</p:column>
                         <p:column headerText="Worker">#{jobDetailsBean.selectedJob.uws.worker.shortDescription}</p:column>
                         <p:column headerText="Created">

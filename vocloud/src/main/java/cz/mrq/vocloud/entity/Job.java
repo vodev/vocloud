@@ -225,7 +225,7 @@ public class Job implements Serializable {
     
     @Transient
     public String getStringId(){
-        return id.toString();
+        return owner.getId().toString() + "-" + id.toString();
     }
 
     @Override

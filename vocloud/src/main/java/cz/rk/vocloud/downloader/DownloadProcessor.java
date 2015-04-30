@@ -114,6 +114,8 @@ public class DownloadProcessor {
                 downloadLog.append("Unable to open http connection with ").append(url.toExternalForm()).append("\n").append(ex.toString()).append('\n');
                 return false;
             }
+            conn.setConnectTimeout(20000);
+            conn.setReadTimeout(20000);
             String ct = conn.getContentType();
             String charset = null;
             if (ct == null) {

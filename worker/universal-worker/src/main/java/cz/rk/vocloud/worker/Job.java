@@ -46,7 +46,6 @@ public class Job extends AbstractJob {
 
     public Job(Map<String, String> lstParam) throws UWSException {
         super(lstParam);
-        System.out.println("New instance");
     }
 
     @Override

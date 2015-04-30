@@ -3,7 +3,11 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    <parent>
+        <groupId>cz.mrq</groupId>
+        <artifactId>vocloud-parent</artifactId>
+        <version>1.0</version>
+    </parent>
     <groupId>cz.mrq</groupId>
     <artifactId>vocloud</artifactId>
     <version>1.0</version>
@@ -12,7 +16,6 @@
     <properties>
         <vocloud.appUrl>http://vocloud:8080/vocloud</vocloud.appUrl>
     </properties>
-
     <scm>
         <connection>scm:git:git://github.com/vodev/vocloud.git</connection>
     </scm>
@@ -98,7 +101,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>3.3</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>

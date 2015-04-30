@@ -14,6 +14,7 @@
         <ui:define name="content">
             <h:form id="mainForm">
                 <p:poll interval="5" update="dataTable" />
+                <p:messages showDetail="true" />
                 <p:dataTable id="dataTable" value="#{downloadQueueBean.model}" var="job" paginator="true" rows="50" lazy="true" resizableColumns="true">
                     <p:column headerText="State">
                         <h:outputText value="#{job.state}" />

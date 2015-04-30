@@ -54,12 +54,12 @@ public class JobFacade extends AbstractFacade<Job> {
     @Inject
     @Config
     private String jobsDir;
-    @Inject
-    @Config
-    private String examplesDir;
-    @Inject
-    @Config
-    private String scriptsDir;
+//    @Inject
+//    @Config
+//    private String examplesDir;
+//    @Inject
+//    @Config
+//    private String scriptsDir;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -159,7 +159,7 @@ public class JobFacade extends AbstractFacade<Job> {
     }
 
     public File getFileDir(Job job) {
-        File result = new File(jobsDir + "/" + job.getId());
+        File result = new File(jobsDir + "/" + job.getStringId());
         result.mkdirs();
         return result;
     }

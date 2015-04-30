@@ -305,7 +305,10 @@ public class SsapBean implements Serializable {
             success = downloadManager.enqueueVotableDatalinkDownload(parsedVotable, paramMap, targetFolder);
         }
         if (success){
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Successfully enqueued", "Download task was successfully enqueued"));
+            FacesContext.getCurrentInstance().getApplication().getNavigationHandler()
+                    .handleNavigation(FacesContext.getCurrentInstance(), null, "download-queue?faces-redirect=true");
             resetVariables();
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error enqueuing new download task", "New download task was NOT successfully enqueued"));
