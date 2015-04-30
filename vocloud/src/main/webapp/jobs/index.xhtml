@@ -14,6 +14,9 @@
         <ui:define name="content">
             <h:form>
                 <p:poll interval="10" listener="#{jobListBean.pollRefresh}" update="@form" widgetVar="poll"/>
+                <p:selectBooleanCheckbox rendered="#{jobListBean.adminPrivileges}" value="#{jobListBean.adminShowAll}" itemLabel="Show jobs of all users">
+                    <p:ajax update="@form"/>
+                </p:selectBooleanCheckbox>
                 <p:dataTable value="#{jobListBean.model}" var="job" paginator="true" rows="20" lazy="true" resizableColumns="true" rowStyleClass="#{job.phase eq 'COMPLETED' ? 'greenRow' : (job.phase eq 'ERROR' ? 'redRow' : null)}">
                     <p:column headerText="Type">
                         <h:outputText value="#{job.uwsType.shortDescription}" />
@@ -51,6 +54,8 @@
 
                 <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" onerror="PF('statusDialog').hide()"/>
 
+            </h:form>
+            <h:form>
                 <p:dialog  widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
                     <p:graphicImage library="images" name="preloader.gif"/>
                 </p:dialog>

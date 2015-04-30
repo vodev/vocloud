@@ -30,6 +30,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJBException;
+import javax.mail.Message;
+import javax.mail.Multipart;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.persistence.TypedQuery;
 import org.apache.commons.io.FileUtils;
 import org.zeroturnaround.zip.ZipUtil;
@@ -215,6 +222,13 @@ public class JobFacade extends AbstractFacade<Job> {
         return query.getResultList();
     }
 
+    public List<Job> findAllJobsPaginated(int first, int count) {
+        TypedQuery<Job> query = em.createNamedQuery("Job.findAllCreateDateOrdered", Job.class);
+        query.setFirstResult(first);
+        query.setMaxResults(count);
+        return query.getResultList();
+    }
+
     public Long countUserJobs(UserAccount userAcc) {
         TypedQuery<Long> query = em.createNamedQuery("Job.countUserJobs", Long.class);
         query.setParameter("owner", userAcc);
@@ -309,68 +323,73 @@ public class JobFacade extends AbstractFacade<Job> {
 //        remove(job);
 //    }
 //
-//    /**
-//     * sends results of the job to the email set in the job
-//     *
-//     * @param job
-//     */
-//    public void sendResults(Job job) {
-//        if (job.getResultsEmail() == null) {
-//            return;
-//        }
-//        Message message = new MimeMessage(mailSession);
-//        try {
-//            message.addRecipient(Message.RecipientType.TO, new InternetAddress(job.getResultsEmail()));
-//            message.setFrom();
-//
-//            // 
-//            message.setSubject("vo-korel: Results of '" + job.getLabel() + "' job");
-//
-//            //multipart
-//            Multipart mp = new MimeMultipart();
-//
-//            // message body
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("Your job '").append(job.getLabel()).append("' ");
-//            if (job.getPhase() == Phase.COMPLETED) {
-//                sb.append("finished successfully.");
-//            }
-//            if (job.getPhase() == Phase.ERROR) {
-//                sb.append("finished with error.");
-//            }
-//            if (job.getPhase() == Phase.ABORTED) {
-//                sb.append("has been aborted,");
-//            }
-//            sb.append("\n");
-//            sb.append("Complete results are in the attachment.");
-//
-//            MimeBodyPart text = new MimeBodyPart();
-//            text.setText(sb.toString());
-//
-//            mp.addBodyPart(text);
-//
-//            //attachments
-//            File resultsFile = new File(getFileDir(job), "results.zip");
-//
-//            if (resultsFile.exists()) {
-//                MimeBodyPart attachment = new MimeBodyPart();
-//                try {
-//                    attachment.attachFile(resultsFile);
-//                } catch (IOException ex) {
-//                    logger.log(Level.SEVERE, null, ex);
-//                }
-//                attachment.setFileName("results" + job.getStringId() + ".zip");
-//                mp.addBodyPart(attachment);
-//            }
-//
-//            message.setContent(mp);
-//            message.setHeader("X-Mailer", "My Mailer");
-//            Transport.send(message);
-//            logger.log(Level.INFO, "Result were sent to {0}", job.getResultsEmail());
-//        } catch (Exception ex) {
-//            logger.log(Level.SEVERE, "failed to send email with job results", ex);
-//        }
-//    }
+
+    /**
+     * sends results of the job to the email set in the job
+     *
+     * @param job
+     */
+    @Asynchronous
+    public void sendResults(Job job) {
+        if (job.getResultsEmail() == null || !job.getResultsEmail()) {
+            return;
+        }
+        Message message = new MimeMessage(mailSession);
+        try {
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(job.getOwner().getEmail()));
+            message.setFrom();
+
+            //set subject of the message
+            message.setSubject("vo-korel: Results of '" + job.getLabel() + "' job");
+
+            //multipart
+            Multipart mp = new MimeMultipart();
+
+            // message body
+            StringBuilder builder = new StringBuilder();
+            builder.append("Your job '").append(job.getLabel()).append("' ");
+            if (job.getPhase() == Phase.COMPLETED) {
+                builder.append("finished successfully.");
+            }
+            if (job.getPhase() == Phase.ERROR) {
+                builder.append("finished with error.");
+            }
+            if (job.getPhase() == Phase.ABORTED) {
+                builder.append("has been aborted,");
+            }
+            builder.append("\n");
+            File resultsFile = new File(getFileDir(job), "results.zip");
+            if (resultsFile.exists() && resultsFile.length() > 5000000) {
+                builder.append("Results are bigger than 5 MB and will not be sent in the attachment.");
+            } else {
+                builder.append("Complete results are in the attachment.");
+            }
+
+            MimeBodyPart text = new MimeBodyPart();
+            text.setText(builder.toString());
+
+            mp.addBodyPart(text);
+
+            //attachments
+            if (resultsFile.exists() && resultsFile.length() <= 5000000) {
+                MimeBodyPart attachment = new MimeBodyPart();
+                try {
+                    attachment.attachFile(resultsFile);
+                } catch (IOException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+                attachment.setFileName("results" + job.getStringId() + ".zip");
+                mp.addBodyPart(attachment);
+            }
+
+            message.setContent(mp);
+            message.setHeader("X-Mailer", "My Mailer");
+            Transport.send(message);
+            LOG.log(Level.INFO, "Result were sent to {0}", job.getOwner().getEmail());
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "failed to send email with job results", ex);
+        }
+    }
 //
 //    /**
 //     * this method run asynchronously to start post process scripts for a job

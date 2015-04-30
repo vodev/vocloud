@@ -1,7 +1,9 @@
 package cz.mrq.vocloud.servlet;
 
 import cz.mrq.vocloud.ejb.JobFacade;
+import cz.mrq.vocloud.ejb.UserAccountFacade;
 import cz.mrq.vocloud.entity.Job;
+import cz.mrq.vocloud.entity.UserAccount;
 import cz.mrq.vocloud.entity.UserGroupName;
 import cz.mrq.vocloud.tools.Config;
 
@@ -22,7 +24,10 @@ import java.io.*;
 public class ImagesServlet extends HttpServlet {
 
     @EJB
-    JobFacade jf;
+    private JobFacade jf;
+    
+    @EJB
+    private UserAccountFacade uaf;
 
     @Inject
     @Config
@@ -42,14 +47,16 @@ public class ImagesServlet extends HttpServlet {
 
         String path = request.getPathInfo();
         String[] split = path.split("/");
-        String jobId = split[1];
+        String jobStrId = split[1];
+        String jobId = jobStrId.split("-")[1];
         String fileName = split[2];
 
         //only owner can access image
         //TODO fix bugs
         Job job = jf.find(Long.parseLong(jobId));
         String user = request.getRemoteUser();
-        if (!job.getOwner().getUsername().equals(user) && !(job.getOwner().getGroupName() == UserGroupName.ADMIN)) {
+        UserAccount userAcc = uaf.findByUsername(user);
+        if (userAcc == null || (!job.getOwner().equals(userAcc) && !userAcc.getGroupName().equals(UserGroupName.ADMIN))) {
             response.sendError(403);
             return;
         }

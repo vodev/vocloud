@@ -97,6 +97,9 @@ public class UserAccountFacade extends AbstractFacade<UserAccount> {
     }
 
     public UserAccount findByUsername(String username) {
+        if (username == null){
+            return null;
+        }
         UserAccount user = null;
         Query q = getEntityManager().createNamedQuery("UserAccount.findByUsername");
         q.setParameter("username", username);

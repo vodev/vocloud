@@ -54,17 +54,18 @@ public class SchedulerBean {
     @Schedule(second = "*/10", minute = "*", hour = "*", persistent = false)
     public void updateExecutingJobs() {
         int prevsize = watchedJobs.size();
-        Phase phase;
         for (Job job : watchedJobs) {
-            phase = job.getPhase();
             UWSJob uwsJob = jf.refreshJob(job);
             if (job.getPhase() == Phase.COMPLETED || job.getPhase() == Phase.ERROR || job.getPhase() == Phase.ABORTED) {
 //                jf.exportUWSJob(job);
+                watchedJobs.remove(job);
                 if (uwsJob != null){
                     jf.downloadResults(job, uwsJob);
                 }
                 jf.destroyRemoteJob(job);
-                watchedJobs.remove(job);
+                if (job.getResultsEmail()){
+                    jf.sendResults(job);
+                }
             }
         }
         lastUpdate = new Date();
@@ -78,14 +79,12 @@ public class SchedulerBean {
     public void addWatchedJob(Job job) {
         if (!watchedJobs.contains(job)) {
             watchedJobs.add(job);
-            logger.log(Level.INFO, "watched jobs: {0}", watchedJobs.size());
         }
     }
 
     public void removeWatchedJob(Job job) {
         if (watchedJobs.contains(job)) {
             watchedJobs.remove(job);
-            logger.log(Level.INFO, "watched jobs: {0}", watchedJobs.size());
         }
     }
 

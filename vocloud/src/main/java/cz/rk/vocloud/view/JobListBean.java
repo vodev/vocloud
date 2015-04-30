@@ -5,6 +5,7 @@ import cz.mrq.vocloud.ejb.JobFacade;
 import cz.mrq.vocloud.ejb.UserSessionBean;
 import cz.mrq.vocloud.entity.Job;
 import cz.mrq.vocloud.entity.UserAccount;
+import cz.mrq.vocloud.entity.UserGroupName;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class JobListBean implements Serializable {
     private JobFacade jobFacade;
     private LazyDataModel<Job> model;
     
+    private boolean showAll = false;
     
     @PostConstruct
     private void init(){
@@ -42,8 +44,16 @@ public class JobListBean implements Serializable {
 
             @Override
             public List<Job> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, Object> filters) {
-                List<Job> jobs = jobFacade.findUserJobsPaginated(userAcc, first, pageSize);//sorting and filtering will not be used
-                model.setRowCount((int)(long)jobFacade.countUserJobs(userAcc));
+                List<Job> jobs;
+                int count;
+                if (showAll && isAdminPrivileges()){
+                    jobs = jobFacade.findAllJobsPaginated(first, pageSize);
+                    count = jobFacade.count();
+                } else {
+                    jobs = jobFacade.findUserJobsPaginated(userAcc, first, pageSize);//sorting and filtering will not be used
+                    count = (int)(long)jobFacade.countUserJobs(userAcc);
+                }
+                model.setRowCount(count);
                 return jobs;
             }
         
@@ -80,4 +90,19 @@ public class JobListBean implements Serializable {
     public String showDetail(Job job){
         return "details?faces-redirect=true&jobId=" + job.getId();
     }
+    
+    public boolean isAdminPrivileges(){
+        return userAcc.getGroupName().equals(UserGroupName.ADMIN);
+    }
+
+    public boolean isAdminShowAll() {
+        return showAll;
+    }
+
+    public void setAdminShowAll(boolean showAll) {
+        this.showAll = showAll;
+    }
+    
+    
+    
 }

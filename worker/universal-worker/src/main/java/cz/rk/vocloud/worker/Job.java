@@ -32,7 +32,7 @@ public class Job extends AbstractJob {
     private static final String RETURN_FILE_NAME = "run.ret";
     private static final String PROCESS_DATA_FOLDER_NAME = ".processData";
     private static final String WORKING_DIR_NAME = "workingDir";
-    
+
     private String configFile;
     private File workingDir;
     private File jobDir;
@@ -41,6 +41,8 @@ public class Job extends AbstractJob {
     private File outputFile;
     private File errorFile;
     private File returnFile;
+    
+    private boolean resultsPrepared = false;
 
     private final List<File> externalFiles = new ArrayList<>();
 
@@ -59,7 +61,7 @@ public class Job extends AbstractJob {
 //            for (Map.Entry<String, String> i: additionalParameters.entrySet()){
 //                System.out.println("key: |" + i.getKey() + "|");
 //            }
-            if (configFile == null){
+            if (configFile == null) {
                 throw new UWSException(UWSException.BAD_REQUEST, "Config file has to be specified.");
             }
         }
@@ -82,8 +84,6 @@ public class Job extends AbstractJob {
             LOG.log(Level.SEVERE, "Worker with identifier {0} is not specified in settings", getJobList().getName());
             throw new UWSException("Worker with identifier " + getJobList().getName() + " was not found");
         }
-        //define aborted variable
-        Boolean aborted = false;
         //create job directory
         jobDir = new File(Config.resultsDir + "/" + getJobId());
         jobDir.mkdirs();
@@ -92,80 +92,84 @@ public class Job extends AbstractJob {
         workingDir.mkdir();
         File processDataDir = new File(workingDir, PROCESS_DATA_FOLDER_NAME);
         processDataDir.mkdir();
-        //print config file
-        File config = new File(processDataDir, "config.json");
-        try (FileOutputStream fos = new FileOutputStream(config)) {
-            fos.write(configFile.getBytes(Charset.forName("UTF-8")));
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "Unable to create config.json file in working directory", ex);
-            throw new UWSException("Unable to create config.json file in working directory");
-        }
-        configFile = null;
-        //download necessary files into working directory
-        downloadFiles(aborted);//extract them from config file
-        // prepare output files
-        try {
-            outputFile = new File(processDataDir, OUTPUT_FILE_NAME);
-            errorFile = new File(processDataDir, ERROR_FILE_NAME);
-            returnFile = new File(processDataDir, RETURN_FILE_NAME);
-            outputFile.createNewFile();
-            errorFile.createNewFile();
-            returnFile.createNewFile();
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new UWSException(UWSException.INTERNAL_SERVER_ERROR, "IO Exception when creating output files.");
-        }
-        //create process itself
         Process process = null;
-        List<String> commands = workerSettings.getExecCommand().getCommand();
-        //use substitution for commands
-        commands = substituteCommands(commands);
-        ProcessBuilder pb = new ProcessBuilder(commands);
-        pb.directory(workingDir);
-
         try {
-            pb.redirectOutput(outputFile);
-            pb.redirectError(errorFile);
+            //print config file
+            File config = new File(processDataDir, "config.json");
+            try (FileOutputStream fos = new FileOutputStream(config)) {
+                fos.write(configFile.getBytes(Charset.forName("UTF-8")));
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, "Unable to create config.json file in working directory", ex);
+                throw new UWSException("Unable to create config.json file in working directory");
+            }
+            configFile = null;
+            //download necessary files into working directory
+            downloadFiles();//extract them from config file
+            // prepare output files
+            try {
+                outputFile = new File(processDataDir, OUTPUT_FILE_NAME);
+                errorFile = new File(processDataDir, ERROR_FILE_NAME);
+                returnFile = new File(processDataDir, RETURN_FILE_NAME);
+                outputFile.createNewFile();
+                errorFile.createNewFile();
+                returnFile.createNewFile();
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+                throw new UWSException(UWSException.INTERNAL_SERVER_ERROR, "IO Exception when creating output files.");
+            }
+            //create process itself
+            List<String> commands = workerSettings.getExecCommand().getCommand();
+            //use substitution for commands
+            commands = substituteCommands(commands);
+            ProcessBuilder pb = new ProcessBuilder(commands);
+            pb.directory(workingDir);
 
-            process = pb.start();
-            boolean processDone = false;
-            do {
-                processDone = process.waitFor(5, TimeUnit.SECONDS);
-            } while (!aborted && !processDone && !thread.isInterrupted());
-            if (aborted || thread.isInterrupted()) {
-                throw new InterruptedException();
+            try {
+                pb.redirectOutput(outputFile);
+                pb.redirectError(errorFile);
+
+                process = pb.start();
+                boolean processDone = false;
+                do {
+                    processDone = process.waitFor(5, TimeUnit.SECONDS);
+                } while (!processDone && !thread.isInterrupted());
+                if (thread.isInterrupted()) {
+                    throw new InterruptedException();
+                }
+            } catch (InterruptedException ie) {
+                //kill process if job is aborted
+                if (process != null) {
+                    LOG.log(Level.INFO, "Calling kill signal to process");
+                    process.destroyForcibly();
+                }
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "error when executing job", e);
+                throw new UWSException(UWSException.INTERNAL_SERVER_ERROR, e, "error when executing job");
             }
-        } catch (InterruptedException ie) {
-            //kill process if job is aborted
-            if (process != null) {
-                LOG.log(Level.INFO, "Calling kill signal to process");
-                process.destroyForcibly();
+            if (process == null) {
+                LOG.severe("Process was not started");
+                throw new UWSException("Process was not started");
             }
-            aborted = true;
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "error when executing job", e);
-            throw new UWSException(UWSException.INTERNAL_SERVER_ERROR, e, "error when executing job");
-        }
-        if (process == null) {
-            LOG.severe("Process was not started");
-            throw new UWSException("Process was not started");
-        }
-        // write return code to the file
-        try (PrintStream ps = new PrintStream(returnFile)) {
-            LOG.log(Level.INFO, "Process exit value: {0}", process.exitValue());
-            ps.println(process.exitValue());
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw new UWSException(ex);
+            // write return code to the file
+            try (PrintStream ps = new PrintStream(returnFile)) {
+                LOG.log(Level.INFO, "Process exit value: {0}", process.exitValue());
+                ps.println(process.exitValue());
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+                throw new UWSException(ex);
+            }
+        } catch (UWSException ex) {
+            prepareResults();
+            throw ex;
         }
         // submit results, send error if process failed
-        prepareResults();
+        if (!thread.isInterrupted()){
+            prepareResults();
+        } else {
+            throw new InterruptedException();
+        }
         if (process.exitValue() != 0) {
             throw new UWSException("process exit value:" + process.exitValue());
-        }
-
-        if (thread.isInterrupted() || aborted) {
-            throw new InterruptedException();
         }
     }
 
@@ -182,7 +186,7 @@ public class Job extends AbstractJob {
         return resolved;
     }
 
-    private void downloadFiles(Boolean aborted) throws InterruptedException, UWSException {
+    private void downloadFiles() throws InterruptedException, UWSException {
         //todo not implemented yet
         System.out.println("Called download files");
     }
@@ -208,8 +212,8 @@ public class Job extends AbstractJob {
     public synchronized void abort() throws UWSException {
         // we still want results even when job is aborted
         prepareResults();
-
         super.abort();
+        configFile = null;
     }
 
     @Override
@@ -223,7 +227,13 @@ public class Job extends AbstractJob {
         super.clearResources();
     }
 
-    private void prepareResults() throws UWSException {
+    private synchronized void prepareResults() throws UWSException {
+        if (jobDir == null || workingDir == null){
+            return;
+        }
+        if (resultsPrepared){
+            return;
+        }
         File zip = new File(jobDir, "results.zip");
         //remove downloaded files
         for (File f : externalFiles) {
@@ -231,5 +241,6 @@ public class Job extends AbstractJob {
         }
         ZipUtil.pack(workingDir, zip);
         addResult(new Result("Results", "zip", Config.resultsLink + "/" + this.getJobId() + "/results.zip"));
+        resultsPrepared = true;
     }
 }

@@ -1,7 +1,9 @@
 package cz.mrq.vocloud.servlet;
 
 import cz.mrq.vocloud.ejb.JobFacade;
+import cz.mrq.vocloud.ejb.UserAccountFacade;
 import cz.mrq.vocloud.entity.Job;
+import cz.mrq.vocloud.entity.UserAccount;
 import cz.mrq.vocloud.entity.UserGroupName;
 import cz.mrq.vocloud.tools.Config;
 
@@ -30,6 +32,9 @@ public class FileServlet extends HttpServlet {
     @Config
     private String jobsDir;
 
+    @EJB
+    private UserAccountFacade uaf;
+    
     private static final int DEFAULT_BUFFER_SIZE = 10240;
 
     @Override
@@ -48,11 +53,12 @@ public class FileServlet extends HttpServlet {
         }
 
         String[] split = path.split("/");
-        String jobId = split[1];
-
+        String jobStrId = split[1];
+        String jobId = jobStrId.split("-")[1];
         Job job = jf.find(Long.parseLong(jobId));
         String user = request.getRemoteUser();
-        if (!job.getOwner().getUsername().equals(user) && !job.getOwner().getGroupName().equals(UserGroupName.ADMIN)) {
+        UserAccount userAcc = uaf.findByUsername(user);
+        if (userAcc == null || (!job.getOwner().equals(userAcc) && !userAcc.getGroupName().equals(UserGroupName.ADMIN))) {
             response.sendError(403);
             return;
         }

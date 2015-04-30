@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.enterprise.inject.Vetoed;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -27,6 +26,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Job.findByPhase", query = "SELECT j FROM Job j WHERE j.phase = :phase"),
     @NamedQuery(name = "Job.findByOwnerId", query = "SELECT j FROM Job j WHERE j.owner = :owner"),
     @NamedQuery(name = "Job.userJobList", query = "SELECT j FROM Job j WHERE j.owner = :owner ORDER BY j.createdDate DESC"),
+    @NamedQuery(name = "Job.findAllCreateDateOrdered", query = "SELECT j FROM Job j ORDER BY j.createdDate DESC"),
     @NamedQuery(name = "Job.findByRemoteId", query = "SELECT j FROM Job j WHERE j.remoteId = :remoteId"),
     @NamedQuery(name = "Job.countUserJobs", query = "SELECT COUNT(j) FROM Job j WHERE j.owner = :owner")
 })
