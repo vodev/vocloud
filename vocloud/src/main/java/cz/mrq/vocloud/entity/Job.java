@@ -68,6 +68,11 @@ public class Job implements Serializable {
     @Basic(fetch = FetchType.LAZY)
     @Column(nullable = false)
     private String configurationJson;
+    //atributes for copy after job completion
+    @Column(nullable = true, length = 1000)
+    private String targetDir;
+    @Column(nullable = true, length = 1000)
+    private String copyMessage;
 
 //    @Transient
 //    private UWSJob uwsJob;
@@ -106,6 +111,7 @@ public class Job implements Serializable {
      *
      * @return Execution time in seconds.
      */
+    @Transient
     public long getExecutingTime() {
         Date sd = startedDate;
         Date fd = finishedDate;
@@ -113,7 +119,7 @@ public class Job implements Serializable {
             return 0;
         }
         if (fd == null) {
-            sd = createdDate;
+//            sd = createdDate;
             fd = new Date();
         }
         return (fd.getTime() - sd.getTime()) / 1000;
@@ -222,9 +228,25 @@ public class Job implements Serializable {
     public void setConfigurationJson(String configurationJson) {
         this.configurationJson = configurationJson;
     }
-    
+
+    public String getTargetDir() {
+        return targetDir;
+    }
+
+    public void setTargetDir(String targetDir) {
+        this.targetDir = targetDir;
+    }
+
+    public String getCopyMessage() {
+        return copyMessage;
+    }
+
+    public void setCopyMessage(String copyMessage) {
+        this.copyMessage = copyMessage;
+    }
+
     @Transient
-    public String getStringId(){
+    public String getStringId() {
         return owner.getId().toString() + "-" + id.toString();
     }
 

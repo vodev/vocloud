@@ -6,6 +6,7 @@ import cz.mrq.vocloud.entity.Job;
 import cz.mrq.vocloud.entity.UserAccount;
 import cz.mrq.vocloud.entity.UserGroupName;
 import cz.mrq.vocloud.tools.Toolbox;
+import cz.rk.vocloud.filesystem.FilesystemManipulator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,15 +44,18 @@ public class JobDetailsBean implements Serializable {
     private UserSessionBean usb;
     @EJB
     private JobFacade jobFacade;
+    @EJB
+    private FilesystemManipulator fsm;
     private Job selectedJob;
 
-    
     private List<File> pages;//html and htm
     private List<File> images;//png, jpg, jpeg, gif
-    
+
     private TreeNode filesRootElement;
     private File selectedFile;
-    
+    private String copyFolder = "/";
+    private TreeNode filesystemTreeRootNode;
+
     @PostConstruct
     private void init() {
         //find out user account
@@ -85,8 +89,8 @@ public class JobDetailsBean implements Serializable {
         initializeImages();
         initializeFileTree();
     }
-    
-    private void initializePages(){
+
+    private void initializePages() {
         File[] listFiles = jobFacade.getFileDir(selectedJob).listFiles();
         pages = new ArrayList<>();
         if (listFiles != null) {
@@ -98,13 +102,13 @@ public class JobDetailsBean implements Serializable {
         }
         Collections.sort(pages);
     }
-    
-    private void initializeImages(){
+
+    private void initializeImages() {
         File[] listFiles = jobFacade.getFileDir(selectedJob).listFiles();
         images = new ArrayList<>();
         if (listFiles != null) {
             for (File file : listFiles) {
-                if ((file.getName().endsWith("png") 
+                if ((file.getName().endsWith("png")
                         || file.getName().endsWith("jpg")
                         || file.getName().endsWith("jpeg")
                         || file.getName().endsWith("gif")) & file.length() != 0) {
@@ -114,17 +118,17 @@ public class JobDetailsBean implements Serializable {
         }
         Collections.sort(images);
     }
-    
-    private void initializeFileTree(){
+
+    private void initializeFileTree() {
         File rootFolder = jobFacade.getFileDir(selectedJob);
         filesRootElement = new DefaultTreeNode(new FileNode(true, "Files", "", rootFolder), null);
         recursiveTreeInitialization(rootFolder, filesRootElement);
     }
-    
-    private void recursiveTreeInitialization(File parentFolder, TreeNode parentNode){
-        for (File i: parentFolder.listFiles()){
+
+    private void recursiveTreeInitialization(File parentFolder, TreeNode parentNode) {
+        for (File i : parentFolder.listFiles()) {
             TreeNode node = new DefaultTreeNode(new FileNode(i.isDirectory(), i.getName(), getFileSize(i), i), parentNode);
-            if (i.isDirectory()){
+            if (i.isDirectory()) {
                 //recursive call
                 recursiveTreeInitialization(i, node);
             }
@@ -133,13 +137,13 @@ public class JobDetailsBean implements Serializable {
 
             @Override
             public int compare(TreeNode o1, TreeNode o2) {
-                return ((FileNode)o1.getData()).compareTo((FileNode)o2.getData());
+                return ((FileNode) o1.getData()).compareTo((FileNode) o2.getData());
             }
         });
     }
-    
-    private String getFileSize(File file){
-        if (!file.isFile()){
+
+    private String getFileSize(File file) {
+        if (!file.isFile()) {
             return "";
         }
         return Toolbox.humanReadableByteCount(file.length(), true);
@@ -182,15 +186,49 @@ public class JobDetailsBean implements Serializable {
     public List<File> getImages() {
         return images;
     }
-    
-    public StreamedContent downloadFile(File file){
+
+    public String getCopyFolder() {
+        return copyFolder;
+    }
+
+    public void setCopyFolder(String copyFolder) {
+        this.copyFolder = copyFolder;
+    }
+
+    private void generateFolderTreeStructure() {
+        filesystemTreeRootNode = new DefaultTreeNode(null, null);
+        TreeNode rootFolderNode = new DefaultTreeNode(new FolderElement("/", "/"), filesystemTreeRootNode);
+        File rootFolder = fsm.getRootFolderDescriptor();
+        recursivelyGenerateTree(rootFolder, "/", rootFolderNode);
+    }
+
+    private void recursivelyGenerateTree(File folder, String path, TreeNode parent) {
+        TreeNode tmpNode;
+        for (File i : folder.listFiles()) {
+            if (!i.isDirectory()) {
+                continue;//ignoring files
+            }
+            tmpNode = new DefaultTreeNode(new FolderElement(i.getName(), path + i.getName() + "/"), parent);
+            recursivelyGenerateTree(i, path + i.getName() + "/", tmpNode);
+        }
+        //sort folders by name
+        Collections.sort(parent.getChildren(), new Comparator<TreeNode>() {
+
+            @Override
+            public int compare(TreeNode o1, TreeNode o2) {
+                return ((FolderElement) o1.getData()).compareTo((FolderElement) o2.getData());
+            }
+        });
+    }
+
+    public StreamedContent downloadFile(File file) {
         //define content
         String mimeType;
-        if (file.getName().endsWith("png")){
+        if (file.getName().endsWith("png")) {
             mimeType = "image/png";
-        } else if (file.getName().endsWith("jpg") || file.getName().endsWith("jpeg")){
+        } else if (file.getName().endsWith("jpg") || file.getName().endsWith("jpeg")) {
             mimeType = "image/jpeg";
-        } else if (file.getName().endsWith("gif")){
+        } else if (file.getName().endsWith("gif")) {
             mimeType = "image/gif";
         } else {
             mimeType = "application/octet-stream";
@@ -202,8 +240,8 @@ public class JobDetailsBean implements Serializable {
         }
         return null;
     }
-    
-    public TreeNode getTreeRoot(){
+
+    public TreeNode getTreeRoot() {
         return filesRootElement;
     }
 
@@ -214,22 +252,22 @@ public class JobDetailsBean implements Serializable {
     public void setSelectedFile(File selectedFile) {
         this.selectedFile = selectedFile;
     }
-    
+
     public String getSelectedFileContents() {
         if (selectedFile == null) {
             return "(no file selected)";
         }
-        if (selectedFile.getName().endsWith("png") 
-                || selectedFile.getName().endsWith("jpg") 
-                || selectedFile.getName().endsWith("jpeg") 
-                || selectedFile.getName().endsWith("gif") ) {
+        if (selectedFile.getName().endsWith("png")
+                || selectedFile.getName().endsWith("jpg")
+                || selectedFile.getName().endsWith("jpeg")
+                || selectedFile.getName().endsWith("gif")) {
             return "(image)";
         }
         if (selectedFile.getName().endsWith("zip")) {
             return Toolbox.ziplist(selectedFile);
         }
         //check size
-        if (selectedFile.length() > 500000){//0.5 MB max
+        if (selectedFile.length() > 500000) {//0.5 MB max
             return "(file is too big to show in the window)";
         }
         String content = "";
@@ -240,14 +278,43 @@ public class JobDetailsBean implements Serializable {
         }
         return content;
     }
-    
-    
-    public static class FileNode implements Serializable, Comparable<FileNode>{
+
+    public TreeNode getFilesystemTreeRootNode() {
+        return filesystemTreeRootNode;
+    }
+
+    public boolean isFilesystemManageAccess() {
+        UserAccount acc = usb.getUser();
+        if (acc == null) {
+            return false;
+        }
+        if (acc.getGroupName().equals(UserGroupName.MANAGER) || acc.getGroupName().equals(UserGroupName.ADMIN)) {
+            //generate folder structure if it is not yet
+            if (filesystemTreeRootNode == null) {
+                generateFolderTreeStructure();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public void selectFolder(FolderElement element) {
+        this.copyFolder = element.getFullPath();
+    }
+
+    public void enqueueFilesystemCopy() {
+        selectedJob.setTargetDir(copyFolder);
+        jobFacade.copyResultsToFilesystem(selectedJob);
+        FacesContext.getCurrentInstance().addMessage("fsCopyMessages", new FacesMessage("Success", "Copy task was successfully enqueued"));
+    }
+
+    public static class FileNode implements Serializable, Comparable<FileNode> {
+
         private final boolean isFolder;
         private final String name;
         private final String size;
         private final File targetFile;
-        
+
         public FileNode(boolean isFolder, String name, String size, File target) {
             this.isFolder = isFolder;
             this.name = name;
@@ -273,16 +340,39 @@ public class JobDetailsBean implements Serializable {
 
         @Override
         public int compareTo(FileNode o) {
-            if (this.isFolder && !o.isFolder){
+            if (this.isFolder && !o.isFolder) {
                 return -1;
             }
-            if (!this.isFolder && o.isFolder){
+            if (!this.isFolder && o.isFolder) {
                 return 1;
             }
             return this.getName().compareTo(o.getName());
         }
-        
-        
-        
+
+    }
+
+    public static class FolderElement implements Serializable, Comparable<FolderElement> {
+
+        private final String folderName;
+        private final String fullPath;
+
+        public FolderElement(String folderName, String fullPath) {
+            this.folderName = folderName;
+            this.fullPath = fullPath;
+        }
+
+        public String getFolderName() {
+            return folderName;
+        }
+
+        public String getFullPath() {
+            return fullPath;
+        }
+
+        @Override
+        public int compareTo(FolderElement o) {
+            return this.folderName.compareTo(o.folderName);
+        }
+
     }
 }

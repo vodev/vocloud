@@ -99,6 +99,11 @@
                             </p:commandButton>
                         </p:column>
                     </p:treeTable>
+                    
+                    <ui:fragment rendered="#{jobDetailsBean.selectedJob.copyMessage != null}">
+                        <h3>Filesystem copy output</h3>
+                        <pre>#{jobDetailsBean.selectedJob.copyMessage}</pre>
+                    </ui:fragment>
 
                     <p:dialog id="fileView" widgetVar="fileView" width="700" maximizable="false" minimizable="true"  height="500"  >
                         <f:facet name="header">View <h:outputText id="name" value="#{jobDetailsBean.selectedFile.name}" /></f:facet>
@@ -109,6 +114,29 @@
                         <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
                         <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
                     </p:confirmDialog>
+                </h:form>
+                <p:spacer height="20" />
+                <h:form>
+                    <p:messages id="fsCopyMessages" showDetail="true" />
+                    <p:panel id="restrictedPanel" header="Filesystem copy" rendered="#{jobDetailsBean.filesystemManageAccess}">
+                        <h:panelGrid columns="2" cellpadding="10" style="padding-bottom: 20px">
+                            <p:outputLabel id="folderLabel" value="Target folder: "/>
+                            <p:inputText id="folderInput" value="#{jobDetailsBean.copyFolder}" size="100" required="true" requiredMessage="Target copy folder must be specified" readonly="true"/>
+                        </h:panelGrid>
+                        <p:treeTable id="folderTreeTable" style="width: 50%" value="#{jobDetailsBean.filesystemTreeRootNode}" var="element">
+                            <f:facet name="Header">
+                                Filesystem folder structure
+                            </f:facet>
+                            <p:column headerText="Folder name">
+                                #{element.folderName}
+                            </p:column>
+                            <p:column style="width: 12px; text-align: center" headerText="Select">
+                                <p:commandButton icon="ui-icon-check" label="Use this folder" ajax="true" actionListener="#{jobDetailsBean.selectFolder(element)}" process="@this" update="@form"/>
+                            </p:column>
+                        </p:treeTable>
+                        <p:commandButton value="Copy results to target folder" action="#{jobDetailsBean.enqueueFilesystemCopy()}" update="@form" />
+                    </p:panel>
+                    
                 </h:form>
 
 

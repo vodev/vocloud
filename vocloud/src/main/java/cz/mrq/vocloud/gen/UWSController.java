@@ -26,7 +26,6 @@ public class UWSController implements Serializable {
     private static final ResourceBundle bundle = ResourceBundle.getBundle("/cz/mrq/vocloud/Bundle");
     private static final Logger LOG = Logger.getLogger(UWSController.class.getName());
 
-    private UWS current;
     @EJB
     private WorkerFacade workerFacade;
     @EJB

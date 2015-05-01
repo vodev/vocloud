@@ -210,6 +210,10 @@ public class CreateJobBean implements Serializable {
         job.setResultsEmail(jobEmail);
         job.setUwsType(chosenUwsType);
         job.setConfigurationJson(configurationJson);
+        if (copyAfter){
+            job.setTargetDir(targetFolder);
+            //else targetDir remains null in job
+        }
         try {
             jobFacade.enqueueNewJob(job, runImmediately);
         } catch (EJBException ex) {
@@ -229,6 +233,13 @@ public class CreateJobBean implements Serializable {
         targetFolder = element.getFullPath();
     }
 
+    public boolean isFilesystemManageAccess() {
+        if (userAcc == null) {
+            return false;
+        }
+        return userAcc.getGroupName().equals(UserGroupName.MANAGER) || userAcc.getGroupName().equals(UserGroupName.ADMIN);
+    }
+    
     public static class FolderElement implements Serializable, Comparable<FolderElement> {
 
         private final String folderName;

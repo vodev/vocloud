@@ -66,6 +66,9 @@ public class SchedulerBean {
                 if (job.getResultsEmail()){
                     jf.sendResults(job);
                 }
+                if (job.getTargetDir() != null){
+                    jf.copyResultsToFilesystem(job);
+                }
             }
         }
         lastUpdate = new Date();

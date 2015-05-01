@@ -11,6 +11,7 @@ import cz.mrq.vocloud.tools.Toolbox;
 import cz.mrq.vocloud.uwsparser.UWSParserManager;
 import cz.mrq.vocloud.uwsparser.model.Result;
 import cz.mrq.vocloud.uwsparser.model.UWSJob;
+import cz.rk.vocloud.filesystem.FilesystemManipulator;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -56,6 +57,8 @@ public class JobFacade extends AbstractFacade<Job> {
     private UserSessionBean usb;
     @EJB
     private SchedulerBean sb;
+    @EJB
+    private FilesystemManipulator fsm;
     @Resource(name = "vokorel-mail")
     private Session mailSession;
     @Inject
@@ -389,6 +392,76 @@ public class JobFacade extends AbstractFacade<Job> {
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "failed to send email with job results", ex);
         }
+    }
+
+    @Asynchronous
+    public void copyResultsToFilesystem(Job job) {
+        if (job == null) {
+            throw new IllegalArgumentException("Job argument is null");
+        }
+        if (job.getTargetDir() == null) {
+            return;//nothing to do
+        }
+        StringBuilder builder = new StringBuilder();//response message
+        //copy only if job is in state completed
+        if (!job.getPhase().equals(Phase.COMPLETED)) {
+            builder.append("Results were not copied.\n")
+                    .append("Job is not in phase COMPLETED\n")
+                    .append("Target folder was: ")
+                    .append(job.getTargetDir())
+                    .append("\n");
+
+        } else {
+            File rootFolder = fsm.getRootFolderDescriptor();
+            String targetFolder = job.getTargetDir();
+            //cut slash on the beginning of the string
+            while (targetFolder.length() > 0 && targetFolder.charAt(0) == '/') {
+                targetFolder = targetFolder.substring(1);
+            }
+            File targetFolderFile = new File(rootFolder, targetFolder);
+            if (!targetFolderFile.exists()) {
+                targetFolderFile.mkdirs();//create new directory listing
+            }
+            File sourceDir = getFileDir(job);
+            //copy files to target folder
+            boolean success = true;
+            for (File i : sourceDir.listFiles()) {
+                //do not copy zip and .processData dir
+                if (i.isFile() && i.getName().equals("results.zip")) {
+                    continue;
+                }
+                if (i.isDirectory() && i.getName().equals(".processData")) {
+                    continue;
+                }
+                try {
+                    //if file copy file
+                    if (i.isFile()) {
+                        FileUtils.copyFileToDirectory(i, targetFolderFile);
+                    } else if (i.isDirectory()) {
+                        //else copy whole dir
+                        FileUtils.copyDirectory(i, targetFolderFile);
+                    }
+                } catch (IOException ex) {
+                    success = false;
+                    LOG.log(Level.SEVERE, "Copy of {0} to {1} failed", new Object[]{i.getName(), targetFolder});
+                }
+            }
+            if (success) {
+                builder.append("Files were successfully copied.\n")
+                        .append("Target folder: ")
+                        .append(job.getTargetDir())
+                        .append('\n');
+            } else {
+                builder.append("Copy failed! Some files were NOT copied.\n")
+                        .append("Target folder: ")
+                        .append(job.getTargetDir())
+                        .append('\n');
+            }
+
+        }
+        //save stringbuilder message
+        job.setCopyMessage(builder.toString());
+        edit(job);
     }
 //
 //    /**
