@@ -24,6 +24,7 @@ import javax.validation.constraints.Size;
 @NamedQueries({
     @NamedQuery(name = "UWSType.findAllByIdentifierOrdered", query = "SELECT t FROM UWSType t ORDER BY t.stringIdentifier"),
     @NamedQuery(name = "UWSType.findAllowedNonRestricted", query = "SELECT DISTINCT u.uwsType FROM UWS u WHERE u.enabled = TRUE AND u.uwsType.restricted = FALSE ORDER BY u.uwsType.shortDescription"),
+    @NamedQuery(name = "UWSType.findAllowedRestricted", query = "SELECT DISTINCT u.uwsType FROM UWS u WHERE u.enabled = TRUE AND u.uwsType.restricted = TRUE ORDER BY u.uwsType.shortDescription"),
     @NamedQuery(name = "UWSType.findByStringIdentifier", query = "SELECT t FROM UWSType t WHERE t.stringIdentifier = :strId")
 })
 public class UWSType implements Serializable {

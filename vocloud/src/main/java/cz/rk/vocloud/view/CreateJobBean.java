@@ -2,11 +2,18 @@ package cz.rk.vocloud.view;
 
 import cz.mrq.vocloud.ejb.JobFacade;
 import cz.mrq.vocloud.ejb.UWSTypeFacade;
+import cz.mrq.vocloud.ejb.UserSessionBean;
 import cz.mrq.vocloud.entity.Job;
 import cz.mrq.vocloud.entity.UWSType;
+import cz.mrq.vocloud.entity.UserAccount;
+import cz.mrq.vocloud.entity.UserGroupName;
+import cz.rk.vocloud.filesystem.FilesystemManipulator;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -18,6 +25,8 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.DefaultTreeNode;
+import org.primefaces.model.TreeNode;
 
 /**
  *
@@ -33,6 +42,12 @@ public class CreateJobBean implements Serializable {
     private UWSTypeFacade uwsTypeFacade;
     @EJB
     private JobFacade jobFacade;
+    @EJB
+    private UserSessionBean usb;
+    @EJB
+    private FilesystemManipulator fsm;
+
+    private UserAccount userAcc;
 
     private UWSType chosenUwsType;
 
@@ -41,9 +56,14 @@ public class CreateJobBean implements Serializable {
     private String jobLabel;
     private String jobNotes;
     private boolean jobEmail;
+    private boolean copyAfter = false;
+    private String targetFolder = "/";
+
+    private TreeNode folderTreeRootNode;
 
     @PostConstruct
     private void init() {
+        userAcc = usb.getUser();
         Job rerun = (Job) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("rerunJob");
         if (rerun != null) {
             //fetch with lazy config file
@@ -65,28 +85,49 @@ public class CreateJobBean implements Serializable {
         chosenUwsType = uwsTypeFacade.findByStringIdentifier(uwsTypeStrId);
     }
 
+    private void generateFolderTreeStructure() {
+        folderTreeRootNode = new DefaultTreeNode(null, null);
+        TreeNode rootFolderNode = new DefaultTreeNode(new FolderElement("/", "/"), folderTreeRootNode);
+        File rootFolder = fsm.getRootFolderDescriptor();
+        recursivelyGenerateTree(rootFolder, "/", rootFolderNode);
+    }
+
+    private void recursivelyGenerateTree(File folder, String path, TreeNode parent) {
+        TreeNode tmpNode;
+        for (File i : folder.listFiles()) {
+            if (!i.isDirectory()) {
+                continue;//ignoring files
+            }
+            tmpNode = new DefaultTreeNode(new FolderElement(i.getName(), path + i.getName() + "/"), parent);
+            recursivelyGenerateTree(i, path + i.getName() + "/", tmpNode);
+        }
+        //sort folders by name
+        Collections.sort(parent.getChildren(), new Comparator<TreeNode>() {
+
+            @Override
+            public int compare(TreeNode o1, TreeNode o2) {
+                return ((FolderElement) o1.getData()).compareTo((FolderElement) o2.getData());
+            }
+        });
+    }
+
     public boolean isNonRestrictedUwsTypeFound() {
         return chosenUwsType != null && !chosenUwsType.getRestricted();
     }
 
     public boolean isRestrictedUwsTypeFound() {
-        return chosenUwsType == null && chosenUwsType.getRestricted();
+        return chosenUwsType != null && chosenUwsType.getRestricted();
     }
 
     public UWSType getChosenUwsType() {
         return chosenUwsType;
     }
 
-    public String checkNonRestrictedParamValidity() {
-        if (isNonRestrictedUwsTypeFound()) {
+    public String checkParamValidity() {
+        if (isRestrictedUwsTypeFound() && (userAcc.getGroupName().equals(UserGroupName.ADMIN) || userAcc.getGroupName().equals(UserGroupName.MANAGER))) {
             return null;//no navigation
-        }
-        //otherwise redirect to home page
-        return "/index?faces-redirect=true";
-    }
-
-    public String checkRestrictedParamValidity() {
-        if (isRestrictedUwsTypeFound()) {
+        } //else
+        if (isNonRestrictedUwsTypeFound()) {
             return null;//no navigation
         }
         //otherwise redirect to home page
@@ -140,6 +181,26 @@ public class CreateJobBean implements Serializable {
         this.jobEmail = jobEmail;
     }
 
+    public boolean isCopyAfter() {
+        return copyAfter;
+    }
+
+    public void setCopyAfter(boolean copyAfter) {
+        //generate folder structure if already isnt
+        if (folderTreeRootNode == null){
+            generateFolderTreeStructure();
+        }
+        this.copyAfter = copyAfter;
+    }
+
+    public String getTargetFolder() {
+        return targetFolder;
+    }
+
+    public void setTargetFolder(String targetFolder) {
+        this.targetFolder = targetFolder;
+    }
+
     public String saveNewJob(boolean runImmediately) {
         Job job = new Job();
         job.setLabel(jobLabel);
@@ -158,5 +219,38 @@ public class CreateJobBean implements Serializable {
         FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);//to survive redirect
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "New " + chosenUwsType.getShortDescription() + " job was successfully enqueued"));
         return "index?faces-redirect=true";
+    }
+
+    public TreeNode getFolderTreeRootNode() {
+        return folderTreeRootNode;
+    }
+    
+    public void selectFolder(FolderElement element){
+        targetFolder = element.getFullPath();
+    }
+
+    public static class FolderElement implements Serializable, Comparable<FolderElement> {
+
+        private final String folderName;
+        private final String fullPath;
+
+        public FolderElement(String folderName, String fullPath) {
+            this.folderName = folderName;
+            this.fullPath = fullPath;
+        }
+
+        public String getFolderName() {
+            return folderName;
+        }
+
+        public String getFullPath() {
+            return fullPath;
+        }
+
+        @Override
+        public int compareTo(FolderElement o) {
+            return this.folderName.compareTo(o.folderName);
+        }
+
     }
 }

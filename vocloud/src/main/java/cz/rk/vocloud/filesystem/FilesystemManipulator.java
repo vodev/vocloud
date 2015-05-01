@@ -241,4 +241,8 @@ public class FilesystemManipulator {
         }
         return pathName;
     }
+    
+    public File getRootFolderDescriptor(){
+        return filesystemDirectory;
+    }
 }

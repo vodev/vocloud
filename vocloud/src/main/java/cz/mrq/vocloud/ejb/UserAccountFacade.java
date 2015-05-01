@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.NoResultException;
 
 /**
  *
@@ -85,19 +86,24 @@ public class UserAccountFacade extends AbstractFacade<UserAccount> {
     }
 
     public UserAccount findByEmail(String email) {
+        if (email == null) {
+            return null;
+        }
         UserAccount user = null;
         Query q = getEntityManager().createNamedQuery("UserAccount.findByEmail");
         q.setParameter("email", email);
         try {
             user = (UserAccount) q.getSingleResult();
+        } catch (NoResultException ex) {
+            //nothing to do here
         } catch (PersistenceException pe) {
-            logger.log(Level.WARNING, "query failed: {0}", pe.toString());
+            logger.log(Level.WARNING, "query failed: {0} for email {1}", new Object[]{pe.toString(), email});
         }
         return user;
     }
 
     public UserAccount findByUsername(String username) {
-        if (username == null){
+        if (username == null) {
             return null;
         }
         UserAccount user = null;
@@ -105,8 +111,10 @@ public class UserAccountFacade extends AbstractFacade<UserAccount> {
         q.setParameter("username", username);
         try {
             user = (UserAccount) q.getSingleResult();
+        } catch (NoResultException ex) {
+            //nothing to do here
         } catch (PersistenceException pe) {
-            logger.log(Level.WARNING, "query failed: {0}", pe.toString());
+            logger.log(Level.WARNING, "query failed: {0} for username {1}", new Object[]{pe.toString(), username});
         }
         return user;
     }

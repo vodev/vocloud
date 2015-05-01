@@ -12,16 +12,16 @@
         <ui:composition template="./../WEB-INF/template.xhtml">
 
             <ui:define name="title">
-                <h:outputText value="Create new #{createJobBean.chosenUwsType.shortDescription} job" rendered="#{createJobBean.nonRestrictedUwsTypeFound}" />
+                <h:outputText value="Create new #{createJobBean.chosenUwsType.shortDescription} job" />
             </ui:define>
 
             <ui:define name="content">
+                <f:metadata>
+                    <f:viewAction action="#{createJobBean.checkParamValidity()}" />
+                </f:metadata>
                 <h1 style="margin-bottom: 10px">New #{createJobBean.chosenUwsType.shortDescription} job</h1>
                 <h:form>
                     <p:messages id="createMessages" showDetail="true" />
-                    <f:metadata>
-                        <f:viewAction action="#{createJobBean.checkNonRestrictedParamValidity()}" />
-                    </f:metadata>
                     <ui:fragment rendered="#{createJobBean.chosenUwsType.description != null}">
                         <h4><h:outputText value="#{createJobBean.chosenUwsType.shortDescription}"/> description</h4>
                         <div class="uwsTypeDescription">
@@ -34,7 +34,7 @@
                     </h:panelGrid>
 
                     <p:panel header="Job description">
-                        <h:panelGrid columns="2" style="padding-bottom: 20px">
+                        <h:panelGrid columns="2" cellpadding="10" style="padding-bottom: 20px">
                             <p:outputLabel value="Project label:" for="label" />
                             <p:inputText size="30" label="Job label" id="label" value="#{createJobBean.jobLabel}"
                                          required="true"  converter="trailingSpacesConverter"
@@ -42,8 +42,29 @@
 
                             <p:outputLabel value="Description:" for="notes" />
                             <p:inputTextarea id="notes" cols="60" value="#{createJobBean.jobNotes}"  converter="trailingSpacesConverter"/>
+
                             <p:selectBooleanCheckbox id="email" value="#{createJobBean.jobEmail}" itemLabel="Email me results" />
                         </h:panelGrid>
+                    </p:panel>
+                    <p:panel header="Restricted job options" rendered="#{createJobBean.restrictedUwsTypeFound}">
+                        <p:selectBooleanCheckbox style="margin-top: 20px; margin-bottom: 20px" itemLabel="Copy result files after job completion" value="#{createJobBean.copyAfter}">
+                            <p:ajax update="@form" process="@this" />
+                        </p:selectBooleanCheckbox>
+                        <h:panelGrid columns="2" cellpadding="10" rendered="#{createJobBean.copyAfter}" style="padding-bottom: 20px">
+                            <p:outputLabel id="folderLabel" value="Target folder: " rendered="#{createJobBean.copyAfter}"/>
+                            <p:inputText id="folderInput" value="#{createJobBean.targetFolder}" size="100" required="true" requiredMessage="Target folder must be specified" rendered="#{createJobBean.copyAfter}" />
+                        </h:panelGrid>
+                        <p:treeTable style="width: 50%" value="#{createJobBean.folderTreeRootNode}" var="element" rendered="#{createJobBean.copyAfter}">
+                            <f:facet name="Header">
+                                Filesystem folder structure
+                            </f:facet>
+                            <p:column headerText="Folder name">
+                                #{element.folderName}
+                            </p:column>
+                            <p:column style="width: 12px; text-align: center" headerText="Select">
+                                <p:commandButton icon="ui-icon-check" label="Use this folder" ajax="true" actionListener="#{createJobBean.selectFolder(element)}" process="@this" update="@form"/>
+                            </p:column>
+                        </p:treeTable>
                     </p:panel>
                     <p:panel header="Job configuration JSON">
                         <h3>Upload JSON configuration file</h3>
@@ -56,8 +77,8 @@
                         <p:menuitem value="Save" action="#{createJobBean.saveNewJob(false)}" update="@form" process="@form" oncomplete="window.scrollTo(0, 0);"/>
                     </p:splitButton>
                     <p:commandButton ajax="false" value="Cancel" action="index?faces-redirect=true" />
-                    
-                    
+
+
                     <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
                     <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">

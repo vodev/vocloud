@@ -45,6 +45,11 @@ public class UWSTypeFacade extends AbstractFacade<UWSType> {
         TypedQuery<UWSType> q = em.createNamedQuery("UWSType.findAllowedNonRestricted", UWSType.class);
         return q.getResultList();
     }
+    
+    public List<UWSType> findAllowedRestrictedTypes() {
+        TypedQuery<UWSType> q = em.createNamedQuery("UWSType.findAllowedRestricted", UWSType.class);
+        return q.getResultList();
+    }
 
     public UWSType findByStringIdentifier(String identifier) {
         if (identifier == null) {
