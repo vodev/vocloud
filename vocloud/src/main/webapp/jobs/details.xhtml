@@ -94,7 +94,7 @@
                         </p:column>
                         <p:column headerText="View" style="width: 1px; text-align: center" >
                             <p:commandButton rendered="#{not node.folder}" title="View file"  icon="ui-icon-newwin"
-                                             update="@form" oncomplete="PF('fileView').show()">
+                                             update=":dialogForm" oncomplete="PF('fileView').show()">
                                 <f:setPropertyActionListener value="#{node.targetFile}" target="#{jobDetailsBean.selectedFile}" />  
                             </p:commandButton>
                         </p:column>
@@ -104,7 +104,8 @@
                         <h3>Filesystem copy output</h3>
                         <pre>#{jobDetailsBean.selectedJob.copyMessage}</pre>
                     </ui:fragment>
-
+                </h:form>
+                <h:form id="dialogForm">
                     <p:dialog id="fileView" widgetVar="fileView" width="700" maximizable="false" minimizable="true"  height="500"  >
                         <f:facet name="header">View <h:outputText id="name" value="#{jobDetailsBean.selectedFile.name}" /></f:facet>
                         <pre><h:outputText id="text" value="#{jobDetailsBean.selectedFileContents}" /></pre>

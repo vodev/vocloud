@@ -6,6 +6,7 @@ import uws.job.AbstractJob;
 import uws.job.Result;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -17,6 +18,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.zeroturnaround.zip.ZipUtil;
 
 /**
@@ -30,10 +34,12 @@ public class Job extends AbstractJob {
     private static final String OUTPUT_FILE_NAME = "run.out";
     private static final String ERROR_FILE_NAME = "run.err";
     private static final String RETURN_FILE_NAME = "run.ret";
+    private static final String DOWNLOAD_LOG_FILE_NAME = "download.log";
     private static final String PROCESS_DATA_FOLDER_NAME = ".processData";
     private static final String WORKING_DIR_NAME = "workingDir";
 
     private String configFile;
+    private JSONObject parsedJsonConfig;
     private File workingDir;
     private File jobDir;
     private Worker workerSettings;
@@ -41,7 +47,9 @@ public class Job extends AbstractJob {
     private File outputFile;
     private File errorFile;
     private File returnFile;
-    
+    private File downloadLogFile;
+    private File processDataDir;
+
     private boolean resultsPrepared = false;
 
     private final List<File> externalFiles = new ArrayList<>();
@@ -84,13 +92,19 @@ public class Job extends AbstractJob {
             LOG.log(Level.SEVERE, "Worker with identifier {0} is not specified in settings", getJobList().getName());
             throw new UWSException("Worker with identifier " + getJobList().getName() + " was not found");
         }
+        //try to parse json config
+        try {
+            parsedJsonConfig = new JSONObject(configFile);
+        } catch (JSONException ex) {
+            LOG.log(Level.WARNING, "JSON parsing failed");
+        }
         //create job directory
         jobDir = new File(Config.resultsDir + "/" + getJobId());
         jobDir.mkdirs();
         //create working directory
         workingDir = new File(jobDir, WORKING_DIR_NAME);
         workingDir.mkdir();
-        File processDataDir = new File(workingDir, PROCESS_DATA_FOLDER_NAME);
+        processDataDir = new File(workingDir, PROCESS_DATA_FOLDER_NAME);
         processDataDir.mkdir();
         Process process = null;
         try {
@@ -160,10 +174,13 @@ public class Job extends AbstractJob {
             }
         } catch (UWSException ex) {
             prepareResults();
+            if (thread.isInterrupted()){
+                throw new InterruptedException();
+            }
             throw ex;
         }
         // submit results, send error if process failed
-        if (!thread.isInterrupted()){
+        if (!thread.isInterrupted()) {
             prepareResults();
         } else {
             throw new InterruptedException();
@@ -187,18 +204,112 @@ public class Job extends AbstractJob {
     }
 
     private void downloadFiles() throws InterruptedException, UWSException {
-        //todo not implemented yet
-        System.out.println("Called download files");
+        //check json parsing
+        if (parsedJsonConfig == null) {
+            return;//nothing to do
+        }
+        JSONArray downloadArray;
+        try {
+            downloadArray = parsedJsonConfig.getJSONArray("download_files");
+        } catch (JSONException ex) {
+            //no download_files key or bad syntax
+            return;
+        }
+        downloadLogFile = new File(processDataDir, DOWNLOAD_LOG_FILE_NAME);
+        try (PrintStream log = new PrintStream(downloadLogFile, "UTF-8")) {
+            for (int i = 0; i < downloadArray.length(); i++) {
+                JSONObject downloadItem;
+                try {
+                    downloadItem = downloadArray.getJSONObject(i);
+                } catch (JSONException ex) {
+                    log.println("Error: Expected JSON map");
+                    continue;
+                }
+                String folderName = "/";//default
+                try {
+                    folderName = downloadItem.getString("folder");
+                } catch (JSONException ex) {
+                }
+                //check characters
+                if (folderName.contains("..")) {
+                    log.println("Unexpected character sequence .. in folder path");
+                    continue;
+                }
+                if (folderName.contains("//")) {
+                    log.println("Unexpected character sequence // in folder path");
+                    continue;
+                }
+                if (folderName.contains("\\")) {
+                    log.println("Unexpected character \\ in folder path");
+                    continue;
+                }
+                //remove slash in the beginning
+                if (folderName.length() > 0 && folderName.charAt(0) == '/') {
+                    folderName = folderName.substring(1);
+                }
+                JSONArray urlArray;
+                try {
+                    urlArray = downloadItem.getJSONArray("urls");
+                } catch (JSONException ex) {
+                    log.println("Warning: Array with key \"urls\" was not found");
+                    continue;
+                }
+                for (int j = 0; j < urlArray.length(); j++) {
+                    if (thread.isInterrupted()){
+                        throw new InterruptedException();//aborted
+                    }
+                    try {
+                        String url = urlArray.getString(j);
+                        downloadRemoteResource(url, folderName, log);
+                    } catch (JSONException ex) {
+                        log.println("Warning: Expected string type as url");
+                    }
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            LOG.log(Level.SEVERE, "Unable to create download log file");
+        } catch (UnsupportedEncodingException ex) {
+            LOG.log(Level.SEVERE, "Unsupported encoding", ex);
+        }
+    }
+
+    private void downloadRemoteResource(String urlStr, String folderPath, PrintStream log) {
+        urlStr = urlStr.trim();
+        if (urlStr.isEmpty()){
+            log.println("Found empty url");
+            return;
+        }
+        //expand resource url if it starts with vocloud://
+        urlStr = urlStr.replaceFirst("^vocloud://", Config.settings.getVocloudServerAddress() + "/files/");
+        //create folder descriptor
+        File folder = new File(workingDir, folderPath);
+        folder.mkdirs();
+        String[] split = urlStr.split("/");
+        String fileName = split[split.length - 1];
+        File file = new File(folder, fileName);
+        URL url;
+        try {
+            url = new URL(urlStr);
+        } catch (MalformedURLException ex) {
+            log.println("Malformed url: " + urlStr);
+            return;
+        }
+        externalFiles.add(file);
+        if (downloadFile(url, file)){
+            log.println("File " + fileName + " was successfully downloaded to /" + folderPath);
+        } else {
+            log.println("Failed to download file " + fileName + " to folder /" + folderPath);
+        }
     }
 
     private boolean downloadFile(URL url, File file) {
 
         try (ReadableByteChannel rbc = Channels.newChannel(url.openStream());
                 FileOutputStream fos = new FileOutputStream(file)) {
-            long transferred = fos.getChannel().transferFrom(rbc, 0, 1 << 8);
+            long transferred = fos.getChannel().transferFrom(rbc, 0, 1 << 16);
             long pos = transferred;
             while (transferred > 0) {
-                transferred = fos.getChannel().transferFrom(rbc, pos, 1 << 8);
+                transferred = fos.getChannel().transferFrom(rbc, pos, 1 << 16);
                 pos += transferred;
             }
             return true;
@@ -228,16 +339,29 @@ public class Job extends AbstractJob {
     }
 
     private synchronized void prepareResults() throws UWSException {
-        if (jobDir == null || workingDir == null){
+        if (jobDir == null || workingDir == null) {
             return;
         }
-        if (resultsPrepared){
+        if (resultsPrepared) {
             return;
         }
         File zip = new File(jobDir, "results.zip");
         //remove downloaded files
         for (File f : externalFiles) {
             f.delete();
+        }
+        //delete empty folders
+        for (File i: workingDir.listFiles()){
+            if (!i.isDirectory()){
+                continue;
+            }
+            if (FileUtils.listFiles(i, null, true).isEmpty()){
+                try {
+                    FileUtils.deleteDirectory(i);
+                } catch (IOException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+            }
         }
         ZipUtil.pack(workingDir, zip);
         addResult(new Result("Results", "zip", Config.resultsLink + "/" + this.getJobId() + "/results.zip"));
