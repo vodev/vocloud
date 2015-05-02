@@ -439,7 +439,7 @@ public class JobFacade extends AbstractFacade<Job> {
                         FileUtils.copyFileToDirectory(i, targetFolderFile);
                     } else if (i.isDirectory()) {
                         //else copy whole dir
-                        FileUtils.copyDirectory(i, targetFolderFile);
+                        FileUtils.copyDirectoryToDirectory(i, targetFolderFile);
                     }
                 } catch (IOException ex) {
                     success = false;

@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
+import org.primefaces.util.TreeUtils;
 
 /**
  *
@@ -102,7 +102,7 @@ public class CreateJobBean implements Serializable {
             recursivelyGenerateTree(i, path + i.getName() + "/", tmpNode);
         }
         //sort folders by name
-        Collections.sort(parent.getChildren(), new Comparator<TreeNode>() {
+        TreeUtils.sortNode(parent, new Comparator<TreeNode>() {
 
             @Override
             public int compare(TreeNode o1, TreeNode o2) {

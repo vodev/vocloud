@@ -29,6 +29,7 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.TreeNode;
+import org.primefaces.util.TreeUtils;
 
 /**
  *
@@ -48,8 +49,8 @@ public class JobDetailsBean implements Serializable {
     private FilesystemManipulator fsm;
     private Job selectedJob;
 
-    private List<File> pages;//html and htm
-    private List<File> images;//png, jpg, jpeg, gif
+    private List<PathExtendedFile> pages;//html and htm in / and /result and /results
+    private List<PathExtendedFile> images;//png, jpg, jpeg, gif
 
     private TreeNode filesRootElement;
     private File selectedFile;
@@ -85,37 +86,45 @@ public class JobDetailsBean implements Serializable {
                     handleNavigation(FacesContext.getCurrentInstance(), null, "index?faces-redirect=true");
         }
         //futher initialization
-        initializePages();
-        initializeImages();
+        initializePagesAndImages();
         initializeFileTree();
     }
 
-    private void initializePages() {
-        File[] listFiles = jobFacade.getFileDir(selectedJob).listFiles();
+    private void initializePagesAndImages() {
+        List<PathExtendedFile> listFiles = new ArrayList<>();
+        File[] fileArray = jobFacade.getFileDir(selectedJob).listFiles();
+        for (File i: fileArray){
+            listFiles.add(new PathExtendedFile(i.getName(), i));
+        }
+        //result dir
+        File resultDir = new File(jobFacade.getFileDir(selectedJob), "result");
+        if (resultDir.isDirectory()) {
+            fileArray = resultDir.listFiles();
+            for (File i: fileArray){
+                listFiles.add(new PathExtendedFile("result/" + i.getName(), i));
+            }
+        }
+        //results dir
+        File resultsDir = new File(jobFacade.getFileDir(selectedJob), "results");
+        if (resultsDir.isDirectory()) {
+            fileArray = resultsDir.listFiles();
+            for (File i: fileArray){
+                listFiles.add(new PathExtendedFile("results/" + i.getName(), i));
+            }
+        }
         pages = new ArrayList<>();
-        if (listFiles != null) {
-            for (File file : listFiles) {
-                if ((file.getName().endsWith("html") || file.getName().endsWith("htm")) & file.length() != 0) {
-                    pages.add(file);
-                }
+        images = new ArrayList<>();
+        for (PathExtendedFile file : listFiles) {
+            if ((file.getFile().getName().endsWith("html") || file.getFile().getName().endsWith("htm")) & file.getFile().length() != 0) {
+                pages.add(file);
+            } else if ((file.getFile().getName().endsWith("png")
+                    || file.getFile().getName().endsWith("jpg")
+                    || file.getFile().getName().endsWith("jpeg")
+                    || file.getFile().getName().endsWith("gif")) & file.getFile().length() != 0){
+                images.add(file);
             }
         }
         Collections.sort(pages);
-    }
-
-    private void initializeImages() {
-        File[] listFiles = jobFacade.getFileDir(selectedJob).listFiles();
-        images = new ArrayList<>();
-        if (listFiles != null) {
-            for (File file : listFiles) {
-                if ((file.getName().endsWith("png")
-                        || file.getName().endsWith("jpg")
-                        || file.getName().endsWith("jpeg")
-                        || file.getName().endsWith("gif")) & file.length() != 0) {
-                    images.add(file);
-                }
-            }
-        }
         Collections.sort(images);
     }
 
@@ -133,7 +142,7 @@ public class JobDetailsBean implements Serializable {
                 recursiveTreeInitialization(i, node);
             }
         }
-        Collections.sort(parentNode.getChildren(), new Comparator<TreeNode>() {
+        TreeUtils.sortNode(parentNode, new Comparator<TreeNode>() {
 
             @Override
             public int compare(TreeNode o1, TreeNode o2) {
@@ -179,11 +188,11 @@ public class JobDetailsBean implements Serializable {
         return "index?faces-redirect=true";
     }
 
-    public List<File> getPages() {
+    public List<PathExtendedFile> getPages() {
         return pages;
     }
 
-    public List<File> getImages() {
+    public List<PathExtendedFile> getImages() {
         return images;
     }
 
@@ -212,7 +221,7 @@ public class JobDetailsBean implements Serializable {
             recursivelyGenerateTree(i, path + i.getName() + "/", tmpNode);
         }
         //sort folders by name
-        Collections.sort(parent.getChildren(), new Comparator<TreeNode>() {
+        TreeUtils.sortNode(parent, new Comparator<TreeNode>() {
 
             @Override
             public int compare(TreeNode o1, TreeNode o2) {
@@ -306,6 +315,31 @@ public class JobDetailsBean implements Serializable {
         selectedJob.setTargetDir(copyFolder);
         jobFacade.copyResultsToFilesystem(selectedJob);
         FacesContext.getCurrentInstance().addMessage("fsCopyMessages", new FacesMessage("Success", "Copy task was successfully enqueued"));
+    }
+
+    public static class PathExtendedFile implements Serializable, Comparable<PathExtendedFile> {
+
+        private final String path;
+        private final File file;
+
+        public PathExtendedFile(String path, File file) {
+            this.path = path;
+            this.file = file;
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        @Override
+        public int compareTo(PathExtendedFile o) {
+            return file.compareTo(o.file);
+        }
+
     }
 
     public static class FileNode implements Serializable, Comparable<FileNode> {

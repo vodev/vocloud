@@ -4,7 +4,6 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:c="http://java.sun.com/jsp/jstl/core"
       xmlns:f="http://java.sun.com/jsf/core">
 
     <body>
@@ -17,7 +16,7 @@
             <ui:define name="content">
 
                 <h:form id="details">
-                    <p:poll interval="10" update="@form" stop="#{jobDetailsBean.stopPolling()}" listener="#{jobDetailsBean.refresh()}"/> 
+                    <p:poll interval="10" update="@form" autoStart="#{not jobDetailsBean.stopPolling()}" stop="#{jobDetailsBean.stopPolling()}" listener="#{jobDetailsBean.refresh()}"/> 
                     <h1>#{jobDetailsBean.selectedJob.label}</h1>
                     <p>#{jobDetailsBean.selectedJob.notes}</p>
                     <p:dataTable id="atributes" value="#{jobDetailsBean.selectedJob}">
@@ -51,9 +50,9 @@
                         <ui:repeat value="#{jobDetailsBean.pages}" var="page">
                             <p:panel style="max-width: 1200px" >
                                 <f:facet name="header">
-                                    #{page.name} - <p:link href="preview/#{jobDetailsBean.selectedJob.stringId}/#{page.name}" target="_blank" value="Fullscreen" />
+                                    #{page.file.name} - <p:link href="preview/#{jobDetailsBean.selectedJob.stringId}/#{page.path}" target="_blank" value="Fullscreen" />
                                 </f:facet>
-                                <iframe src="preview/#{jobDetailsBean.selectedJob.stringId}/#{page.name}" style="width: 98%; height: 700px; border: 0px; margin-left: 5px;" ></iframe>
+                                <iframe src="preview/#{jobDetailsBean.selectedJob.stringId}/#{page.path}" style="width: 98%; height: 700px; border: 0px; margin-left: 5px;" ></iframe>
                             </p:panel>
                         </ui:repeat>
                     </ui:fragment>
@@ -62,12 +61,12 @@
                         <ui:repeat value="#{jobDetailsBean.images}" var="image">
                             <p:panel style="max-width: 800px" >
                                 <f:facet name="header">
-                                    #{image.name} - 
+                                    #{image.file.name} - 
                                     <p:commandLink value="Download" ajax="false">
-                                        <p:fileDownload value="#{jobDetailsBean.downloadFile(image)}" />
+                                        <p:fileDownload value="#{jobDetailsBean.downloadFile(image.file)}" />
                                     </p:commandLink>
                                 </f:facet>
-                                <h:graphicImage url="images/#{jobDetailsBean.selectedJob.stringId}/#{image.name}" />
+                                <h:graphicImage url="images/#{jobDetailsBean.selectedJob.stringId}/#{image.path}" />
                             </p:panel>
                         </ui:repeat>
                     </ui:fragment>
