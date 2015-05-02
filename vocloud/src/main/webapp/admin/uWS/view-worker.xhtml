@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition template="/WEB-INF/template.xhtml">
+        <ui:define name="title">
+            <h:outputText value="Worker details" />
+        </ui:define>
+        <ui:define name="content">
+            <h:form>
+                <p:messages autoUpdate="true" showDetail="true" />
+                <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
+                    <p:outputLabel value="Short description" />
+                    <h:outputText value="#{uWSController.editingWorker.shortDescription}" />
+
+                    <p:outputLabel value="Description"/>
+                    <h:outputText value="#{uWSController.editingWorker.description}" />
+
+                    <p:outputLabel value="Resource URL" />
+                    <h:outputText value="#{uWSController.editingWorker.resourceUrl}"/>
+
+                    <p:outputLabel value="Maximum concurrent jobs" />
+                    <h:outputText value="#{uWSController.editingWorker.maxJobs}" />
+                </h:panelGrid>
+                <br />
+                <p:commandLink action="list?faces-redirect=true" value="Back to list"/>
+                <br /><br />
+                <p:commandLink action="#{uWSController.workerEdit(uWSController.editingWorker)}" value="Edit"/>
+                <br />
+                <p:commandLink ajax="false" action="#{uWSController.workerDestroy(uWSController.editingWorker)}" value="Delete">
+                    <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
+                </p:commandLink>
+
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>
+
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</html>

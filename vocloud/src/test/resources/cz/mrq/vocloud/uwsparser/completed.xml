@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uws:job xmlns:uws="http://www.ivoa.net/xml/UWS/v1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <uws:jobId>1394313702207A</uws:jobId>
+    <uws:runId xsi:nil="true" />
+    <uws:ownerId>83.208.252.36</uws:ownerId>
+    <uws:phase>COMPLETED</uws:phase>
+    <uws:quote xsi:nil="true" />
+    <uws:startTime>2014-03-08T22:21:55.459+0100</uws:startTime>
+    <uws:endTime>2014-03-08T22:22:36.291+0100</uws:endTime>
+    <uws:executionDuration>3600</uws:executionDuration>
+    <uws:destruction>2014-04-08T22:21:42.207+0200</uws:destruction>
+    <uws:parameters>
+        <uws:parameter id="zip"><![CDATA[http://localhost/korel.zip]]></uws:parameter>
+    </uws:parameters>
+    <uws:results>
+        <uws:result id="Results" xlink:type="zip" xlink:href="http://192.168.192.118/uws-korel/results/korel/1394313702207A/results.zip" />
+    </uws:results>
+    <uws:errorSummary xsi:nil="true" />
+</uws:job>

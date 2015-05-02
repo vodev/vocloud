@@ -1,0 +1,24 @@
+<uws:job xmlns:uws="http://www.ivoa.net/xml/UWS/v1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <uws:jobId>1394317780984A</uws:jobId>
+    <uws:runId xsi:nil="true"/>
+    <uws:ownerId>127.0.0.1</uws:ownerId>
+    <uws:phase>ERROR</uws:phase>
+    <uws:quote xsi:nil="true"/>
+    <uws:startTime>2014-03-08T23:29:41.023+0100</uws:startTime>
+    <uws:endTime>2014-03-08T23:29:41.347+0100</uws:endTime>
+    <uws:executionDuration>3600</uws:executionDuration>
+    <uws:destruction>2014-04-08T23:29:40.984+0200</uws:destruction>
+    <uws:parameters>
+        <uws:parameter id="zip">
+            <![CDATA[
+http://vocloud/vokorel/download/cf18e312-a928-4043-8af4-6e9fd441be9a/parameters.zip
+]]>
+        </uws:parameter>
+    </uws:parameters>
+    <uws:results>
+        <uws:result id="Error Downloading ZIP file."/>
+    </uws:results>
+    <uws:errorSummary type="FATAL" hasDetail="false">
+        <uws:message>Cannot download ZIP file.</uws:message>
+    </uws:errorSummary>
+</uws:job>

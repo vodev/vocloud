@@ -1,0 +1,136 @@
+                  _                  _
+__   _____       | | _____  _ __ ___| |
+\ \ / / _ \ _____| |/ / _ \| '__/ _ \ |
+ \ V / (_) |_____|   < (_) | | |  __/ |
+  \_/ \___/      |_|\_\___/|_|  \___|_|
+
+vo-korel - cloud web application
+
+Requirements
+============
+
+- JDK 6 or 7+
+- server supporting JEE 6 and can handle EJB containers (glassfish | jboss ...)
+- database (derby | postgres | mysql ...)
+
+Production install guide
+========================
+for Debian 'squeeze' amd64 with glassfish 3.1.2 server, JDK 7 and postgresql 8.4
+
+1. install JDK 7
+
+   download JDK from
+        http://www.oracle.com/technetwork/java/javase/downloads/index.html
+   in zip file form, for example jdk-7u4-linux-x64.tar.gz
+   extract archive to /usr/lib/jvm
+   setup enviroment variables for java and glassfish 
+   add these lines to the end of /etc/profile
+        export JAVA_HOME=/usr/lib/jvm/jdk1.7.0_04
+        export GLASSFISH_HOME=/usr/local/bin/glassfish3/glassfish
+        export PATH=$JAVA_HOME/bin:$GLASSFISH_HOME/bin:$PATH
+   	
+
+2. install glassfish 3.1.2 full platform
+
+   download zip from http://glassfish.java.net, glassfish-3.1.2.zip
+   extract archive to the /usr/local/bin
+   change network-listener1 port form 8080 to 80
+      edit glassfish3/glassfish/domains/domain1/config/domain.xml
+   
+3. start glassfish default domain (domain1)
+
+   u can do so by executing command "asadmin start-domain"
+   server is running on http://localhost/
+   you can access admin console on http://localhost:4848/
+
+4. install and configure postgres database server
+
+   apt-get install postgresql
+   login as postgres "su - postgres" and run client "psql template1" 
+   then type following commands to setup database for vokorel,
+       CREATE USER vokorel WITH PASSWORD 'vokorel';
+       CREATE DATABASE vokorel;
+       GRANT ALL PRIVILEGES ON DATABASE vokorel TO vokorel;
+
+5. configure database resource in glassfish
+	
+   download JDBC4 driver from jdbc.postgresql.org to the $GLASSFISH_HOME/lib/
+
+   in glassfish admin console create new JDBC Connection Pool
+       name: vokorel-postgres-pool
+       type: javax.sql.DataSource
+       vendor: Postgresql
+       datasource classname: org.postgresql.ds.PGSimpleDataSource
+
+       additional properties:
+           portNumber: 5432
+           databaseName: vokorel
+           serverName: localhost
+           user: vokorel
+           password: vokorel
+           driverClass: org.postgresql.Driver
+           
+   ping should be successful
+
+   create new JDBC Resource (Resources > JDBC > JDBC Resources)
+       JNDI Name: vokorel-db
+       Pool Name: vokorel-postgres-pool
+
+6. configure mail in glassfish
+
+   create new JavaMail Session (Resources > JavaMail Sessions)
+        JNDI Name: vokorel-mail
+        Mail Host: smtp.example.com
+        Default User: vokorel@example.com
+        Default Sender Address: vokorel@example.com
+
+        additional properties:
+           mail.smtp.auth: true
+           mail.smtp.password: yoursmtppassword
+           mail.smtp.port: 587
+           mail.smtp.starttsl.enable: true
+
+7. configure security in glassfish
+
+   create new security realm (Configurations > server-config > Security > Realms)
+        Name: vocloud-jdbcrealm
+        Class Name: com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm
+        JAAS Context: jdbcRealm
+        JNDI: vokorel-db
+        User Table: useraccount
+        User Name Column: username
+        Password Column: pass
+        Group Table: useraccount
+        Group Name Column: groupname
+        Digest Algorithm: SHA-256
+        Password Encryption Algorithm: SHA-256
+
+8. define vokorel.properties file
+
+   create file /etc/vokorel.properties with this content
+   	applicationAddress=http://localhost/vokorel
+        tempDir=/tmp/upload
+        jobsDir=/var/local/korel/jobs
+        feedbackEmail=vokorel@example.com
+        defaultQuota=100000000
+
+9. deploy vokorel.war to the glassfish server (Applications)
+
+   choose vokorel.war from your drive and select virtual server: server
+   vo-korel should be running now on http://localhost/vokorel/
+   
+10. create admin account
+
+    using http://localhost/vokorel/register.xhtml 
+    register account with username admin
+
+11. configure uws 
+
+    login to vo-korel as admin, go to section UWS
+    create new uws with your parameters, for example:
+        Enabled: true
+        LocationUrl: http://localhost:8080/uws-korel/uws/korel
+        Label: local korel worker
+        Priority: 1
+        Threads: 2
+        Type: Korel

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="windows-1250"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://vocloud.rk.cz/schema"
+            xmlns:tns="http://vocloud.rk.cz/schema"
+            elementFormDefault="qualified">
+    
+    <xsd:complexType name="worker">
+        <xsd:sequence>
+            <xsd:element name="identifier" type="xsd:token"/>
+            <xsd:element name="description" type="xsd:string"/>
+            <xsd:element name="restricted" type="xsd:boolean" default="false"/>
+            <xsd:element name="binaries-location" type="xsd:string"/>
+            <xsd:element name="exec-command" type="tns:command-list"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="command-list">
+        <xsd:sequence>
+            <xsd:element name="command" type="xsd:string" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="uws-settings">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="vocloud-server-address" type="xsd:anyURI"/>
+                <xsd:element name="local-address" type="xsd:anyURI"/>
+                <xsd:element name="max-jobs" type="xsd:positiveInteger" default="4"/>
+                <xsd:element name="description" type="xsd:string"/>
+                <xsd:element name="default-destruction-interval" type="xsd:positiveInteger" minOccurs="0"/>
+                <xsd:element name="max-destruction-interval" minOccurs="0" type="xsd:positiveInteger"/>
+                <xsd:element name="default-execution-duration" default="3600" minOccurs="0" type="xsd:positiveInteger"/>
+                <xsd:element name="max-execution-duration" default="3600" minOccurs="0" type="xsd:positiveInteger"/>
+                <xsd:element name="workers">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="worker" maxOccurs="unbounded" minOccurs="0" type="tns:worker"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

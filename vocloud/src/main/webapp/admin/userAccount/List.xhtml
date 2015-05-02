@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pou="http://primefaces.org/ui">
+
+    <ui:composition template="/WEB-INF/template.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.ListUserAccountTitle}" />
+        </ui:define>
+        <ui:define name="content">
+            <h:form styleClass="jsfcrud_list_form">
+                <h:panelGroup id="messagePanel" layout="block">
+                    <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
+                </h:panelGroup>
+                <h:outputText escape="false" value="#{bundle.ListUserAccountEmpty}" rendered="#{userAccountController.items.rowCount == 0}"/>
+                <h:panelGroup rendered="#{userAccountController.items.rowCount > 0}">
+                    <h:outputText value="#{userAccountController.pagination.pageFirstItem + 1}..#{userAccountController.pagination.pageLastItem + 1}/#{userAccountController.pagination.itemsCount}"/>&nbsp;
+                    <h:commandLink action="#{userAccountController.previous}" value="#{bundle.Previous} #{userAccountController.pagination.pageSize}" rendered="#{userAccountController.pagination.hasPreviousPage}"/>&nbsp;
+                    <h:commandLink action="#{userAccountController.next}" value="#{bundle.Next} #{userAccountController.pagination.pageSize}" rendered="#{userAccountController.pagination.hasNextPage}"/>&nbsp;
+                    <pou:dataTable value="#{userAccountController.items}" var="item" >
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_id}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.id}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_username}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.username}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_groupName}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.groupName}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_email}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.email}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_enabled}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.enabled}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_lastIp}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.lastIp}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_lastLogin}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.lastLogin}">
+                                <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                            </h:outputText>
+                        </pou:column>
+
+
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_quota}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.quota}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_registeredIp}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.registeredIp}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_since}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.since}">
+                                <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                            </h:outputText>
+                        </pou:column>
+
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_firstName}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.firstName}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_lastName}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.lastName}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListUserAccountTitle_organization}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.organization}"/>
+                        </pou:column>
+                        <pou:column>
+                            <f:facet name="header">
+                                <h:outputText value="&nbsp;"/>
+                            </f:facet>
+                            <h:commandLink action="#{userAccountController.prepareView}" value="#{bundle.ListUserAccountViewLink}"/>
+                            <h:outputText value=" "/>
+                            <h:commandLink action="#{userAccountController.prepareEdit}" value="#{bundle.ListUserAccountEditLink}"/>
+                            <h:outputText value=" "/>
+                            <h:commandLink action="#{userAccountController.destroy}" value="#{bundle.ListUserAccountDestroyLink}"/>
+                        </pou:column>
+                    </pou:dataTable>
+                </h:panelGroup>
+                <br />
+                <h:commandLink action="#{userAccountController.prepareCreate}" value="#{bundle.ListUserAccountCreateLink}"/>
+
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</html>

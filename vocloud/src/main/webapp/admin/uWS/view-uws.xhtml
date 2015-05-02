@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition template="/WEB-INF/template.xhtml">
+        <ui:define name="title">
+            <h:outputText value="UWS details" />
+        </ui:define>
+        <ui:define name="content">
+            <h:form>
+                <p:messages autoUpdate="true" showDetail="true" />
+                <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
+                    <p:outputLabel value="UWS Type" for="uwsType" />
+                    <h:outputText id="uwsType" value="#{uWSController.editingUws.uwsType.shortDescription}" />
+                    
+                    <p:outputLabel value="UWS Type description" for="uwsTypeDesc" />
+                    <h:outputText id="uwsTypeDesc" value="#{uWSController.editingUws.uwsType.description}" />
+                    
+                    <p:outputLabel value="UWS Type documentation URL" for="docUrl" />
+                    <h:outputText id="docUrl" value="#{uWSController.editingUws.uwsType.documentationUrl}" />
+                    
+                    <p:outputLabel value="Reserved to managers"/>
+                    <h:outputText value="true" rendered="#{uWSController.editingUws.uwsType.restricted}" />
+                    <h:outputText value="false" rendered="#{not uWSController.editingUws.uwsType.restricted}" />
+                    
+                    <p:outputLabel value="Resource URL" for="resUrl" />
+                    <h:outputText id="resUrl" value="#{uWSController.editingUws.uwsUrl}" />
+                    
+                    <p:outputLabel value="Worker" for="worker" />
+                    <h:outputText id="worker" value="#{uWSController.editingUws.worker.shortDescription}" />
+                    
+                    <p:outputLabel value="Worker description" for="workerDesc" />
+                    <h:outputText id="workerDesc" value="#{uWSController.editingUws.worker.description}" />
+                    
+                </h:panelGrid>
+                <br />
+                <p:commandLink action="list?faces-redirect=true" value="Back to list"/>
+                <br /><br />
+                <p:commandLink action="#{uWSController.uwsEdit(uWSController.editingUws)}" value="Edit"/>
+                <br />
+                <p:commandLink ajax="false" action="#{uWSController.uwsDestroy(uWSController.editingUws)}" value="Delete">
+                    <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
+                </p:commandLink>
+
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>
+
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</html>

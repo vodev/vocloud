@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+    <ui:composition template="./WEB-INF/template.xhtml">
+        <ui:define name="title">Login</ui:define>
+        <ui:define name="content">
+            <h3>Login failed!</h3>
+            <p>Invalid user or password. Please try <h:link outcome="login">again</h:link> or you can <h:link outcome="reset-password">reset</h:link> your password.</p>   
+        </ui:define>
+    </ui:composition>
+</html>

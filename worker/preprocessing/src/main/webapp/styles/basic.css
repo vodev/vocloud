@@ -1,0 +1,30 @@
+#request {
+	padding: 0.5em;
+	background-color: #e8f6e8;
+}
+
+#request p {
+	margin-bottom: 0;
+}
+
+#request > ul > li {
+	 margin-bottom: 1em;
+}
+
+#request > ul > li > ul {
+	padding-left: 1em;
+	padding-top: 0.5em;
+}
+
+#request #buttonsPanel {
+	margin-left: 2em;
+}
+
+#resultBlock {
+	visibility: hidden;
+	width: 99%;
+	overflow: auto;
+	padding: 0.5em;
+	margin-top: 1em;
+	background-color: #f9ebd7;
+}

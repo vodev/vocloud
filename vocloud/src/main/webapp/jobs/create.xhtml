@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="./../WEB-INF/template.xhtml">
+
+            <ui:define name="title">
+                <h:outputText value="Create new #{createJobBean.chosenUwsType.shortDescription} job" />
+            </ui:define>
+
+            <ui:define name="content">
+                <f:metadata>
+                    <f:viewAction action="#{createJobBean.checkParamValidity()}" />
+                </f:metadata>
+                <h1 style="margin-bottom: 10px">New #{createJobBean.chosenUwsType.shortDescription} job</h1>
+                <h:form id="mainForm">
+                    <p:messages id="createMessages" showDetail="true" />
+                    <ui:fragment rendered="#{createJobBean.chosenUwsType.description != null}">
+                        <h4><h:outputText value="#{createJobBean.chosenUwsType.shortDescription}"/> description</h4>
+                        <div class="uwsTypeDescription">
+                            <h:outputText value="#{createJobBean.chosenUwsType.description}" />
+                        </div>
+                    </ui:fragment>
+                    <h:panelGrid columns="2" cellpadding="" cellspacing="2" rendered="#{createJobBean.chosenUwsType.documentationUrl != null}">
+                        <p:outputLabel value="Documentation URL: "/>
+                        <p:link target="_blank" href="#{createJobBean.chosenUwsType.documentationUrl}" value="#{createJobBean.chosenUwsType.documentationUrl}" />  
+                    </h:panelGrid>
+
+                    <p:panel header="Job description">
+                        <h:panelGrid columns="2" cellpadding="10" style="padding-bottom: 20px">
+                            <p:outputLabel value="Project label:" for="label" />
+                            <p:inputText size="30" label="Job label" id="label" value="#{createJobBean.jobLabel}"
+                                         required="true"  converter="trailingSpacesConverter"
+                                         requiredMessage="Please enter a label for this job"/>
+
+                            <p:outputLabel value="Description:" for="notes" />
+                            <p:inputTextarea id="notes" cols="60" value="#{createJobBean.jobNotes}"  converter="trailingSpacesConverter"/>
+
+                            <p:selectBooleanCheckbox id="email" value="#{createJobBean.jobEmail}" itemLabel="Email me results" />
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel id="restrictedPanel" header="Filesystem management options" rendered="#{createJobBean.filesystemManageAccess}">
+                        <p:selectBooleanCheckbox style="margin-top: 20px; margin-bottom: 20px" itemLabel="Copy result files after job completion" value="#{createJobBean.copyAfter}">
+                            <p:ajax update=":mainForm:restrictedPanel" process="@this" />
+                        </p:selectBooleanCheckbox>
+                        <h:panelGrid columns="2" cellpadding="10" rendered="#{createJobBean.copyAfter}" style="padding-bottom: 20px">
+                            <p:outputLabel id="folderLabel" value="Target folder: " rendered="#{createJobBean.copyAfter}"/>
+                            <p:inputText id="folderInput" value="#{createJobBean.targetFolder}" size="100" required="true" requiredMessage="Target folder must be specified" rendered="#{createJobBean.copyAfter}" readonly="true"/>
+                        </h:panelGrid>
+                        <p:treeTable id="folderTreeTable" style="width: 50%" value="#{createJobBean.folderTreeRootNode}" var="element" rendered="#{createJobBean.copyAfter}">
+                            <f:facet name="Header">
+                                Filesystem folder structure
+                            </f:facet>
+                            <p:column headerText="Folder name">
+                                #{element.folderName}
+                            </p:column>
+                            <p:column style="width: 12px; text-align: center" headerText="Select">
+                                <p:commandButton icon="ui-icon-check" label="Use this folder" ajax="true" actionListener="#{createJobBean.selectFolder(element)}" process="@this" update=":mainForm:restrictedPanel"/>
+                            </p:column>
+                        </p:treeTable>
+                    </p:panel>
+                    <p:panel header="Job configuration JSON">
+                        <h3>Upload JSON configuration file</h3>
+                        <p:fileUpload fileUploadListener="#{createJobBean.handleConfigUpload}" mode="advanced" dragDropSupport="true"
+                                      update="configTextArea,createMessages" sizeLimit="500000" allowTypes="/(\.|\/)(txt|json|htm|html)$/" multiple="false" />
+                        <h3>JSON configuration preview</h3>
+                        <p:inputTextarea id="configTextArea" converter="trailingSpacesConverter" rows="20" cols="100" maxlength="500000" value="#{createJobBean.configurationJson}" required="true" requiredMessage="Confinguration is mandatory"/>
+                    </p:panel>                   
+                    <p:splitButton value="Save and run" action="#{createJobBean.saveNewJob(true)}" update="@form" process="@form" oncomplete="window.scrollTo(0, 0);">
+                        <p:menuitem value="Save" action="#{createJobBean.saveNewJob(false)}" update="@form" process="@form" oncomplete="window.scrollTo(0, 0);"/>
+                    </p:splitButton>
+                    <p:commandButton ajax="false" value="Cancel" action="index?faces-redirect=true" />
+
+
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage library="images" name="preloader.gif"/>
+                    </p:dialog>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

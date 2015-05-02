@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <body>
+
+        <ui:composition template="./WEB-INF/template.xhtml">
+
+            <ui:define name="title">
+                Help
+            </ui:define>
+
+            <ui:define name="content">
+                <div class="text">
+                    <p>We are preparing some basic help topics about this web application, in meantime you can submit some feedback or questions in contact form <h:link outcome="/feedback.xhtml" >here</h:link>.</p>
+                    <p>If you are searching some help about KOREL, you can referee to its <a href="http://www.asu.cas.cz/~had/korel.html">homepage</a>, 
+                        and its recommended to read seminar <a href="http://de.arxiv.org/abs/0909.0172">Disentangling of spectra - theory and practice</a> 
+                        - all job examples are taken from this publication.</p>
+                </div>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:composition template="/WEB-INF/template.xhtml">
+        <ui:define name="title">
+            <h:outputText value="Edit Worker" />
+        </ui:define>
+        <ui:define name="content">
+            <h:form>
+                <p:messages autoUpdate="true" showDetail="true"/>
+                <h:panelGrid columns="2" cellspacing="2" cellpadding="5">
+                    <p:outputLabel value="Short description" for="shortDes" />
+                    <p:inputText id="shortDes" value="#{uWSController.editingWorker.shortDescription}" title="Short description" 
+                                 required="true" requiredMessage="Short description is mandatory" maxlength="100" size="50"
+                                 validatorMessage="Maximum 100 characters for short description"/>
+                    
+                    <p:outputLabel value="Description" for="description" />
+                    <p:inputTextarea id="description" value="#{uWSController.editingWorker.description}" title="Description" 
+                                     maxlength="1000" validatorMessage="Maximum 1000 characters for long description" cols="50"/>
+                    
+                    <p:outputLabel value="Resource URL" for="resourceUrl" />
+                    <p:inputText id="resourceUrl" value="#{uWSController.editingWorker.resourceUrl}" title="Resource URL" size="50" 
+                                 validator="urlValidator" required="true" requiredMessage="Resource URL is mandatory"/>
+                    
+                    <p:outputLabel value="Maximum concurrent jobs" for="maxJobs" />
+                    <p:inputText id="maxJobs" value="#{uWSController.editingWorker.maxJobs}" title="Maximum concurrent jobs" size="50"
+                                 required="true" requiredMessage="Max jobs value is mandatory">
+                        <f:convertNumber type="number" />
+                    </p:inputText>
+                    
+                </h:panelGrid>
+                <br />
+                <p:commandButton action="#{uWSController.updateEditingWorker()}" value="Update" />
+                <br />
+                <br />
+                <p:commandLink action="#{uWSController.workerView(uWSController.editingWorker)}" value="View" immediate="true"/>
+                <br />
+                <p:commandLink action="list?faces-redirect=true" value="Back to list" immediate="true"/>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</html>

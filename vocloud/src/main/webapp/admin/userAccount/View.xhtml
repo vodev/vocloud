@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:composition template="/WEB-INF/template.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.ViewUserAccountTitle}" />
+        </ui:define>
+        <ui:define name="content">
+            <h:panelGroup id="messagePanel" layout="block">
+                <h:messages errorStyle="color: red" infoStyle="color: green" layout="table"/>
+            </h:panelGroup>
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_groupName}"/>
+                    <h:outputText value="#{userAccountController.selected.groupName}" title="#{bundle.ViewUserAccountTitle_groupName}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_email}"/>
+                    <h:outputText value="#{userAccountController.selected.email}" title="#{bundle.ViewUserAccountTitle_email}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_enabled}"/>
+                    <h:outputText value="#{userAccountController.selected.enabled}" title="#{bundle.ViewUserAccountTitle_enabled}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_lastIp}"/>
+                    <h:outputText value="#{userAccountController.selected.lastIp}" title="#{bundle.ViewUserAccountTitle_lastIp}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_lastLogin}"/>
+                    <h:outputText value="#{userAccountController.selected.lastLogin}" title="#{bundle.ViewUserAccountTitle_lastLogin}">
+                        <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                    </h:outputText>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_lastName}"/>
+                    <h:outputText value="#{userAccountController.selected.lastName}" title="#{bundle.ViewUserAccountTitle_lastName}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_organization}"/>
+                    <h:outputText value="#{userAccountController.selected.organization}" title="#{bundle.ViewUserAccountTitle_organization}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_pass}"/>
+                    <h:outputText value="#{userAccountController.selected.pass}" title="#{bundle.ViewUserAccountTitle_pass}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_quota}"/>
+                    <h:outputText value="#{userAccountController.selected.quota}" title="#{bundle.ViewUserAccountTitle_quota}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_registeredIp}"/>
+                    <h:outputText value="#{userAccountController.selected.registeredIp}" title="#{bundle.ViewUserAccountTitle_registeredIp}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_since}"/>
+                    <h:outputText value="#{userAccountController.selected.since}" title="#{bundle.ViewUserAccountTitle_since}">
+                        <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                    </h:outputText>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_username}"/>
+                    <h:outputText value="#{userAccountController.selected.username}" title="#{bundle.ViewUserAccountTitle_username}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_firstName}"/>
+                    <h:outputText value="#{userAccountController.selected.firstName}" title="#{bundle.ViewUserAccountTitle_firstName}"/>
+                    <h:outputText value="#{bundle.ViewUserAccountLabel_id}"/>
+                    <h:outputText value="#{userAccountController.selected.id}" title="#{bundle.ViewUserAccountTitle_id}"/>
+                </h:panelGrid>
+                <br />
+                <h:commandLink action="#{userAccountController.destroyAndView}" value="#{bundle.ViewUserAccountDestroyLink}"/>
+                <br />
+                <br />
+                <h:commandLink action="Edit" value="#{bundle.ViewUserAccountEditLink}"/>
+                <br />
+                <h:commandLink action="#{userAccountController.prepareCreate}" value="#{bundle.ViewUserAccountCreateLink}" />
+                <br />
+                <h:commandLink action="#{userAccountController.prepareList}" value="#{bundle.ViewUserAccountShowAllLink}"/>
+
+
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</html>

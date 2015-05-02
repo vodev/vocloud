@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:component xmlns:ui="http://java.sun.com/jsf/facelets"
+              xmlns:h="http://java.sun.com/jsf/html"
+              xmlns:p="http://primefaces.org/ui"
+              xmlns="http://www.w3.org/1999/xhtml">
+
+    <h:form id="navigationForm">
+        <p:menubar>
+            <p:menuitem value="#{bundle.MenuItemHome}" outcome="/index" />
+            <p:menuitem rendered='#{request.remoteUser != null and not (request.isUserInRole("MANAGER") or request.isUserInRole("ADMIN"))}' ajax="false" action="/filesystem/index?faces-redirect=true" value="#{bundle.MenuItemViewFilesystem}" icon="ui-icon-folder-collapsed" />
+            <p:menuitem rendered='#{request.remoteUser != null and (request.isUserInRole("MANAGER") or request.isUserInRole("ADMIN"))}' ajax="false" action="/filesystem/secured/index?faces-redirect=true" value="#{bundle.MenuItemManageFilesystem}" icon="ui-icon-folder-collapsed" />
+            <p:menuitem rendered="#{request.remoteUser != null}" ajax="false" action="/jobs/index?faces-redirect=true" value="#{bundle.MenuItemJobs}" icon="ui-icon-document" />
+            <p:submenu rendered="#{request.remoteUser != null}" binding="#{jobsCreateMenuBean.submenuBinding}" icon="ui-icon-disk" />
+            <p:menuitem rendered="#{request.remoteUser != null}" ajax="false" action="/settings" value="#{bundle.MenuItemSettings}" icon="ui-icon-gear" />                    
+            <p:submenu rendered='#{request.isUserInRole("ADMIN")}' label="#{bundle.SubmenuAdmin}">
+                <p:menuitem ajax="false" action="admin-users" value="#{bundle.MenuItemUsers}" />
+                <p:menuitem ajax="false" action="admin-uws" value="#{bundle.MenuItemUWS}" />
+            </p:submenu>
+            <p:menuitem rendered="#{request.remoteUser != null}" ajax="false" outcome="/help" value="#{bundle.MenuItemHelp}" icon="ui-icon-help" />
+            <p:menuitem rendered="#{request.remoteUser != null}" ajax="false" action="#{loginBean.logout()}" value="#{bundle.MenuItemLogout} (#{request.remoteUser})" icon="ui-icon-close" />
+            <p:menuitem rendered="#{request.remoteUser == null}" ajax="false" outcome="/register" value="#{bundle.MenuItemRegister}" icon="ui-icon-gear" />
+            <p:menuitem rendered="#{request.remoteUser == null}" ajax="false" outcome="/login" value="#{bundle.MenuItemLogin}" icon="ui-icon-check" />
+        </p:menubar>
+    </h:form>
+</ui:component>

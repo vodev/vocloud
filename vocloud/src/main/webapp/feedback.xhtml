@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      >
+
+    <body>
+
+        <ui:composition template="./WEB-INF/template.xhtml">
+
+            <ui:define name="title">
+                Feedback
+            </ui:define>
+
+            <ui:define name="messages">
+                <p:messages globalOnly="true" />
+            </ui:define>
+
+
+            <ui:define name="content">
+                <p>Here you can submit bug reports, feature requests or other feedback about application.</p>
+                <h:form>
+                    <h:panelGrid id="messaa" columns="3" columnClasses="label, value, message" styleClass="grid"  >
+                        <h:outputText value="Name:" />
+                        <p:inputText id="name" required="true" label="name" value="#{feedbackBean.name}" />
+                        <p:message id="nameM" for="name" />  
+
+                        <h:outputText value="Email:" />
+                        <p:inputText id="email" required="true" label="email" value="#{feedbackBean.email}" />
+                        <p:message id="emailM" for="email" /> 
+
+                        <h:outputText value="Topic:" />
+                        <p:inputText  id="topic" required="true" label="topic" value="#{feedbackBean.topic}"/>
+                        <p:message id="topicM" for="topic" />  
+
+                        <h:outputText value="Message:" />
+                        <p:inputTextarea  cols="80" rows="6"  id="mess" required="true" autoResize="true" label="topic" value="#{feedbackBean.message}">
+                        </p:inputTextarea>
+                        <p:message id="messM" for="mess" />  
+                    </h:panelGrid>   
+                    <h:panelGrid rendered="#{request.remoteUser == null}" id="captcha" columns="2" columnClasses="label, value, message" styleClass="grid"  >
+
+                        <p:spacer height="15" />
+                        <h:outputText value=" " />
+
+
+                        <h:outputText value="Prove that you are not a robot." />
+                        <h:outputText value=" " />
+
+
+                        <p:captcha  id="c" label="captcha" theme="white" />
+                        <p:message id="cMessage" for="c" />
+
+                    </h:panelGrid> 
+                    <br />
+                    <br />
+                    <p:commandButton action="#{feedbackBean.send}" ajax="false" value="Send feedback" />
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="./../WEB-INF/template.xhtml">
+
+            <ui:define name="title">
+                Details of job #{jobs.selected.id}
+            </ui:define>
+
+            <ui:define name="content">
+
+                <h:form id="details">
+                    <p:poll interval="10" update="@form" autoStart="#{not jobDetailsBean.stopPolling()}" stop="#{jobDetailsBean.stopPolling()}" listener="#{jobDetailsBean.refresh()}"/> 
+                    <h1>#{jobDetailsBean.selectedJob.label}</h1>
+                    <p>#{jobDetailsBean.selectedJob.notes}</p>
+                    <p:dataTable id="atributes" value="#{jobDetailsBean.selectedJob}">
+                        <p:column headerText="Type">#{jobDetailsBean.selectedJob.uwsType.shortDescription}</p:column>
+                        <p:column headerText="Id">#{jobDetailsBean.selectedJob.stringId}</p:column>
+                        <p:column headerText="Phase">#{jobDetailsBean.selectedJob.phase}</p:column>
+                        <p:column headerText="Worker">#{jobDetailsBean.selectedJob.uws.worker.shortDescription}</p:column>
+                        <p:column headerText="Created">
+                            <h:outputText value="#{jobDetailsBean.selectedJob.createdDate}">
+                                <f:convertDateTime type="both"  timeStyle="medium" dateStyle="short" timeZone="CET" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Started">
+                            <h:outputText value="#{jobDetailsBean.selectedJob.startedDate}">
+                                <f:convertDateTime type="both"  timeStyle="medium" dateStyle="short" timeZone="CET" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Finished">
+                            <h:outputText value="#{jobDetailsBean.selectedJob.finishedDate}">
+                                <f:convertDateTime type="both"  timeStyle="medium" dateStyle="short" timeZone="CET" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Executing time">#{jobDetailsBean.selectedJob.executingTime} sec</p:column>
+                    </p:dataTable>
+                    <p:commandButton id="again" action="#{jobDetailsBean.runAgain()}" ajax="false" value="Run again" icon="ui-icon-arrowrefresh-1-w" title="create new job with same parameters" />                    
+                    <p:commandButton id="delete" action="#{jobDetailsBean.delete()}" update="@form" icon="ui-icon-close" value="Delete" title="Delete job">
+                        <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
+                    </p:commandButton>
+                    <ui:fragment rendered="#{not empty jobDetailsBean.pages}">
+                        <h3>Preview</h3>
+                        <ui:repeat value="#{jobDetailsBean.pages}" var="page">
+                            <p:panel style="max-width: 1200px" >
+                                <f:facet name="header">
+                                    #{page.file.name} - <p:link href="preview/#{jobDetailsBean.selectedJob.stringId}/#{page.path}" target="_blank" value="Fullscreen" />
+                                </f:facet>
+                                <iframe src="preview/#{jobDetailsBean.selectedJob.stringId}/#{page.path}" style="width: 98%; height: 700px; border: 0px; margin-left: 5px;" ></iframe>
+                            </p:panel>
+                        </ui:repeat>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{not empty jobDetailsBean.images}">
+                        <h3>Images</h3>
+                        <ui:repeat value="#{jobDetailsBean.images}" var="image">
+                            <p:panel style="max-width: 800px" >
+                                <f:facet name="header">
+                                    #{image.file.name} - 
+                                    <p:commandLink value="Download" ajax="false">
+                                        <p:fileDownload value="#{jobDetailsBean.downloadFile(image.file)}" />
+                                    </p:commandLink>
+                                </f:facet>
+                                <h:graphicImage url="images/#{jobDetailsBean.selectedJob.stringId}/#{image.path}" />
+                            </p:panel>
+                        </ui:repeat>
+                    </ui:fragment>
+
+                    <h3>Files</h3>
+                    <p:treeTable value="#{jobDetailsBean.treeRoot}" var="node">
+                        <f:facet name="header">
+                            Folder structure
+                        </f:facet>
+                        <p:column width="12">
+                            <h:panelGroup styleClass="ui-icon ui-icon-folder-collapsed" rendered="#{node.folder}" />
+                            <h:panelGroup styleClass="ui-icon ui-icon-document" rendered="#{not node.folder}" />
+                        </p:column>
+                        <p:column headerText="Name">
+                            <h:outputText value="#{node.name}" />
+                        </p:column>
+                        <p:column headerText="Size">
+                            <h:outputText value="#{node.size}" />
+                        </p:column>
+                        <p:column headerText="Download" style="width: 1px; text-align: center">
+                            <p:commandButton rendered="#{not node.folder}" ajax="false" icon="ui-icon-arrowthick-1-s" title="Download #{node.name}">
+                                <p:fileDownload value="#{jobDetailsBean.downloadFile(node.targetFile)}" />
+                            </p:commandButton>
+                        </p:column>
+                        <p:column headerText="View" style="width: 1px; text-align: center" >
+                            <p:commandButton rendered="#{not node.folder}" title="View file"  icon="ui-icon-newwin"
+                                             update=":dialogForm" oncomplete="PF('fileView').show()">
+                                <f:setPropertyActionListener value="#{node.targetFile}" target="#{jobDetailsBean.selectedFile}" />  
+                            </p:commandButton>
+                        </p:column>
+                    </p:treeTable>
+                    
+                    <ui:fragment rendered="#{jobDetailsBean.selectedJob.copyMessage != null}">
+                        <h3>Filesystem copy output</h3>
+                        <pre>#{jobDetailsBean.selectedJob.copyMessage}</pre>
+                    </ui:fragment>
+                </h:form>
+                <h:form id="dialogForm">
+                    <p:dialog id="fileView" widgetVar="fileView" width="700" maximizable="false" minimizable="true"  height="500"  >
+                        <f:facet name="header">View <h:outputText id="name" value="#{jobDetailsBean.selectedFile.name}" /></f:facet>
+                        <pre><h:outputText id="text" value="#{jobDetailsBean.selectedFileContents}" /></pre>
+                    </p:dialog>
+
+                    <p:confirmDialog appendTo="@(body)" id="confirmDialog" widgetVar="confirmDialog" global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                    </p:confirmDialog>
+                </h:form>
+                <p:spacer height="20" />
+                <h:form>
+                    <p:messages id="fsCopyMessages" showDetail="true" />
+                    <p:panel id="restrictedPanel" header="Filesystem copy" rendered="#{jobDetailsBean.filesystemManageAccess}">
+                        <h:panelGrid columns="2" cellpadding="10" style="padding-bottom: 20px">
+                            <p:outputLabel id="folderLabel" value="Target folder: "/>
+                            <p:inputText id="folderInput" value="#{jobDetailsBean.copyFolder}" size="100" required="true" requiredMessage="Target copy folder must be specified" readonly="true"/>
+                        </h:panelGrid>
+                        <p:treeTable id="folderTreeTable" style="width: 50%" value="#{jobDetailsBean.filesystemTreeRootNode}" var="element">
+                            <f:facet name="Header">
+                                Filesystem folder structure
+                            </f:facet>
+                            <p:column headerText="Folder name">
+                                #{element.folderName}
+                            </p:column>
+                            <p:column style="width: 12px; text-align: center" headerText="Select">
+                                <p:commandButton icon="ui-icon-check" label="Use this folder" ajax="true" actionListener="#{jobDetailsBean.selectFolder(element)}" process="@this" update="@form"/>
+                            </p:column>
+                        </p:treeTable>
+                        <p:commandButton value="Copy results to target folder" action="#{jobDetailsBean.enqueueFilesystemCopy()}" update="@form" />
+                    </p:panel>
+                    
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

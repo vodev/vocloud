@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/WEB-INF/template.xhtml">
+        <ui:define name="title">Login</ui:define>
+
+        <ui:define name="messages">
+            <p:messages globalOnly="true"/>
+        </ui:define>
+
+        <ui:define name="content">
+            <ui:fragment rendered="#{loginBean.userLogged}">
+                <p>You are already logged in as #{loginBean.principalName}.</p>
+            </ui:fragment>
+            <ui:fragment rendered="#{not loginBean.userLogged}">
+                <p>Please log in.</p>
+                <h:form>
+                    <h:panelGrid columns="2">
+                        <h:outputLabel for="username" 
+                                       value="User name:"/>
+                        <p:inputText id="username" required="true" value="#{loginBean.username}"/>
+
+
+                        <h:outputLabel for="password" 
+                                       value="Password:"/>
+                        <p:password id="password" required="true" feedback="false" value="#{loginBean.password}"/>
+                        <h:outputLabel for="reset" 
+                                       value=" "/>
+                        <h:link id="reset" outcome="reset-password">Forgot password?</h:link>
+                        <p:commandButton ajax="false" value="Login" action="#{loginBean.login()}"/>    
+                    </h:panelGrid>
+                </h:form>  
+            </ui:fragment>
+
+        </ui:define>
+    </ui:composition>
+</html>

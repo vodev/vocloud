@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:composition template="/WEB-INF/template.xhtml">
+        <ui:define name="title">Jobs</ui:define>
+        <ui:define name="messages">
+            <p:messages id="jobMessages" showDetail="true" />
+        </ui:define>
+        <ui:define name="content">
+            <h:form>
+                <p:poll interval="10" listener="#{jobListBean.pollRefresh}" update="@form" widgetVar="poll"/>
+                <p:selectBooleanCheckbox rendered="#{jobListBean.adminPrivileges}" value="#{jobListBean.adminShowAll}" itemLabel="Show jobs of all users">
+                    <p:ajax update="@form"/>
+                </p:selectBooleanCheckbox>
+                <p:dataTable value="#{jobListBean.model}" var="job" paginator="true" rows="20" lazy="true" resizableColumns="true" rowStyleClass="#{job.phase eq 'COMPLETED' ? 'greenRow' : (job.phase eq 'ERROR' ? 'redRow' : null)}">
+                    <p:column headerText="Type">
+                        <h:outputText value="#{job.uwsType.shortDescription}" />
+                    </p:column>
+                    <p:column headerText="ID">
+                        <h:outputText value="#{job.stringId}" />
+                    </p:column>
+                    <p:column headerText="Job label" width="300">
+                        <h:outputText value="#{job.label}" />
+                    </p:column>
+                    <p:column  headerText="Created">
+                        <h:outputText value="#{job.createdDate}">
+                            <f:convertDateTime type="both"  dateStyle="short" timeZone="CET" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Duration">
+                        <h:outputText value="#{job.executingTime} sec" />
+                    </p:column>
+                    <p:column headerText="Phase">
+                        <h:outputText value="#{job.phase}" />
+                    </p:column>
+                    <p:column headerText="Action" width="60" style="text-align: center">
+                        <p:commandButton rendered="#{job.phase eq 'PENDING'}" id="start" actionListener="#{jobListBean.startJob(job)}" update="@form" value="Start" title="Start" />
+                        <p:commandButton rendered="#{job.phase eq 'EXECUTING' or job.phase eq 'QUEUED'}" id="abort" actionListener="#{jobListBean.abortJob(job)}" update="@form" value="Abort" title="Abort" />
+                    </p:column>
+                    <p:column headerText="Delete" width="40" style="text-align: center">
+                        <p:commandButton actionListener="#{jobListBean.deleteJob(job)}" update="@form" icon="ui-icon-close" title="Delete job">
+                            <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
+                        </p:commandButton>
+                    </p:column>
+                    <p:column headerText="Details" width="40" style="text-align: center">
+                        <p:commandButton id="details" action="#{jobListBean.showDetail(job)}" ajax="false" icon="ui-icon-document" title="Details of job" />
+                    </p:column>
+                </p:dataTable>
+
+                <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" onerror="PF('statusDialog').hide()"/>
+
+            </h:form>
+            <h:form>
+                <p:dialog  widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+                    <p:graphicImage library="images" name="preloader.gif"/>
+                </p:dialog>
+                <p:confirmDialog appendTo="@(body)" id="confirmDialog" widgetVar="confirmDialog" global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+
+
+</html>
+

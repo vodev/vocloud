@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <h:head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1.0" />
+        <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicon.ico']}"/>
+        <h:outputStylesheet name="css/default.css" />
+        <h:outputStylesheet name="css/cssLayout.css" />
+        <title>
+            <ui:insert name="title">
+                vo-cloud
+            </ui:insert>
+        </title>
+    </h:head>
+
+    <h:body>
+        <div id="top">
+            <div id="title"><h2 class="titl"> vo-cloud <ui:insert name="title" /></h2></div>
+            <div id="navigation">
+                <ui:include src="navigation/navigation.xhtml" />
+            </div>
+            <ui:insert name="top"/>
+        </div>
+
+        <div id="messageBar">
+            <ui:insert name="messages" />
+        </div>
+
+        <div id="content" class="center_content">
+
+            <ui:insert name="content" />
+        </div>
+
+        <div id="bottom">
+            <ui:insert name="bottom" />
+            <h:form>
+                <div align="right">
+                    
+                    <h:commandLink value="feedback"  action="/feedback" /> -
+                    <a target="_blank" href="https://github.com/vodev/vocloud">github</a>
+                    Build time: #{propertiesInfoBean.buildTimestamp} Build id: #{propertiesInfoBean.buildNumber}
+                </div>
+            </h:form>
+        </div>
+
+    </h:body>
+
+</html>

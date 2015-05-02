@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:composition template="/WEB-INF/template.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.ViewFilesystemTitle}" />
+        </ui:define>
+
+        <ui:define name="content">
+            <h:form>
+                <p:breadCrumb model="#{filesystemViewBean.breadcrumbModel}"/>
+                <p:dataTable resizableColumns="true" var="item" value="#{filesystemViewBean.filesystemItemList}">
+                    <p:column width="12">
+                        <f:facet name="header">                            
+                            <h:commandLink rendered="#{not filesystemViewBean.inRoot}" action="#{filesystemViewBean.goBack()}" styleClass="ui-icon ui-icon-arrowreturnthick-1-w" style="position:relative; left: -5px"/>
+                            <h:commandLink rendered="#{filesystemViewBean.inRoot}" styleClass="ui-icon ui-icon-home" style="position:relative; left: -5px"/>
+                        </f:facet>
+                        <h:panelGroup styleClass="ui-icon ui-icon-folder-collapsed" rendered="#{item.folder}" />
+                        <h:panelGroup styleClass="ui-icon ui-icon-document" rendered="#{not item.folder}" />
+                    </p:column>
+
+                    <p:column headerText="#{bundle.FileName}" sortBy="${item}" sortFunction="#{filesystemViewBean.sortByName}">
+                        <h:outputText rendered="#{not item.folder}" value="#{item.name}" />
+                        <h:commandLink action="#{filesystemViewBean.goToFolder(item)}" value="#{item.name}" rendered="#{item.folder}" />
+                    </p:column>
+
+                    <p:column headerText="#{bundle.FileLength}" sortBy="#{item.sizeInBytes}">
+                        <h:outputText value="#{filesystemViewBean.humanReadableSize(item)}" />
+                    </p:column>
+
+                    <p:column headerText="#{bundle.FileLastModified}" sortBy="#{item.lastModified}">
+                        <h:outputText value="#{item.lastModified}">
+                            <f:convertDateTime type="both"  timeZone="CET" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{bundle.FileOperation}">
+                        <p:commandButton rendered="#{not item.folder}" value="#{bundle.FileDownload}" ajax="false" icon="ui-icon-arrowthick-1-s">
+                            <p:fileDownload value="#{filesystemViewBean.downloadFile(item)}" />
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</html>

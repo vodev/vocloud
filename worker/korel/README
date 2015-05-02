@@ -1,0 +1,73 @@
+                          _                  _
+ _   ___      _____      | | _____  _ __ ___| |
+| | | \ \ /\ / / __|_____| |/ / _ \| '__/ _ \ |
+| |_| |\ V  V /\__ \_____|   < (_) | | |  __/ |
+ \__,_| \_/\_/ |___/     |_|\_\___/|_|  \___|_|
+
+uws-korel - the KOREL worker based on UWS library
+
+
+Requirements
+============
+
+- JRE 7 and compatible servlet engine (tomcat 7+ or glassfish 3+)
+
+Korel executable requirements:
+- amd64 kernel
+- FORTRAN77 - package fort77 in debian
+
+Post-process scripts requirements:
+- gnuplot
+
+
+Install guide
+=============
+for Debian 'squeeze' amd64 with tomcat 7 servlet engine
+
+1.  install prerequisites
+    
+    required by KOREL
+        apt-get install fort77
+    required by post-processing scripts
+        apt-get install gnuplot 
+
+2.  install JRE 7
+
+    download JRE
+        http://www.oracle.com/technetwork/java/javase/downloads/index.html 
+    pick a gz archive, for example jre-7u4-linux-x64.gz
+    extract archive to /usr/lib/jvm/
+
+3.  install apache tomcat 7 servlet engine
+
+    download core tar.gz from http://tomcat.apache.org/download-70.cgi
+    extract it for example to /usr/local/bin/
+    set JRE for tomcat
+    write JRE_HOME=/usr/lib/jvm/jre1.7.0_04 to %TOMCAT_HOME%/bin/setenv.sh
+    setup your access to tomcat manager
+        add user with role manager-gui to %TOMCAT_HOME%/conf/tomcat-users.xml
+    you can now start server using %TOMCAT_HOME%/bin/startup.sh
+    you should be able to access your server at http://localhost:8080 
+    and test manager at /manager
+
+4.  deploy uws-korel using WAR 
+
+    open http://localhost:8080/manager 
+    select WAR file to upload uws-korel.war and deploy
+    you can access uws-korel on http://localhost:8080/uws-korel
+
+5. make post-processing scripts you want to use executable
+
+    to enable all scripts chmod +x WEB-INF/scripts/*
+
+6. configure uws-korel, edit file WEB-INF/uws-korel.conf
+
+    set path to your KOREL binary to korel_bin, 
+    and server address where worker is located
+    to apply changes in config file, you have to reload application 
+    or restart tomcat
+
+application should be now able to successfully generate expected results,
+you can test it using javascript client located on 
+    http://localhost:8080/uws-korel 
+

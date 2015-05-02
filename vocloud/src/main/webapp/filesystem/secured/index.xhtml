@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:composition template="/WEB-INF/template.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.ManageFilesystemTitle}" />
+        </ui:define>
+
+        <ui:define name="content">
+            <h:form id="form">
+                <h:panelGroup id="messagePanel" layout="block">
+                    <p:messages showIcon="true" showDetail="true" showSummary="false"/>
+                </h:panelGroup>
+                <p:menubar>
+                    <p:menuitem id="newFolderBtn" value="#{bundle.NewFolderMenuItem}" icon="ui-icon-folder-open" />
+                    <p:menuitem id="uploadFilesBtn" value="#{bundle.FileUploadMenuItem}" icon="ui-icon-arrowthick-1-n" action="upload-file">
+                        <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
+                    </p:menuitem>
+                    <p:menuitem id="remoteDownloadBtn" action="remote-download" value="#{bundle.RemoteDownloadMenuItem}" icon="ui-icon-arrowthick-1-s">
+                        <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
+                    </p:menuitem>
+                    <p:menuitem id="SSAPDownloadBtn" action="ssap" value="#{bundle.SSAPDownloadMenuItem}" icon="ui-icon-arrowthick-1-s">
+                        <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
+                    </p:menuitem>
+                    <p:menuitem id="showDownloadQueueBtn" action="download-queue" value="#{bundle.ShowDownloadQueueMenuItem}" icon="ui-icon-clipboard" />
+
+                </p:menubar>
+                <p:overlayPanel id="newFolderPanel" for="newFolderBtn" hideEffect="fade">
+                    <h:panelGrid columns="2" cellpadding="10" cellspacing="5">
+                        <p:inputText maxlength="30" value="#{filesystemManageBean.folderName}"/>
+                        <p:commandButton value="#{bundle.CreateFolderButton}" action="#{filesystemManageBean.createFolder()}" update="@form" />
+                    </h:panelGrid>
+                </p:overlayPanel>
+                <p:breadCrumb model="#{filesystemManageBean.breadcrumbModel}"/>
+                <p:dataTable resizableColumns="true" var="item" value="#{filesystemManageBean.filesystemItemList}">
+                    <p:column width="12">
+                        <f:facet name="header">                            
+                            <h:commandLink rendered="#{not filesystemManageBean.inRoot}" action="#{filesystemManageBean.goBack()}" styleClass="ui-icon ui-icon-arrowreturnthick-1-w" style="position:relative; left: -5px"/>
+                            <h:commandLink rendered="#{filesystemManageBean.inRoot}" styleClass="ui-icon ui-icon-home" style="position:relative; left: -5px"/>
+                        </f:facet>
+                        <h:panelGroup styleClass="ui-icon ui-icon-folder-collapsed" rendered="#{item.folder}" />
+                        <h:panelGroup styleClass="ui-icon ui-icon-document" rendered="#{not item.folder}" />
+                    </p:column>
+
+                    <p:column headerText="#{bundle.FileName}" sortBy="${item}" sortFunction="#{filesystemManageBean.sortByName}">
+                        <h:outputText rendered="#{not item.folder}" value="#{item.name}" />
+                        <h:commandLink action="#{filesystemManageBean.goToFolder(item)}" value="#{item.name}" rendered="#{item.folder}" />
+                    </p:column>
+
+                    <p:column headerText="#{bundle.FileLength}" sortBy="#{item.sizeInBytes}">
+                        <h:outputText value="#{filesystemManageBean.humanReadableSize(item)}" />
+                    </p:column>
+
+                    <p:column headerText="#{bundle.FileLastModified}" sortBy="#{item.lastModified}">
+                        <h:outputText value="#{item.lastModified}">
+                            <f:convertDateTime type="both"  timeZone="CET" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{bundle.FileOperation}" width="300">
+                        <p:commandButton disabled="#{item.folder}" value="#{bundle.FileDownload}" ajax="false" icon="ui-icon-arrowthick-1-s">
+                            <p:fileDownload value="#{filesystemManageBean.downloadFile(item)}" />
+                        </p:commandButton>
+                        <p:commandButton value="#{bundle.FileDelete}" icon="ui-icon-trash" action="#{filesystemManageBean.delete(item)}" update="@form">
+                            <p:confirm header="#{bundle.ConfirmationTitle}" message="#{bundle.ConfirmationMessage}" icon="ui-icon-alert" />
+                        </p:commandButton>
+                        <p:commandButton update=":dialogForm:fileRenamePanel" value="#{bundle.FileRename}" icon="ui-icon-pencil" oncomplete="PF('renameDialog').show()">
+                            <f:setPropertyActionListener target="#{filesystemManageBean.itemToRename}" value="#{item.name}" />
+                            <f:setPropertyActionListener target="#{filesystemManageBean.filesystemItemToRename}" value="#{item}" />
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="#{bundle.YesChoice}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                    <p:commandButton value="#{bundle.NoChoice}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>
+            </h:form>
+            <h:form id="dialogForm">
+                <p:dialog header="#{bundle.RenameDialog}" widgetVar="renameDialog" modal="true" resizable="false">
+                    <p:outputPanel id="fileRenamePanel" style="text-align:center;">
+                        <h:panelGrid columns="2" cellpadding="10" cellspacing="5" rendered="#{filesystemManageBean.itemToRename != null}">
+                            <p:inputText maxlength="30" value="#{filesystemManageBean.itemToRename}"/>
+                            <p:commandButton id="renameBtn" value="#{bundle.FileRenameButton}" action="#{filesystemManageBean.renameFilesystemItem()}" update=":form,@form"/>
+                            <p:defaultCommand target="renameBtn" />
+                        </h:panelGrid>
+                    </p:outputPanel>
+                </p:dialog>  
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</html>
