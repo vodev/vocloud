@@ -92,7 +92,7 @@ public class FeedbackBean implements Serializable {
             //set flash to keep messages during redirect
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Thank you for your feedback!", "Your message has been sent to the administrator."));
-            return "index/faces-redirect=true";
+            return "index?faces-redirect=true";
 
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "error when sending feedback email", ex);
