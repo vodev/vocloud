@@ -35,7 +35,7 @@ public class FeedbackBean implements Serializable {
     @EJB
     private UserAccountFacade uaf;
 
-    @Resource(name = "vokorel-mail")
+    @Resource(lookup = "java:jboss/mail/vocloud-mail")
     private Session mailSession;
     @Inject
     @Config

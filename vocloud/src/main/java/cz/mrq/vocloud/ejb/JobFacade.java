@@ -59,7 +59,7 @@ public class JobFacade extends AbstractFacade<Job> {
     private SchedulerBean sb;
     @EJB
     private FilesystemManipulator fsm;
-    @Resource(name = "vokorel-mail")
+    @Resource(lookup = "java:jboss/mail/vocloud-mail")
     private Session mailSession;
     @Inject
     @Config

@@ -14,7 +14,9 @@
     <packaging>war</packaging>
 
     <properties>
-        <vocloud.appUrl>http://vocloud:8080/vocloud</vocloud.appUrl>
+        <vocloud.appUrl>http://localhost:80/vocloud</vocloud.appUrl>
+        <vocloud.filesystemDir>../files/</vocloud.filesystemDir>
+        <vocloud.jobsDir>../jobs/</vocloud.jobsDir>
     </properties>
     <scm>
         <connection>scm:git:git://github.com/vodev/vocloud.git</connection>
@@ -170,11 +172,29 @@
         <profile>
             <id>vocloud-dev</id>
             <properties>
-                <vocloud.appUrl>http://vocloud-dev:8001/vocloud</vocloud.appUrl>
+                <vocloud.appUrl>http://localhost:8080/vocloud2</vocloud.appUrl>
+                <vocloud.filesystemDir>/var/local/vocloud/filesystem/</vocloud.filesystemDir>
+                <vocloud.jobsDir>/var/local/vocloud/jobs/</vocloud.jobsDir>
             </properties>
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>2.6</version>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                </manifest>
+                                <manifestEntries>
+                                    <git-SHA-1>${buildNumber}</git-SHA-1>
+                                </manifestEntries>
+                            </archive>
+                            <warName>vocloud2</warName>
+                        </configuration>
+                    </plugin>
+                    <!--                    <plugin>
                         <groupId>org.glassfish.maven.plugin</groupId>
                         <artifactId>maven-glassfish-plugin</artifactId>
                         <version>2.1</version>
@@ -207,11 +227,11 @@
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>
+                    </plugin>-->
                 </plugins>
             </build>
         </profile>
-        <profile>
+        <!--        <profile>
             <id>vocloud-local</id>
             <build>
                 <plugins>
@@ -251,7 +271,7 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
+        </profile>-->
     </profiles>
     <repositories>
         <repository>

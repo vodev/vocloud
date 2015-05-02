@@ -33,7 +33,7 @@ public class UserAccountFacade extends AbstractFacade<UserAccount> {
     @PersistenceContext(unitName = "vokorelPU")
     private EntityManager em;
 
-    @Resource(name = "vokorel-mail")
+    @Resource(lookup = "java:jboss/mail/vocloud-mail")
     private Session mailSession;
 
     @Override
