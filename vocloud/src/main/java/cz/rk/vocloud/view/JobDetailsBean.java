@@ -281,7 +281,7 @@ public class JobDetailsBean implements Serializable {
         }
         String content = "";
         try {
-            content = FileUtils.readFileToString(selectedFile);
+            content = FileUtils.readFileToString(selectedFile, "UTF-8");
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }

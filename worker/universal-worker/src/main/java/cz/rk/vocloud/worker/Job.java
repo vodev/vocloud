@@ -4,10 +4,12 @@ import cz.rk.vocloud.schema.Worker;
 import uws.UWSException;
 import uws.job.AbstractJob;
 import uws.job.Result;
-
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
@@ -231,7 +233,7 @@ public class Job extends AbstractJob {
         for (String command : commands) {
             tmp = command
                     .replace("${binaries-location}", workerSettings.getBinariesLocation())
-//                    .replace("${config-file}", PROCESS_DATA_FOLDER_NAME + "/config.json");
+                    //                    .replace("${config-file}", PROCESS_DATA_FOLDER_NAME + "/config.json");
                     .replace("${config-file}", "config.json");//todo remove after python fix
             resolved.add(tmp);
         }
@@ -309,6 +311,10 @@ public class Job extends AbstractJob {
     }
 
     private void downloadRemoteResource(String urlStr, String folderPath, PrintStream log) {
+        folderPath = folderPath.trim();
+        if (folderPath.startsWith("/")){
+            folderPath = folderPath.substring(1);
+        }
         urlStr = urlStr.trim();
         if (urlStr.isEmpty()) {
             log.println("Found empty url");
@@ -316,12 +322,7 @@ public class Job extends AbstractJob {
         }
         //expand resource url if it starts with vocloud://
         urlStr = urlStr.replaceFirst("^vocloud://", Config.settings.getVocloudServerAddress() + "/files/");
-        //create folder descriptor
-        File folder = new File(workingDir, folderPath);
-        folder.mkdirs();
-        String[] split = urlStr.split("/");
-        String fileName = split[split.length - 1];
-        File file = new File(folder, fileName);
+        //create URL
         URL url;
         try {
             url = new URL(urlStr);
@@ -329,17 +330,109 @@ public class Job extends AbstractJob {
             log.println("Malformed url: " + urlStr);
             return;
         }
-        externalFiles.add(file);
-        if (downloadFile(url, file)) {
-            log.println("File " + fileName + " was successfully downloaded to /" + folderPath);
+        //try to create HttpUrlConnection
+        HttpURLConnection conn;
+        try {
+            conn = (HttpURLConnection) url.openConnection();
+        } catch (IOException ex) {
+            log.println("Unable to connect to: " + urlStr);
+            return;
+        } catch (ClassCastException ex) {
+            log.println("Resource is not http/https connection: " + urlStr);
+            return;
+        }
+        //check if it is json - possible folder
+        if ("application/json".equals(conn.getContentType())) {
+            //possible folder
+            StringBuilder folderJson = new StringBuilder();
+            //read into folderJson
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), Charset.forName("UTF-8")))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    folderJson.append(line);
+                }
+            } catch (IOException ex) {
+                log.println("Exception during reading folder json from: " + urlStr);
+                conn.disconnect();
+                return;
+            }
+            conn.disconnect();
+            JSONObject folderDesc;
+            try {
+                folderDesc = new JSONObject(folderJson.toString());
+            } catch (JSONException ex) {
+                log.println("Unable to parse folder descripting json from: " + urlStr);
+                return;
+            }
+            JSONArray folders;
+            JSONArray files;
+            try {
+                folders = folderDesc.getJSONArray("folders");
+                files = folderDesc.getJSONArray("files");
+            } catch (JSONException ex) {
+                log.println("Invalid format of folder json from: " + urlStr);
+                return;
+            }
+            try {
+                //call function recursively on folders and files
+                for (int i = 0; i < folders.length(); i++) {
+                    String folderName;
+                    try {
+                        folderName = folders.getString(i);
+                    } catch (JSONException ex) {
+                        log.println("Expected string - ignoring value");
+                        continue;
+                    }
+                    downloadRemoteResource(conc(urlStr, URLEncoder.encode(folderName, "UTF-8")), conc(folderPath, folderName), log);
+                }
+                for (int i = 0; i < files.length(); i++) {
+                    String fileName;
+                    try {
+                        fileName = files.getString(i);
+                    } catch (JSONException ex) {
+                        log.println("Expected string - ignoring value");
+                        continue;
+                    }
+                    downloadRemoteResource(conc(urlStr, URLEncoder.encode(fileName, "UTF-8")), folderPath, log);
+                }
+            } catch (UnsupportedEncodingException ex) {
+                LOG.log(Level.SEVERE, "Unsupported encoding", ex);
+            }
         } else {
-            log.println("Failed to download file " + fileName + " to folder /" + folderPath);
+            //create folder descriptor
+            File folder = new File(workingDir, folderPath);
+            folder.mkdirs();
+            String[] split = urlStr.split("/");
+            String fileName = split[split.length - 1];
+            try {
+            fileName = URLDecoder.decode(fileName, "UTF-8");
+            } catch (UnsupportedEncodingException ex){
+                LOG.log(Level.SEVERE, "Unsupported encoding", ex);
+                return;
+            }
+            File file = new File(folder, fileName);
+            externalFiles.add(file);
+
+            if (downloadFile(conn, file)) {
+                log.println("File " + fileName + " was successfully downloaded to /" + folderPath);
+            } else {
+                log.println("Failed to download file " + fileName + " to folder /" + folderPath);
+            }
+            conn.disconnect();
         }
     }
 
-    private boolean downloadFile(URL url, File file) {
+    private String conc(String prefix, String value) {
+        //concatenates two strings and puts slash between them if it is not already
+        if (prefix.endsWith("/")) {
+            return prefix + value;
+        }
+        //else
+        return prefix + '/' + value;
+    }
 
-        try (ReadableByteChannel rbc = Channels.newChannel(url.openStream());
+    private boolean downloadFile(HttpURLConnection conn, File file) {
+        try (ReadableByteChannel rbc = Channels.newChannel(conn.getInputStream());
                 FileOutputStream fos = new FileOutputStream(file)) {
             long transferred = fos.getChannel().transferFrom(rbc, 0, 1 << 16);
             long pos = transferred;
@@ -349,7 +442,6 @@ public class Job extends AbstractJob {
             }
             return true;
         } catch (IOException e) {
-            LOG.log(Level.WARNING, "failed to download file from url " + url, e);
             return false;
         }
     }
