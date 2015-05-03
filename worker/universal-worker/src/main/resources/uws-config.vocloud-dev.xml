@@ -17,7 +17,7 @@
                 <ns:binaries-location>/home/voadmin/preprocessing</ns:binaries-location>
                 <ns:exec-command>
                     <ns:command>python3</ns:command>
-                    <ns:command>${binaries-location}/run-preprocessing.py</ns:command>
+                    <ns:command>${binaries-location}/run_preprocessing.py</ns:command>
                     <ns:command>${config-file}</ns:command>
                 </ns:exec-command>
             </ns:worker>

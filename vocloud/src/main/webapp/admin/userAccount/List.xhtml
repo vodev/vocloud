@@ -20,7 +20,7 @@
                     <h:outputText value="#{userAccountController.pagination.pageFirstItem + 1}..#{userAccountController.pagination.pageLastItem + 1}/#{userAccountController.pagination.itemsCount}"/>&nbsp;
                     <h:commandLink action="#{userAccountController.previous}" value="#{bundle.Previous} #{userAccountController.pagination.pageSize}" rendered="#{userAccountController.pagination.hasPreviousPage}"/>&nbsp;
                     <h:commandLink action="#{userAccountController.next}" value="#{bundle.Next} #{userAccountController.pagination.pageSize}" rendered="#{userAccountController.pagination.hasNextPage}"/>&nbsp;
-                    <pou:dataTable value="#{userAccountController.items}" var="item" >
+                    <pou:dataTable value="#{userAccountController.items}" var="item" resizableColumns="true">
                         <pou:column>
                             <f:facet name="header">
                                 <h:outputText value="#{bundle.ListUserAccountTitle_id}"/>
