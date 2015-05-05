@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:composition template="/WEB-INF/template.xhtml">
+        <ui:define name="title">
+            <h:outputText value="Edit UWS Type" />
+        </ui:define>
+        <ui:define name="content">
+            <h:form>
+                <p:messages autoUpdate="true" />
+                <h:panelGrid columns="2" cellspacing="2" cellpadding="5">
+                    <p:outputLabel value="UWS Type" for="uwsType" />
+                    <p:selectOneMenu id="uwsType" value="#{uWSController.selectedUwsType}" required="true" requiredMessage="UWS Type is mandatory">
+                        <f:selectItem itemLabel="Select One" itemValue="" />
+                        <f:selectItems value="#{uWSController.uwsTypes}" var="type" itemValue="#{type.id}" itemLabel="#{type.shortDescription}" />
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="Worker" for="worker" />
+                    <p:selectOneMenu id="worker" value="#{uWSController.selectedWorker}" required="true" requiredMessage="Worker is mandatory">
+                        <f:selectItem itemLabel="Select One" itemValue="" />
+                        <f:selectItems value="#{uWSController.workers}" var="worker" itemValue="#{worker.id}" itemLabel="#{worker.shortDescription}" />
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel value="Enabled" for="enabled" />
+                    <p:selectBooleanCheckbox id="enabled" value="#{uWSController.editingUws.enabled}" />
+                    
+                </h:panelGrid>
+                <br />
+                <p:commandButton action="#{uWSController.updateEditingUws()}" value="Update" />
+                <br />
+                <br />
+                <p:commandLink action="#{uWSController.uwsView(uWSController.editingUws)}" value="View" immediate="true"/>
+                <br />
+                <p:commandLink action="list?faces-redirect=true" value="Back to list" immediate="true"/>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</html>
