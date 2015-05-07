@@ -7,7 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -18,7 +22,10 @@ import javax.persistence.TypedQuery;
  */
 @Stateless
 public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
+    private static final Logger LOG = Logger.getLogger(DownloadJobFacade.class.getName());
 
+    
+    
     @PersistenceContext(unitName = "vokorelPU")
     private EntityManager em;
 
@@ -38,39 +45,38 @@ public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
         job.setSaveDir(folderPath);
         job.setState(DownloadState.CREATED);
         this.create(job);
-        em.flush();
         return job;
     }
     
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public List<DownloadJob> createNewDownloadJobs(List<String> downloadUrls, String folderPath){
         List<DownloadJob> jobs = new ArrayList<>();
-        Date now = new Date();
         for (String url: downloadUrls){
             DownloadJob job = new DownloadJob();
-            job.setCreateTime(now);
+            job.setCreateTime(new Date());
             job.setDownloadUrl(url);
             job.setSaveDir(folderPath);
             job.setState(DownloadState.CREATED);
             jobs.add(job);
-            this.create(job);
+            em.persist(job);
         }
         //flush all to database to obtain primary key values
         em.flush();
         return jobs;
     }
     
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public List<DownloadJob> createNewDownloadJobsWithNames(List<UrlWithName> downloadUrls, String folderPath){
         List<DownloadJob> jobs = new ArrayList<>();
-        Date now = new Date();
         for (UrlWithName i: downloadUrls){
             DownloadJob job = new DownloadJob();
-            job.setCreateTime(now);
+            job.setCreateTime(new Date());
             job.setDownloadUrl(i.getUrl());
             job.setFileName(i.getName());
             job.setSaveDir(folderPath);
             job.setState(DownloadState.CREATED);
             jobs.add(job);
-            this.create(job);
+            em.persist(job);
         }
         //flush all to database to obtain primary key values
         em.flush();

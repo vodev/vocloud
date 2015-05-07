@@ -109,7 +109,7 @@ public class DownloadManager {
             List<UrlWithName> urlsWithNames = new ArrayList<>();
             for (Record r : votable.getRows()) {
                 String url = baseUrl + URLEncoder.encode(votable.getPubDIDColumn(r), "ASCII");
-                String name = votable.getAccrefColumn(r).replaceAll("^.*?([^/]+)$", "$1").replaceAll("^(.*?)\\.?[^\\.]*$", "$1");;
+                String name = votable.getAccrefColumn(r).replaceAll("^.*?([^/]+)$", "$1").replaceAll("^(.*?)\\.?[^\\.]*$", "$1");
                 urlsWithNames.add(new UrlWithName(url, name));
             }
             //create download jobs
