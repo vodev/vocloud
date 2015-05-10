@@ -76,7 +76,7 @@
                     <p:splitButton value="Save and run" action="#{createJobBean.saveNewJob(true)}" update="@form" process="@form" oncomplete="window.scrollTo(0, 0);">
                         <p:menuitem value="Save" action="#{createJobBean.saveNewJob(false)}" update="@form" process="@form" oncomplete="window.scrollTo(0, 0);"/>
                     </p:splitButton>
-                    <p:commandButton ajax="false" value="Cancel" action="index?faces-redirect=true" />
+                    <p:commandButton ajax="false" immediate="true" value="Cancel" action="index?faces-redirect=true" />
 
 
                     <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
