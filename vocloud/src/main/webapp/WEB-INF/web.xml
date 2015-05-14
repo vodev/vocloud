@@ -6,7 +6,7 @@
     </context-param>
     <filter>
         <filter-name>Character Encoding Filter</filter-name>
-        <filter-class>cz.rk.vocloud.view.filter.CharacterEncodingFilter</filter-class>
+        <filter-class>cz.ivoa.vocloud.view.filter.CharacterEncodingFilter</filter-class>
     </filter>
     <filter>
         <filter-name>PrimeFaces FileUpload Filter</filter-name>
@@ -131,7 +131,7 @@
         <description/>
         <role-name>MANAGER</role-name>
     </security-role>
-<!--    <error-page>
+    <!--    <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
         <location>/index.xhtml</location>
     </error-page>-->

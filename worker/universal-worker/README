@@ -1,0 +1,62 @@
+
+Requirements
+============
+
+- JDK 7+
+- Java application server supporting Java servlet technology (tomcat, wildfly, ...)
+- Maven tool (if building is necessary)
+- Executable computational application for each desired computational type
+
+Install guide
+=============
+For instance I will use Debian amd64 with Wildfly 8.2 application server, JDK 8 and Maven 3.1
+
+
+1. Install JDK 8
+
+   Download JDK from
+        http://www.oracle.com/technetwork/java/javase/downloads/index.html
+        in zip file form, for example jdk-8u45-linux-x64.tar.gz
+   Extract archive to /usr/lib/jvm
+   Setup enviroment variables for java 
+   add these lines to the end of /etc/profile
+        export JAVA_HOME=/usr/lib/jvm/jdk1.8.45  
+        export PATH=$JAVA_HOME/bin
+
+2. Install Wildfly 8.2.0
+
+    Download zip from http://wildfly.org/downloads/
+    Extract archive to the /usr/local
+    In the newly extracted wildfly directory execute bin/add-user.sh and setup new wildfly administering user.
+   
+3. Start Wildfly by executing bin/standalone.sh
+
+    Server should successfully start.
+    If everything went OK:
+    Server is running on http://localhost:8080/
+    Admin console on http://localhost:9990/
+
+4. Configure universal-worker configuration file (optional step if you want another configuration that it is in prebuilt archive) 
+
+    Download sources of universal-worker
+    Go to src/main/resources/
+    Adjust uws-config.xml file
+    Go back to sources root
+    Execute command "mvn package"
+    Worker is compiled and the deployable archive is created in target/universal-worker.war
+    
+5. Deploy universal worker to Wildfly
+
+    Open Wildfly admin console on http://localhost:9990/
+    Login with the credentials of administrating user
+    Navigate to Deployments section
+    Click Add
+    Select deployable universal-worker.war archive
+    Click OK
+    Enable the newly deployed application
+
+    UWS service should now run on
+    http://localhost:8080/universal-worker/uws
+    
+
+Note: This is only description of universal-worker application which serves as the mediator between the master server and executable computational application. In order to make a worker fully functional you have to set the configuration file of the universal-worker to point to the valid locations of the executable computational applications. For more information see the documentation of the specific executable computational application. 

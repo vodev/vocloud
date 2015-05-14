@@ -8,7 +8,7 @@
               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd">
     <application>
         <resource-bundle>
-            <base-name>/cz/mrq/vocloud/Bundle</base-name>
+            <base-name>/cz/ivoa/vocloud/Bundle</base-name>
             <var>bundle</var>
         </resource-bundle>
         <action-listener>
@@ -23,7 +23,7 @@
     </application>
     <factory>
         <exception-handler-factory>
-            cz.rk.vocloud.view.exceptionhandler.ViewExpiredExceptionExceptionHandlerFactory
+            cz.ivoa.vocloud.view.exceptionhandler.ViewExpiredExceptionExceptionHandlerFactory
         </exception-handler-factory>
     </factory>
     <navigation-rule>

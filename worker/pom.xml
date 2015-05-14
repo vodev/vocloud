@@ -14,10 +14,6 @@
 
 
     <modules>
-        <module>korel</module>
-        <module>som</module>
-        <module>rdf</module>
-        <module>preprocessing</module>
         <module>universal-worker</module>
     </modules>
 
