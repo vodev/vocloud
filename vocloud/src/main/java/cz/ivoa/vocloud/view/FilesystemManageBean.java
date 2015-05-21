@@ -3,6 +3,7 @@ package cz.ivoa.vocloud.view;
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import cz.ivoa.vocloud.filesystem.model.Folder;
 import java.nio.file.InvalidPathException;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -20,6 +21,7 @@ public class FilesystemManageBean extends FilesystemViewBean {
     private String folderName;
     private String itemToRename;
     private FilesystemItem filesystemItemToRename;
+    private List<FilesystemItem> selected;
     
     @Override
     protected String getThisNamedBeanName() {
@@ -120,5 +122,34 @@ public class FilesystemManageBean extends FilesystemViewBean {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Failed", "File or folder with this name already exists"));
         }
     }
+
+    public List<FilesystemItem> getSelectedItems() {
+        return selected;
+    }
+
+    public void setSelectedItems(List<FilesystemItem> selected) {
+        this.selected = selected;
+    }
+    
+    
+    public void deleteSelected(){
+        if (selected == null || selected.isEmpty()){
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "You must select files first"));
+        } else {
+            boolean successFlag = true;
+            for (FilesystemItem item: selected){
+                if (!fsm.tryToDeleteFilesystemItem(item)){
+                    successFlag = false;
+                }
+            }
+            if (successFlag){
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Deletion was successful"));
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Some files or folders were not deleted successfully"));
+            }
+        }
+        init();
+    }
+    
     
 }

@@ -18,6 +18,7 @@
                 </h:panelGroup>
                 <p:menubar>
                     <p:menuitem id="newFolderBtn" value="#{bundle.NewFolderMenuItem}" icon="ui-icon-folder-open" />
+                    <p:menuitem id="deleteSelectedBtn" value="Delete selected" icon="ui-icon-trash" oncomplete="PF('deleteDialog').show()"/>
                     <p:menuitem id="uploadFilesBtn" value="#{bundle.FileUploadMenuItem}" icon="ui-icon-arrowthick-1-n" action="upload-file">
                         <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
                     </p:menuitem>
@@ -37,7 +38,8 @@
                     </h:panelGrid>
                 </p:overlayPanel>
                 <p:breadCrumb model="#{filesystemManageBean.breadcrumbModel}"/>
-                <p:dataTable resizableColumns="true" var="item" value="#{filesystemManageBean.filesystemItemList}">
+                <p:dataTable id="dataTable" resizableColumns="true" var="item" value="#{filesystemManageBean.filesystemItemList}" selection="#{filesystemManageBean.selectedItems}" rowKey="#{item.name}">
+                    <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
                     <p:column width="12">
                         <f:facet name="header">                            
                             <h:commandLink rendered="#{not filesystemManageBean.inRoot}" action="#{filesystemManageBean.goBack()}" styleClass="ui-icon ui-icon-arrowreturnthick-1-w" style="position:relative; left: -5px"/>
@@ -66,9 +68,6 @@
                         <p:commandButton disabled="#{item.folder}" value="#{bundle.FileDownload}" ajax="false" icon="ui-icon-arrowthick-1-s">
                             <p:fileDownload value="#{filesystemManageBean.downloadFile(item)}" />
                         </p:commandButton>
-                        <p:commandButton value="#{bundle.FileDelete}" icon="ui-icon-trash" action="#{filesystemManageBean.delete(item)}" update="@form">
-                            <p:confirm header="#{bundle.ConfirmationTitle}" message="#{bundle.ConfirmationMessage}" icon="ui-icon-alert" />
-                        </p:commandButton>
                         <p:commandButton update=":dialogForm:fileRenamePanel" value="#{bundle.FileRename}" icon="ui-icon-pencil" oncomplete="PF('renameDialog').show()">
                             <f:setPropertyActionListener target="#{filesystemManageBean.itemToRename}" value="#{item.name}" />
                             <f:setPropertyActionListener target="#{filesystemManageBean.filesystemItemToRename}" value="#{item}" />
@@ -76,9 +75,12 @@
                     </p:column>
 
                 </p:dataTable>
-                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-                    <p:commandButton value="#{bundle.YesChoice}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
-                    <p:commandButton value="#{bundle.NoChoice}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+ 
+                
+                <p:confirmDialog showEffect="fade" hideEffect="fade" widgetVar="deleteDialog" header="Delete items" message="Do you really want to delete selected items?" severity="alert">
+                    <p:commandButton id="confirm" value="#{bundle.YesChoice}" icon="ui-icon-check" oncomplete="PF('deleteDialog').hide()" actionListener="#{filesystemManageBean.deleteSelected()}"
+                                     update="@form"/>
+                    <p:commandButton id="decline" value="#{bundle.NoChoice}" icon="ui-icon-close" onclick="PF('deleteDialog').hide()"/>
                 </p:confirmDialog>
             </h:form>
             <h:form id="dialogForm">
