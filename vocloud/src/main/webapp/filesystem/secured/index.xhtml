@@ -57,7 +57,7 @@
                     <p:messages id="messages" showIcon="true" showDetail="true" showSummary="false"/>
                 </h:panelGroup>
                 <p:menubar id="menubar">
-                    <p:menuitem id="newFolderBtn" value="#{bundle.NewFolderMenuItem}" icon="ui-icon-folder-open" />
+                    <p:menuitem id="newFolderBtn" value="#{bundle.NewFolderMenuItem}" icon="ui-icon-folder-open" oncomplete="PF('renameOverlay').loadContents()"/>
                     <p:menuitem id="deleteSelectedBtn" value="Delete selected" icon="ui-icon-trash" oncomplete="PF('deleteDialog').show()"/>
                     <p:menuitem id="sendToSAMPbtn" disabled="#{not filesystemManageBean.sampBtnEnabled}" value="Send through SAMP" 
                                 icon="ui-icon-circle-arrow-n" action="#{filesystemManageBean.sendSelectedThroughSAMP}" update="messages"/>
@@ -71,11 +71,10 @@
                         <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
                     </p:menuitem>
                     <p:menuitem id="showDownloadQueueBtn" action="download-queue" value="#{bundle.ShowDownloadQueueMenuItem}" icon="ui-icon-clipboard" />
-
                 </p:menubar>
-                <p:overlayPanel id="newFolderPanel" for="newFolderBtn" hideEffect="fade">
+                <p:overlayPanel id="newFolderPanel" for="newFolderBtn" hideEffect="fade" widgetVar="renameOverlay">
                     <h:panelGrid columns="2" cellpadding="10" cellspacing="5">
-                        <p:inputText maxlength="30" value="#{filesystemManageBean.folderName}"/>
+                        <p:inputText maxlength="100" value="#{filesystemManageBean.folderName}"/>
                         <p:commandButton value="#{bundle.CreateFolderButton}" action="#{filesystemManageBean.createFolder()}" update="@form" />
                     </h:panelGrid>
                 </p:overlayPanel>
