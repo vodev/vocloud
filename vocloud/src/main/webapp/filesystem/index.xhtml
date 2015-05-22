@@ -12,9 +12,56 @@
         </ui:define>
 
         <ui:define name="content">
-            <h:form>
+            <h:outputScript library="script" name="samp.js" />
+            <script type="text/javascript">
+                //<![CDATA[
+                // URL of table to send.
+                var serviceUrl = window.location.href.toString().replace(new RegExp("filesystem/.*$"), "files/");
+                var baseUrl;
+                var fits;
+                var btnEnabled = false;
+                // Broadcasts a table given a hub connection.
+                var send = function (connection) {
+                    for (var i = 0; i < fits.length; i++) {
+                        var link = baseUrl + fits[i];
+                        var msg = new samp.Message("spectrum.load.ssa-generic", {"url": link});
+                        connection.notifyAll([msg]);
+                    }
+                };
+
+                // Adjusts page content depending on whether the hub exists or not.
+                var configureSampEnabled = function (isHubRunning) {
+                    if (!btnEnabled && isHubRunning){
+                        btnEnabled = true;
+                        enableSAMP();
+                    } else if (btnEnabled && !isHubRunning){
+                        btnEnabled = false;
+                        disableSAMP();
+                    }
+                };
+
+                // Arrange for document to be adjusted for presence of hub every 2 sec.
+                var connector = new samp.Connector("Sender");
+                onload = function () {
+                    connector.onHubAvailability(configureSampEnabled, 2000);
+                };
+                onunload = function () {
+                    connector.unregister();
+                };
+                //]]>
+            </script>
+            <h:form id="form">
+                <p:remoteCommand name="enableSAMP" update="menubar" actionListener="#{filesystemViewBean.enableSamp(true)}" />
+                <p:remoteCommand name="disableSAMP" update="menubar" actionListener="#{filesystemViewBean.enableSamp(false)}" />
+                <h:panelGroup id="messagePanel" layout="block">
+                    <p:messages id="messages" showIcon="true" showDetail="true" showSummary="false"/>
+                </h:panelGroup>
+                <p:menubar id="menubar">
+                    <p:menuitem id="sendToSAMPbtn" disabled="#{not filesystemViewBean.sampBtnEnabled}" value="Send through SAMP" icon="ui-icon-circle-arrow-n" action="#{filesystemViewBean.sendSelectedThroughSAMP}" update="messages"/>
+                </p:menubar>
                 <p:breadCrumb model="#{filesystemViewBean.breadcrumbModel}"/>
-                <p:dataTable resizableColumns="true" var="item" value="#{filesystemViewBean.filesystemItemList}">
+                <p:dataTable resizableColumns="true" var="item" value="#{filesystemViewBean.filesystemItemList}" selection="#{filesystemViewBean.selectedItems}" rowKey="#{item.name}">
+                    <p:column disabledSelection="#{item.folder}" selectionMode="multiple" style="width:16px;text-align:center"/>
                     <p:column width="12">
                         <f:facet name="header">                            
                             <h:commandLink rendered="#{not filesystemViewBean.inRoot}" action="#{filesystemViewBean.goBack()}" styleClass="ui-icon ui-icon-arrowreturnthick-1-w" style="position:relative; left: -5px"/>

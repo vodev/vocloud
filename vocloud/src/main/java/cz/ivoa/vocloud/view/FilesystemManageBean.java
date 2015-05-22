@@ -3,7 +3,6 @@ package cz.ivoa.vocloud.view;
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import cz.ivoa.vocloud.filesystem.model.Folder;
 import java.nio.file.InvalidPathException;
-import java.util.List;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -21,8 +20,7 @@ public class FilesystemManageBean extends FilesystemViewBean {
     private String folderName;
     private String itemToRename;
     private FilesystemItem filesystemItemToRename;
-    private List<FilesystemItem> selected;
-    
+
     @Override
     protected String getThisNamedBeanName() {
         return "filesystemManageBean";
@@ -73,6 +71,7 @@ public class FilesystemManageBean extends FilesystemViewBean {
             } else {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "File " + item.getName() + " was successfully deleted"));
             }
+            selected = null;
             init();
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Deletion failed"));
@@ -95,54 +94,44 @@ public class FilesystemManageBean extends FilesystemViewBean {
         this.filesystemItemToRename = filesystemItemToRename;
     }
 
-    
-    
-    public void renameFilesystemItem(){
+    public void renameFilesystemItem() {
         //check validity of the name
-        if (itemToRename == null || !FilesystemItem.isValidName(itemToRename)){
+        if (itemToRename == null || !FilesystemItem.isValidName(itemToRename)) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "New name is invalid"));
             return;
         }
         //check property load
-        if (filesystemItemToRename == null){
+        if (filesystemItemToRename == null) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "Unknown error"));
             Logger.getLogger(this.getClass().getName()).severe("filesystemItemToRename is null");
             return;
         }
         //if names are same - do nothing
-        if (filesystemItemToRename.getName().equals(itemToRename)){
+        if (filesystemItemToRename.getName().equals(itemToRename)) {
             return;
         }
         //invoke rename
         boolean success = fsm.renameFilesystemItem(filesystemItemToRename, itemToRename);
-        if (success){
+        if (success) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Rename was successful"));
+            selected = null;
             init();
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Failed", "File or folder with this name already exists"));
         }
     }
 
-    public List<FilesystemItem> getSelectedItems() {
-        return selected;
-    }
-
-    public void setSelectedItems(List<FilesystemItem> selected) {
-        this.selected = selected;
-    }
-    
-    
-    public void deleteSelected(){
-        if (selected == null || selected.isEmpty()){
+    public void deleteSelected() {
+        if (selected == null || selected.isEmpty()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "You must select files first"));
         } else {
             boolean successFlag = true;
-            for (FilesystemItem item: selected){
-                if (!fsm.tryToDeleteFilesystemItem(item)){
+            for (FilesystemItem item : selected) {
+                if (!fsm.tryToDeleteFilesystemItem(item)) {
                     successFlag = false;
                 }
             }
-            if (successFlag){
+            if (successFlag) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Deletion was successful"));
             } else {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Some files or folders were not deleted successfully"));
@@ -150,6 +139,5 @@ public class FilesystemManageBean extends FilesystemViewBean {
         }
         init();
     }
-    
-    
+
 }

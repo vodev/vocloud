@@ -6,14 +6,18 @@ import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import org.primefaces.context.RequestContext;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.menu.DefaultMenuItem;
@@ -35,7 +39,9 @@ public class FilesystemViewBean implements Serializable {
 
     protected String prefix;
     protected List<FilesystemItem> items;
-
+    protected List<FilesystemItem> selected;
+    private boolean sampBtnEnabled = false;
+    
     @PostConstruct
     protected void viewBeanInitialization() {
         //look for folderPrefix set from other windows
@@ -168,4 +174,78 @@ public class FilesystemViewBean implements Serializable {
         }
         return null;
     }
+
+    public List<FilesystemItem> getSelectedItems() {
+        return selected;
+    }
+
+    public void setSelectedItems(List<FilesystemItem> selected) {
+        this.selected = selected;
+    }
+
+    private static String escapePathToUrl(String path) {
+        String[] array = path.split("/");
+        StringBuilder escaped = new StringBuilder();
+        boolean isFirst = true;
+        try {
+            for (String s : array) {
+                if (!isFirst) {
+                    escaped.append('/');
+                }
+                isFirst = false;
+                escaped.append(URLEncoder.encode(s, "UTF-8"));
+            }
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(FilesystemViewBean.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+        return escaped.toString();
+    }
+
+    public void sendSelectedThroughSAMP() {
+        if (selected == null || selected.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "You must select files first"));
+            return;
+        }
+        StringBuilder arrayText = new StringBuilder();
+        boolean isFirst = true;
+        for (FilesystemItem item : selected) {
+            if (item.isFolder()) {
+                continue;
+            }
+            if (!isFirst) {
+                arrayText.append(',');
+            }
+            isFirst = false;
+            try {
+                arrayText.append('"').append(URLEncoder.encode(item.getName(), "UTF-8")).append('"');
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(FilesystemViewBean.class.getName()).log(Level.SEVERE, null, ex);
+                return;
+            }
+        }
+        String arrayTextString = arrayText.toString();
+        if (arrayTextString.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "You must select files first"));
+            return;
+        }
+        RequestContext context = RequestContext.getCurrentInstance();
+        if (prefix.isEmpty()) {
+            context.execute("baseUrl = serviceUrl;");
+        } else {
+            context.execute("baseUrl = serviceUrl + '" + escapePathToUrl(prefix) + "/';");//TODO escape prefix
+        }
+        context.execute("fits = new Array(" + arrayText.toString() + ");");
+        context.execute("connector.runWithConnection(send);");
+    }
+    
+    public void enableSamp(boolean enable){
+        this.sampBtnEnabled = enable;
+    }
+
+    public boolean isSampBtnEnabled() {
+        return sampBtnEnabled;
+    }
+    
+    
 }

@@ -12,13 +12,55 @@
         </ui:define>
 
         <ui:define name="content">
+            <h:outputScript library="script" name="samp.js" />
+            <script type="text/javascript">
+                //<![CDATA[
+                // URL of table to send.
+                var serviceUrl = window.location.href.toString().replace(new RegExp("filesystem/.*$"), "files/");
+                var baseUrl;
+                var fits;
+                var btnEnabled = false;
+                // Broadcasts a table given a hub connection.
+                var send = function (connection) {
+                    for (var i = 0; i < fits.length; i++) {
+                        var link = baseUrl + fits[i];
+                        var msg = new samp.Message("spectrum.load.ssa-generic", {"url": link});
+                        connection.notifyAll([msg]);
+                    }
+                };
+
+                // Adjusts page content depending on whether the hub exists or not.
+                var configureSampEnabled = function (isHubRunning) {
+                    if (!btnEnabled && isHubRunning) {
+                        btnEnabled = true;
+                        enableSAMP();
+                    } else if (btnEnabled && !isHubRunning) {
+                        btnEnabled = false;
+                        disableSAMP();
+                    }
+                };
+
+                // Arrange for document to be adjusted for presence of hub every 2 sec.
+                var connector = new samp.Connector("Sender");
+                onload = function () {
+                    connector.onHubAvailability(configureSampEnabled, 2000);
+                };
+                onunload = function () {
+                    connector.unregister();
+                };
+                //]]>
+            </script>
             <h:form id="form">
+                <p:remoteCommand name="enableSAMP" update="menubar" actionListener="#{filesystemManageBean.enableSamp(true)}" />
+                <p:remoteCommand name="disableSAMP" update="menubar" actionListener="#{filesystemManageBean.enableSamp(false)}" />
                 <h:panelGroup id="messagePanel" layout="block">
-                    <p:messages showIcon="true" showDetail="true" showSummary="false"/>
+                    <p:messages id="messages" showIcon="true" showDetail="true" showSummary="false"/>
                 </h:panelGroup>
-                <p:menubar>
+                <p:menubar id="menubar">
                     <p:menuitem id="newFolderBtn" value="#{bundle.NewFolderMenuItem}" icon="ui-icon-folder-open" />
                     <p:menuitem id="deleteSelectedBtn" value="Delete selected" icon="ui-icon-trash" oncomplete="PF('deleteDialog').show()"/>
+                    <p:menuitem id="sendToSAMPbtn" disabled="#{not filesystemManageBean.sampBtnEnabled}" value="Send through SAMP" 
+                                icon="ui-icon-circle-arrow-n" action="#{filesystemManageBean.sendSelectedThroughSAMP}" update="messages"/>
                     <p:menuitem id="uploadFilesBtn" value="#{bundle.FileUploadMenuItem}" icon="ui-icon-arrowthick-1-n" action="upload-file">
                         <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
                     </p:menuitem>
@@ -75,8 +117,8 @@
                     </p:column>
 
                 </p:dataTable>
- 
-                
+
+
                 <p:confirmDialog showEffect="fade" hideEffect="fade" widgetVar="deleteDialog" header="Delete items" message="Do you really want to delete selected items?" severity="alert">
                     <p:commandButton id="confirm" value="#{bundle.YesChoice}" icon="ui-icon-check" oncomplete="PF('deleteDialog').hide()" actionListener="#{filesystemManageBean.deleteSelected()}"
                                      update="@form"/>
@@ -87,7 +129,7 @@
                 <p:dialog header="#{bundle.RenameDialog}" widgetVar="renameDialog" modal="true" resizable="false">
                     <p:outputPanel id="fileRenamePanel" style="text-align:center;">
                         <h:panelGrid columns="2" cellpadding="10" cellspacing="5" rendered="#{filesystemManageBean.itemToRename != null}">
-                            <p:inputText maxlength="30" value="#{filesystemManageBean.itemToRename}"/>
+                            <p:inputText maxlength="150" value="#{filesystemManageBean.itemToRename}"/>
                             <p:commandButton id="renameBtn" value="#{bundle.FileRenameButton}" action="#{filesystemManageBean.renameFilesystemItem()}" update=":form,@form"/>
                             <p:defaultCommand target="renameBtn" />
                         </h:panelGrid>
