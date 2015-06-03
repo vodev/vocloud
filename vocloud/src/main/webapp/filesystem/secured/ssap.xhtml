@@ -69,7 +69,7 @@
                     <ui:fragment rendered="#{not ssapBean.fileDownloadSet}">
                         <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
                             <p:outputLabel for="votableDownloadResourceUrl">URL address of SSAP query: </p:outputLabel>
-                            <p:inputText id="votableDownloadResourceUrl" required="true" requiredMessage="URL address of SSAP query must not be empty" value="#{ssapBean.downloadUrl}" validator="urlValidator" size="100"/>
+                            <p:inputText id="votableDownloadResourceUrl" required="true" requiredMessage="URL address of SSAP query must not be empty" value="#{ssapBean.downloadUrl}" validator="urlValidator" size="150"/>
                         </h:panelGrid>
                         <p:commandButton ajax="true" value="Load VOTABLE" action="#{ssapBean.downloadVotable()}" update="@form" async="true" />
                     </ui:fragment>

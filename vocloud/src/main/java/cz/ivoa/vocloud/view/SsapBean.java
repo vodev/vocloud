@@ -271,7 +271,7 @@ public class SsapBean implements Serializable {
                 for (Option o : p.getOptions()) {
                     item = new SelectItem();
                     item.setValue(o.getValue());
-                    item.setLabel(o.getName());
+                    item.setLabel(o.getName() + ": " + o.getValue());
                     items.add(item);
                 }
                 UISelectItems uiContainer = new UISelectItems();
