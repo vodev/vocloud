@@ -14,8 +14,18 @@ public abstract class FilesystemItem implements Serializable{
     private final String prefix;
     
     protected FilesystemItem(String name, String prefix){
-        this.name = name.trim();
-        this.prefix = prefix.trim();
+        if (name == null){
+            throw new IllegalArgumentException("Name of filesystem item must not be null");
+        }
+        if (prefix == null){
+            throw new IllegalArgumentException("Prefix of filesystem item must not be null");
+        }
+        name = name.trim();
+        prefix = prefix.trim();
+        //check if name is not empty
+        if (name.isEmpty()){
+            throw new IllegalArgumentException("Name of filesystem item must not be empty");
+        }
         //check prefix and name correctness
         if (!isValidName(name)){
             throw new IllegalArgumentException("Name of filesystem item is invalid: " + name);
@@ -23,6 +33,20 @@ public abstract class FilesystemItem implements Serializable{
         if (prefix.contains(".")){
             throw new IllegalArgumentException("Invalid use of . or .. in filesystem item prefix: " + prefix);
         }
+        if (prefix.contains("\\")){
+            throw new IllegalArgumentException("Prefix of filesystem item must not contain backslash");
+        }
+        if (prefix.contains("//")){
+            throw new IllegalArgumentException("Prefix of filesystem item must not contain multiple slashes in sequence");
+        }
+        if (prefix.startsWith("/")){
+            throw new IllegalArgumentException("Absolute paths in filesystem item prefix are not supported");
+        }
+        while (prefix.endsWith("/")){
+            prefix = prefix.substring(0, prefix.length() - 1);
+        }
+        this.name = name;
+        this.prefix = prefix;
     }
     
     /**

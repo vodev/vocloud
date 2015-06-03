@@ -21,15 +21,32 @@ public class UrlValidator implements Validator {
         StringBuilder url = new StringBuilder();
         String urlValue = value.toString();
         if (urlValue.length() == 0){
-            return;
+            throw new ValidatorException(new FacesMessage("Invalid format of URL address", "URL string is empty"));
         }
-        if (!urlValue.startsWith("http://", 0) || !urlValue.startsWith("https://", 0)) {
+        if (!urlValue.matches("^[a-z]+://.*")) {
             url.append("http://");
+        } else {
+            //supported protocols http, https, ftp only
+            String protocol = urlValue.replaceFirst("^([a-z]+)://.*", "$1");
+            switch (protocol){
+                case "http":
+                case "https":
+                case "ftp": break;//ok
+                default: //unsupported protocol
+                    throw new ValidatorException(new FacesMessage("Invalid format of URL address", "Unsupported protocol: " + protocol));
+            }
         }
         url.append(urlValue);
 
         try {
             URI uri = new URI(url.toString());
+            int port = uri.getPort();
+            if (port == -1){
+                return;
+            }
+            if (port <= 0 || port >= 65536){
+                throw new URISyntaxException(url.toString(), "Invalid port: " + port);
+            } 
         } catch (URISyntaxException e) {
             FacesMessage msg
                     = new FacesMessage("Invalid format of URL address", "Invalid URL format");
