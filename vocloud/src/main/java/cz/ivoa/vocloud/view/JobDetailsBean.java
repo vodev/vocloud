@@ -25,6 +25,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import org.apache.commons.io.FileUtils;
+import org.primefaces.event.NodeExpandEvent;
+import org.primefaces.event.NodeSelectEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.StreamedContent;
@@ -93,14 +95,14 @@ public class JobDetailsBean implements Serializable {
     private void initializePagesAndImages() {
         List<PathExtendedFile> listFiles = new ArrayList<>();
         File[] fileArray = jobFacade.getFileDir(selectedJob).listFiles();
-        for (File i: fileArray){
+        for (File i : fileArray) {
             listFiles.add(new PathExtendedFile(i.getName(), i));
         }
         //result dir
         File resultDir = new File(jobFacade.getFileDir(selectedJob), "result");
         if (resultDir.isDirectory()) {
             fileArray = resultDir.listFiles();
-            for (File i: fileArray){
+            for (File i : fileArray) {
                 listFiles.add(new PathExtendedFile("result/" + i.getName(), i));
             }
         }
@@ -108,7 +110,7 @@ public class JobDetailsBean implements Serializable {
         File resultsDir = new File(jobFacade.getFileDir(selectedJob), "results");
         if (resultsDir.isDirectory()) {
             fileArray = resultsDir.listFiles();
-            for (File i: fileArray){
+            for (File i : fileArray) {
                 listFiles.add(new PathExtendedFile("results/" + i.getName(), i));
             }
         }
@@ -120,7 +122,7 @@ public class JobDetailsBean implements Serializable {
             } else if ((file.getFile().getName().endsWith("png")
                     || file.getFile().getName().endsWith("jpg")
                     || file.getFile().getName().endsWith("jpeg")
-                    || file.getFile().getName().endsWith("gif")) & file.getFile().length() != 0){
+                    || file.getFile().getName().endsWith("gif")) & file.getFile().length() != 0) {
                 images.add(file);
             }
         }
@@ -206,28 +208,42 @@ public class JobDetailsBean implements Serializable {
 
     private void generateFolderTreeStructure() {
         filesystemTreeRootNode = new DefaultTreeNode(null, null);
-        TreeNode rootFolderNode = new DefaultTreeNode(new FolderElement("/", "/"), filesystemTreeRootNode);
-        File rootFolder = fsm.getRootFolderDescriptor();
-        recursivelyGenerateTree(rootFolder, "/", rootFolderNode);
+        TreeNode rootFolderNode = new DefaultTreeNode(new FolderElement("/", "/", fsm.getRootFolderDescriptor()), filesystemTreeRootNode);
+        TreeNode dummy = new DefaultTreeNode("DUMMY", rootFolderNode);
+//        File rootFolder = fsm.getRootFolderDescriptor();
+//        recursivelyGenerateTree(rootFolder, "/", rootFolderNode);
     }
 
-    private void recursivelyGenerateTree(File folder, String path, TreeNode parent) {
-        TreeNode tmpNode;
-        for (File i : folder.listFiles()) {
-            if (!i.isDirectory()) {
-                continue;//ignoring files
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
+    public void onFilesystemNodeExpand(NodeExpandEvent event) {
+        DefaultTreeNode parent = (DefaultTreeNode) event.getTreeNode();
+        if (parent.getChildCount() == 1 && parent.getChildren().get(0).getData().toString().equals("DUMMY")) {
+            parent.getChildren().remove(0);
+            FolderElement ele = (FolderElement) parent.getData();
+            TreeNode tmpNode;
+            for (File i : ele.getTargetFile().listFiles()) {
+                if (!i.isDirectory()) {
+                    continue;
+                }
+                tmpNode = new DefaultTreeNode(new FolderElement(i.getName(), ele.getFullPath() + i.getName() + "/", i), parent);
+                //add dummy to tmpNode
+                new DefaultTreeNode("DUMMY", tmpNode);
             }
-            tmpNode = new DefaultTreeNode(new FolderElement(i.getName(), path + i.getName() + "/"), parent);
-            recursivelyGenerateTree(i, path + i.getName() + "/", tmpNode);
-        }
-        //sort folders by name
-        TreeUtils.sortNode(parent, new Comparator<TreeNode>() {
+            //sort folders by name
+            TreeUtils.sortNode(parent, new Comparator<TreeNode>() {
 
-            @Override
-            public int compare(TreeNode o1, TreeNode o2) {
-                return ((FolderElement) o1.getData()).compareTo((FolderElement) o2.getData());
-            }
-        });
+                @Override
+                public int compare(TreeNode o1, TreeNode o2) {
+                    return ((FolderElement) o1.getData()).compareTo((FolderElement) o2.getData());
+                }
+            });
+        }
+    }
+    
+    public void onFilesystemFolderSelect(NodeSelectEvent event){
+        DefaultTreeNode selected = (DefaultTreeNode) event.getTreeNode();
+        copyFolder = ((FolderElement)selected.getData()).getFullPath();
+        selected.setSelected(false);
     }
 
     public StreamedContent downloadFile(File file) {
@@ -307,9 +323,6 @@ public class JobDetailsBean implements Serializable {
         return false;
     }
 
-    public void selectFolder(FolderElement element) {
-        this.copyFolder = element.getFullPath();
-    }
 
     public void enqueueFilesystemCopy() {
         selectedJob.setTargetDir(copyFolder);
@@ -389,10 +402,12 @@ public class JobDetailsBean implements Serializable {
 
         private final String folderName;
         private final String fullPath;
+        private final File targetFile;
 
-        public FolderElement(String folderName, String fullPath) {
+        public FolderElement(String folderName, String fullPath, File targetFile) {
             this.folderName = folderName;
             this.fullPath = fullPath;
+            this.targetFile = targetFile;
         }
 
         public String getFolderName() {
@@ -401,6 +416,10 @@ public class JobDetailsBean implements Serializable {
 
         public String getFullPath() {
             return fullPath;
+        }
+
+        public File getTargetFile() {
+            return targetFile;
         }
 
         @Override
