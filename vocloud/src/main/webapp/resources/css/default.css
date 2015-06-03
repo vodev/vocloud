@@ -76,3 +76,8 @@ a:link:hover, a:visited:hover  {
     background-image: none !important;
     color: #000000 !important;
 }
+
+.ui-datatable td.scrollableCell div {
+    white-space: nowrap;
+    overflow-x: scroll;
+}

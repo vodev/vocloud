@@ -13,18 +13,18 @@
 
         <ui:define name="content">
             <h:form id="mainForm">
-                <p:poll interval="5" update="dataTable" />
                 <p:messages showDetail="true" />
+                <p:commandButton value="Refresh" icon="ui-icon-refresh" process="@this" update="dataTable" ajax="true" />
                 <p:dataTable id="dataTable" value="#{downloadQueueBean.model}" var="job" paginator="true" rows="50" lazy="true" resizableColumns="true">
-                    <p:column headerText="State">
+                    <p:column headerText="State" width="90">
                         <h:outputText value="#{job.state}" />
                     </p:column>
-                    <p:column headerText="Created">
+                    <p:column headerText="Created" width="140">
                         <h:outputText value="#{job.createTime}">
                             <f:convertDateTime type="both"  timeZone="CET" />
                         </h:outputText>
                     </p:column>
-                    <p:column headerText="Finished">
+                    <p:column headerText="Finished" width="140">
                         <h:outputText rendered="#{job.finishTime != null}" value="#{job.finishTime}">
                             <f:convertDateTime type="both"  timeZone="CET" />
                         </h:outputText>
@@ -32,10 +32,12 @@
                     <p:column headerText="Target directory">
                         <h:outputText value="/#{job.saveDir}" />
                     </p:column>
-                    <p:column headerText="Download URL">
-                        <p:link target="_blank" href="#{job.downloadUrl}" value="#{job.downloadUrl}" />
+                    <p:column headerText="Download URL" styleClass="scrollableCell">
+                        <div>
+                            <p:link target="_blank" href="#{job.downloadUrl}" value="#{job.downloadUrl}" />
+                        </div>
                     </p:column>
-                    <p:column headerText="Download log">
+                    <p:column headerText="Download log" width="120">
                         <h:outputText value="Empty" rendered="#{job.messageLog == null}" />
                         <p:commandButton rendered="#{job.messageLog != null}" value="Show log" actionListener="#{downloadQueueBean.showMessageLog(job)}" oncomplete="PF('logView').show();" update=":mainForm:logView" />
                     </p:column>
