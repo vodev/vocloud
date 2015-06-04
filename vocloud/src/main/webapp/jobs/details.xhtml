@@ -123,17 +123,6 @@
                             <p:outputLabel id="folderLabel" value="Target folder: "/>
                             <p:inputText id="folderInput" value="#{jobDetailsBean.copyFolder}" size="100" required="true" requiredMessage="Target copy folder must be specified" readonly="true"/>
                         </h:panelGrid>
-<!--                        <p:treeTable id="folderTreeTable" style="width: 50%" value="#{jobDetailsBean.filesystemTreeRootNode}" var="element">
-                            <f:facet name="Header">
-                                Filesystem folder structure
-                            </f:facet>
-                            <p:column headerText="Folder name">
-                        #{element.folderName}
-                    </p:column>
-                    <p:column style="width: 12px; text-align: center" headerText="Select">
-                        <p:commandButton icon="ui-icon-check" label="Use this folder" ajax="true" actionListener="#{jobDetailsBean.selectFolder(element)}" process="@this" update="@form"/>
-                    </p:column>
-                </p:treeTable>-->
                         <p:tree id="filesystemTree" value="#{jobDetailsBean.filesystemTreeRootNode}" var="folder" dynamic="true" animate="true" cache="false" selectionMode="single">
                             <p:ajax event="expand" listener="#{jobDetailsBean.onFilesystemNodeExpand}"/>
                             <p:ajax event="select" update="@form" process="@this" listener="#{jobDetailsBean.onFilesystemFolderSelect}" />

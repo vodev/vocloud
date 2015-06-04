@@ -210,11 +210,8 @@ public class JobDetailsBean implements Serializable {
         filesystemTreeRootNode = new DefaultTreeNode(null, null);
         TreeNode rootFolderNode = new DefaultTreeNode(new FolderElement("/", "/", fsm.getRootFolderDescriptor()), filesystemTreeRootNode);
         TreeNode dummy = new DefaultTreeNode("DUMMY", rootFolderNode);
-//        File rootFolder = fsm.getRootFolderDescriptor();
-//        recursivelyGenerateTree(rootFolder, "/", rootFolderNode);
     }
 
-    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void onFilesystemNodeExpand(NodeExpandEvent event) {
         DefaultTreeNode parent = (DefaultTreeNode) event.getTreeNode();
         if (parent.getChildCount() == 1 && parent.getChildren().get(0).getData().toString().equals("DUMMY")) {
@@ -227,7 +224,7 @@ public class JobDetailsBean implements Serializable {
                 }
                 tmpNode = new DefaultTreeNode(new FolderElement(i.getName(), ele.getFullPath() + i.getName() + "/", i), parent);
                 //add dummy to tmpNode
-                new DefaultTreeNode("DUMMY", tmpNode);
+                TreeNode dummy = new DefaultTreeNode("DUMMY", tmpNode);
             }
             //sort folders by name
             TreeUtils.sortNode(parent, new Comparator<TreeNode>() {

@@ -54,17 +54,13 @@
                             <p:outputLabel id="folderLabel" value="Target folder: " rendered="#{createJobBean.copyAfter}"/>
                             <p:inputText id="folderInput" value="#{createJobBean.targetFolder}" size="100" required="true" requiredMessage="Target folder must be specified" rendered="#{createJobBean.copyAfter}" readonly="true"/>
                         </h:panelGrid>
-                        <p:treeTable id="folderTreeTable" style="width: 50%" value="#{createJobBean.folderTreeRootNode}" var="element" rendered="#{createJobBean.copyAfter}">
-                            <f:facet name="Header">
-                                Filesystem folder structure
-                            </f:facet>
-                            <p:column headerText="Folder name">
-                                #{element.folderName}
-                            </p:column>
-                            <p:column style="width: 12px; text-align: center" headerText="Select">
-                                <p:commandButton icon="ui-icon-check" label="Use this folder" ajax="true" actionListener="#{createJobBean.selectFolder(element)}" process="@this" update=":mainForm:restrictedPanel"/>
-                            </p:column>
-                        </p:treeTable>
+                        <p:tree id="filesystemTree" value="#{createJobBean.folderTreeRootNode}" var="folder" dynamic="true" animate="true" cache="false" selectionMode="single" rendered="#{createJobBean.copyAfter}">
+                            <p:ajax event="expand" listener="#{createJobBean.onFilesystemNodeExpand}"/>
+                            <p:ajax event="select" update="@form" process="@this" listener="#{createJobBean.onFilesystemFolderSelect}" />
+                            <p:treeNode expandedIcon="ui-icon-folder-open" collapsedIcon="ui-icon-folder-collapsed">
+                                <h:outputText value="#{folder.folderName}"/>
+                            </p:treeNode>
+                        </p:tree>
                     </p:panel>
                     <p:panel header="Job configuration JSON">
                         <h3>Upload JSON configuration file</h3>

@@ -24,6 +24,8 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.event.NodeExpandEvent;
+import org.primefaces.event.NodeSelectEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 import org.primefaces.util.TreeUtils;
@@ -87,30 +89,41 @@ public class CreateJobBean implements Serializable {
 
     private void generateFolderTreeStructure() {
         folderTreeRootNode = new DefaultTreeNode(null, null);
-        TreeNode rootFolderNode = new DefaultTreeNode(new FolderElement("/", "/"), folderTreeRootNode);
-        File rootFolder = fsm.getRootFolderDescriptor();
-        recursivelyGenerateTree(rootFolder, "/", rootFolderNode);
+        TreeNode rootFolderNode = new DefaultTreeNode(new FolderElement("/", "/", fsm.getRootFolderDescriptor()), folderTreeRootNode);
+        TreeNode dummy = new DefaultTreeNode("DUMMY", rootFolderNode);
     }
 
-    private void recursivelyGenerateTree(File folder, String path, TreeNode parent) {
-        TreeNode tmpNode;
-        for (File i : folder.listFiles()) {
-            if (!i.isDirectory()) {
-                continue;//ignoring files
+    public void onFilesystemFolderSelect(NodeSelectEvent event){
+        DefaultTreeNode selected = (DefaultTreeNode) event.getTreeNode();
+        targetFolder = ((FolderElement)selected.getData()).getFullPath();
+        selected.setSelected(false);
+    }
+    
+    public void onFilesystemNodeExpand(NodeExpandEvent event){
+        DefaultTreeNode parent = (DefaultTreeNode) event.getTreeNode();
+        if (parent.getChildCount() == 1 && parent.getChildren().get(0).getData().toString().equals("DUMMY")) {
+            parent.getChildren().remove(0);
+            FolderElement ele = (FolderElement) parent.getData();
+            TreeNode tmpNode;
+            for (File i : ele.getTargetFile().listFiles()) {
+                if (!i.isDirectory()) {
+                    continue;
+                }
+                tmpNode = new DefaultTreeNode(new FolderElement(i.getName(), ele.getFullPath() + i.getName() + "/", i), parent);
+                //add dummy to tmpNode
+                TreeNode dummy = new DefaultTreeNode("DUMMY", tmpNode);
             }
-            tmpNode = new DefaultTreeNode(new FolderElement(i.getName(), path + i.getName() + "/"), parent);
-            recursivelyGenerateTree(i, path + i.getName() + "/", tmpNode);
+            //sort folders by name
+            TreeUtils.sortNode(parent, new Comparator<TreeNode>() {
+
+                @Override
+                public int compare(TreeNode o1, TreeNode o2) {
+                    return ((FolderElement) o1.getData()).compareTo((FolderElement) o2.getData());
+                }
+            });
         }
-        //sort folders by name
-        TreeUtils.sortNode(parent, new Comparator<TreeNode>() {
-
-            @Override
-            public int compare(TreeNode o1, TreeNode o2) {
-                return ((FolderElement) o1.getData()).compareTo((FolderElement) o2.getData());
-            }
-        });
     }
-
+    
     public boolean isNonRestrictedUwsTypeFound() {
         return chosenUwsType != null && !chosenUwsType.getRestricted();
     }
@@ -187,7 +200,7 @@ public class CreateJobBean implements Serializable {
 
     public void setCopyAfter(boolean copyAfter) {
         //generate folder structure if already isnt
-        if (folderTreeRootNode == null){
+        if (folderTreeRootNode == null) {
             generateFolderTreeStructure();
         }
         this.copyAfter = copyAfter;
@@ -210,7 +223,7 @@ public class CreateJobBean implements Serializable {
         job.setResultsEmail(jobEmail);
         job.setUwsType(chosenUwsType);
         job.setConfigurationJson(configurationJson);
-        if (copyAfter){
+        if (copyAfter) {
             job.setTargetDir(targetFolder);
             //else targetDir remains null in job
         }
@@ -228,8 +241,8 @@ public class CreateJobBean implements Serializable {
     public TreeNode getFolderTreeRootNode() {
         return folderTreeRootNode;
     }
-    
-    public void selectFolder(FolderElement element){
+
+    public void selectFolder(FolderElement element) {
         targetFolder = element.getFullPath();
     }
 
@@ -239,15 +252,17 @@ public class CreateJobBean implements Serializable {
         }
         return userAcc.getGroupName().equals(UserGroupName.MANAGER) || userAcc.getGroupName().equals(UserGroupName.ADMIN);
     }
-    
+
     public static class FolderElement implements Serializable, Comparable<FolderElement> {
 
         private final String folderName;
         private final String fullPath;
+        private final File targetFile;
 
-        public FolderElement(String folderName, String fullPath) {
+        public FolderElement(String folderName, String fullPath, File targetFile) {
             this.folderName = folderName;
             this.fullPath = fullPath;
+            this.targetFile = targetFile;
         }
 
         public String getFolderName() {
@@ -256,6 +271,10 @@ public class CreateJobBean implements Serializable {
 
         public String getFullPath() {
             return fullPath;
+        }
+
+        public File getTargetFile() {
+            return targetFile;
         }
 
         @Override
