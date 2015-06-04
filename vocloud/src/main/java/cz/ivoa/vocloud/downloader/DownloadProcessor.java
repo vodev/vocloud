@@ -3,6 +3,7 @@ package cz.ivoa.vocloud.downloader;
 import cz.ivoa.vocloud.entity.DownloadJob;
 import cz.ivoa.vocloud.entity.DownloadState;
 import cz.ivoa.vocloud.filesystem.FilesystemManipulator;
+import cz.ivoa.vocloud.tools.ContentTypeToExtensionConverter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -171,6 +172,19 @@ public class DownloadProcessor {
                 } catch (UnsupportedEncodingException ex) {
                     //should not be thrown if charset is set properly
                     Logger.getLogger(DownloadProcessor.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                //check if extension is set - if not - try to take extension from content type header
+                if (!fileName.matches(".+\\..+")){
+                    //no extension set
+                    String contentType = conn.getHeaderField("Content-Type");
+                    //if header is set
+                    if (contentType != null){
+                        String extension = ContentTypeToExtensionConverter.getInstance().convertToExtension(contentType);
+                        if (extension != null){
+                            //set extension
+                            fileName += "." + extension;
+                        }
+                    }
                 }
                 try {
                     boolean result = fsm.saveDownloadedFileIfNotExists(saveDir + fileName, conn.getInputStream(), true);
