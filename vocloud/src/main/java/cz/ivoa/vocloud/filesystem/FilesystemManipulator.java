@@ -1,5 +1,6 @@
 package cz.ivoa.vocloud.filesystem;
 
+import cz.ivoa.vocloud.entity.UWSType;
 import cz.ivoa.vocloud.tools.Config;
 import cz.ivoa.vocloud.filesystem.model.FilesystemFile;
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
@@ -30,11 +31,14 @@ import org.apache.commons.io.FileUtils;
 @LocalBean
 @Stateless
 public class FilesystemManipulator {
+    private static final Logger LOG = Logger.getLogger(FilesystemManipulator.class.getName());
 
     @Inject
     @Config
     private String filesystemDir;
-    private static final Logger LOG = Logger.getLogger(FilesystemManipulator.class.getName());
+    @Inject
+    @Config
+    private String filesystemConfigDir;
 
     private File filesystemDirectory;
 
@@ -280,5 +284,29 @@ public class FilesystemManipulator {
 
     public File getRootFolderDescriptor() {
         return filesystemDirectory;
+    }
+    
+    public List<FilesystemFile> listPrecreatedConfigFiles(UWSType uwsType){
+        if (uwsType == null){
+            throw new IllegalArgumentException("Passed uwsType is null");
+        }
+        if (filesystemConfigDir == null){
+            throw new IllegalStateException("Configuration dir not set");
+        }
+        File uwsConfDir = filesystemDirectory.toPath()
+                .resolve(filesystemConfigDir)
+                .resolve(uwsType.getStringIdentifier()).toFile();
+        if (!uwsConfDir.exists() || !uwsConfDir.isDirectory()){
+            return new ArrayList<>();//no configuration directory for this uws type is specified
+        }
+        List<FilesystemFile> result = new ArrayList<>();
+        for (File i: uwsConfDir.listFiles()){
+            //throw out directories
+            if (i.isDirectory()){
+                continue;
+            }
+            result.add(new FilesystemFile(i.getName(), filesystemConfigDir + '/' + uwsType.getStringIdentifier(), i.length(), new Date(i.lastModified())));
+        }
+        return result;
     }
 }

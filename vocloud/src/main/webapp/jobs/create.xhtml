@@ -56,16 +56,38 @@
                         </h:panelGrid>
                         <p:tree id="filesystemTree" value="#{createJobBean.folderTreeRootNode}" var="folder" dynamic="true" animate="true" cache="false" selectionMode="single" rendered="#{createJobBean.copyAfter}">
                             <p:ajax event="expand" listener="#{createJobBean.onFilesystemNodeExpand}"/>
-                            <p:ajax event="select" update="@form" process="@this" listener="#{createJobBean.onFilesystemFolderSelect}" />
+                            <p:ajax event="select" update=":mainForm:restrictedPanel" process="@this" listener="#{createJobBean.onFilesystemFolderSelect}" />
                             <p:treeNode expandedIcon="ui-icon-folder-open" collapsedIcon="ui-icon-folder-collapsed">
                                 <h:outputText value="#{folder.folderName}"/>
                             </p:treeNode>
                         </p:tree>
                     </p:panel>
                     <p:panel header="Job configuration JSON">
-                        <h3>Upload JSON configuration file</h3>
-                        <p:fileUpload fileUploadListener="#{createJobBean.handleConfigUpload}" mode="advanced" dragDropSupport="true"
-                                      update="configTextArea,createMessages" sizeLimit="500000" allowTypes="/(\.|\/)(txt|json|htm|html)$/" multiple="false" />
+                        <p:tabView>
+                            <p:tab title="Upload configuration">
+                                <h3>Upload JSON configuration file</h3>
+                                <p:fileUpload fileUploadListener="#{createJobBean.handleConfigUpload}" mode="advanced" dragDropSupport="true"
+                                              update=":mainForm:configTextArea,:mainForm:createMessages" sizeLimit="500000" allowTypes="/(\.|\/)(txt|json|htm|html)$/" multiple="false" />
+                            </p:tab>
+                            <p:tab title="Use precreated configuration" disabled="#{empty createJobBean.precreatedConfigs}">
+                                <h3>Use one of precreated configuration files</h3>
+                                <p:dataTable value="#{createJobBean.precreatedConfigs}" var="config" resizableColumns="true">
+                                    <p:column headerText="Configuration file name">
+                                        <h:outputText value="#{config.name}" />
+                                    </p:column>
+                                    <p:column headerText="View" style="width: 45px; text-align: center">
+                                        <p:commandButton title="View configuration file"  icon="ui-icon-newwin" immediate="true" process="@this"
+                                                         update=":dialogForm" oncomplete="PF('fileView').show()">
+                                            <f:setPropertyActionListener value="#{config}" target="#{createJobBean.selectedPrecreatedConfig}" />  
+                                        </p:commandButton>
+                                    </p:column>
+                                    <p:column headerText="Load" style="width: 45px; text-align: center">
+                                        <p:commandButton process="@this" immediate="true" title="Load configuration file" icon="ui-icon-check" update=":mainForm:configTextArea,:mainForm:createMessages" action="#{createJobBean.loadPrecreatedConfig(config)}"/>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </p:tab>
+                        </p:tabView>
                         <h3>JSON configuration preview</h3>
                         <p:inputTextarea id="configTextArea" converter="trailingSpacesConverter" rows="20" cols="100" maxlength="500000" value="#{createJobBean.configurationJson}" required="true" requiredMessage="Confinguration is mandatory"/>
                     </p:panel>                   
@@ -79,6 +101,12 @@
 
                     <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
                         <p:graphicImage library="images" name="preloader.gif"/>
+                    </p:dialog>
+                </h:form>
+                <h:form id="dialogForm">
+                    <p:dialog id="fileView" widgetVar="fileView" width="700" maximizable="false" minimizable="true"  height="500">
+                        <f:facet name="header">Configuration <h:outputText id="name" value="#{createJobBean.selectedPrecreatedConfig.name}" /></f:facet>
+                        <pre><h:outputText id="text" value="#{createJobBean.selectedPrecreatedConfigContents}" /></pre>
                     </p:dialog>
                 </h:form>
             </ui:define>

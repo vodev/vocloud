@@ -8,11 +8,14 @@ import cz.ivoa.vocloud.entity.UWSType;
 import cz.ivoa.vocloud.entity.UserAccount;
 import cz.ivoa.vocloud.entity.UserGroupName;
 import cz.ivoa.vocloud.filesystem.FilesystemManipulator;
+import cz.ivoa.vocloud.filesystem.model.FilesystemFile;
+import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -62,6 +65,8 @@ public class CreateJobBean implements Serializable {
     private String targetFolder = "/";
 
     private TreeNode folderTreeRootNode;
+    private List<FilesystemFile> precreatedConfigs;
+    private FilesystemFile selectedPrecreatedConfig;
 
     @PostConstruct
     private void init() {
@@ -73,6 +78,7 @@ public class CreateJobBean implements Serializable {
         }//next null check is necessary too
         if (rerun != null) {
             chosenUwsType = rerun.getUwsType();
+            initializePrecreatedConfigs();
             configurationJson = rerun.getConfigurationJson();
             jobLabel = rerun.getLabel() + "(copy)";
             jobNotes = rerun.getNotes();
@@ -85,6 +91,15 @@ public class CreateJobBean implements Serializable {
             return;//page will be rendered with error message
         }
         chosenUwsType = uwsTypeFacade.findByStringIdentifier(uwsTypeStrId);
+        initializePrecreatedConfigs();
+    }
+
+    private void initializePrecreatedConfigs() {
+        //assumming the chosenUwsType instance field is set
+        if (chosenUwsType == null) {
+            throw new IllegalStateException("Chosen UWS type field is null");
+        }
+        precreatedConfigs = fsm.listPrecreatedConfigFiles(chosenUwsType);
     }
 
     private void generateFolderTreeStructure() {
@@ -93,13 +108,13 @@ public class CreateJobBean implements Serializable {
         TreeNode dummy = new DefaultTreeNode("DUMMY", rootFolderNode);
     }
 
-    public void onFilesystemFolderSelect(NodeSelectEvent event){
+    public void onFilesystemFolderSelect(NodeSelectEvent event) {
         DefaultTreeNode selected = (DefaultTreeNode) event.getTreeNode();
-        targetFolder = ((FolderElement)selected.getData()).getFullPath();
+        targetFolder = ((FolderElement) selected.getData()).getFullPath();
         selected.setSelected(false);
     }
-    
-    public void onFilesystemNodeExpand(NodeExpandEvent event){
+
+    public void onFilesystemNodeExpand(NodeExpandEvent event) {
         DefaultTreeNode parent = (DefaultTreeNode) event.getTreeNode();
         if (parent.getChildCount() == 1 && parent.getChildren().get(0).getData().toString().equals("DUMMY")) {
             parent.getChildren().remove(0);
@@ -123,7 +138,7 @@ public class CreateJobBean implements Serializable {
             });
         }
     }
-    
+
     public boolean isNonRestrictedUwsTypeFound() {
         return chosenUwsType != null && !chosenUwsType.getRestricted();
     }
@@ -251,6 +266,42 @@ public class CreateJobBean implements Serializable {
             return false;
         }
         return userAcc.getGroupName().equals(UserGroupName.MANAGER) || userAcc.getGroupName().equals(UserGroupName.ADMIN);
+    }
+
+    public List<FilesystemFile> getPrecreatedConfigs() {
+        return precreatedConfigs;
+    }
+
+    public FilesystemFile getSelectedPrecreatedConfig() {
+        return selectedPrecreatedConfig;
+    }
+
+    public void setSelectedPrecreatedConfig(FilesystemFile selectedPrecreatedConfig) {
+        this.selectedPrecreatedConfig = selectedPrecreatedConfig;
+    }
+
+    private String readPrecreatedConfigContents(FilesystemItem config){
+        if (config.getSizeInBytes() > 500000) {//0.5 MB max
+            return "Error: Contents too long to be viewed";
+        }
+        try {
+            String content = IOUtils.toString(fsm.getDownloadStream(config), "UTF-8");
+            return content;
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            return "Exception during reading config - try again";
+        }
+    }
+    
+    public String getSelectedPrecreatedConfigContents() {
+        if (selectedPrecreatedConfig == null) {
+            return "No content";
+        }
+        return readPrecreatedConfigContents(selectedPrecreatedConfig);
+    }
+    
+    public void loadPrecreatedConfig(FilesystemItem config){
+        configurationJson = readPrecreatedConfigContents(config);
     }
 
     public static class FolderElement implements Serializable, Comparable<FolderElement> {
