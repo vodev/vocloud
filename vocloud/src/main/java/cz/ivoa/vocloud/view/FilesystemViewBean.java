@@ -33,6 +33,7 @@ import org.primefaces.model.menu.MenuModel;
 @Named
 @ViewScoped
 public class FilesystemViewBean implements Serializable {
+
     private static final Logger LOG = Logger.getLogger(FilesystemViewBean.class.getName());
 
     @EJB
@@ -44,9 +45,9 @@ public class FilesystemViewBean implements Serializable {
     protected List<FilesystemItem> items;
     protected List<FilesystemItem> selected;
     private boolean sampBtnEnabled = false;
-    
+
     protected FilesystemFile selectedViewedFile;
-    
+
     @PostConstruct
     protected void viewBeanInitialization() {
         //look for folderPrefix set from other windows
@@ -243,8 +244,8 @@ public class FilesystemViewBean implements Serializable {
         context.execute("fits = new Array(" + arrayText.toString() + ");");
         context.execute("connector.runWithConnection(send);");
     }
-    
-    public void enableSamp(boolean enable){
+
+    public void enableSamp(boolean enable) {
         this.sampBtnEnabled = enable;
     }
 
@@ -252,20 +253,20 @@ public class FilesystemViewBean implements Serializable {
         return sampBtnEnabled;
     }
 
-    public void setSelectedViewedFile(FilesystemItem item){
-        if (item == null || item.isFolder()){
+    public void setSelectedViewedFile(FilesystemItem item) {
+        if (item == null || item.isFolder()) {
             item = null;
             return;
         }
         this.selectedViewedFile = (FilesystemFile) item;
     }
-    
+
     public FilesystemItem getSelectedViewedFile() {
         return selectedViewedFile;
     }
-    
-    public String getSelectedViewedFileContents(){
-        if (selectedViewedFile == null){
+
+    public String getSelectedViewedFileContents() {
+        if (selectedViewedFile == null) {
             return "Error: File does not exist";
         }
         if (selectedViewedFile.getSizeInBytes() > 500000) {//0.5 MB max
@@ -281,7 +282,7 @@ public class FilesystemViewBean implements Serializable {
             LOG.log(Level.SEVERE, null, ex);
             return "Error: Exception during reading file " + ex.getMessage();
         } finally {
-            if (stream != null){
+            if (stream != null) {
                 IOUtils.closeQuietly(stream);
             }
         }
