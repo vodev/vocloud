@@ -31,10 +31,10 @@
 
                 // Adjusts page content depending on whether the hub exists or not.
                 var configureSampEnabled = function (isHubRunning) {
-                    if (!btnEnabled && isHubRunning){
+                    if (!btnEnabled && isHubRunning) {
                         btnEnabled = true;
                         enableSAMP();
-                    } else if (btnEnabled && !isHubRunning){
+                    } else if (btnEnabled && !isHubRunning) {
                         btnEnabled = false;
                         disableSAMP();
                     }
@@ -90,9 +90,19 @@
                         <p:commandButton rendered="#{not item.folder}" value="#{bundle.FileDownload}" ajax="false" icon="ui-icon-arrowthick-1-s">
                             <p:fileDownload value="#{filesystemViewBean.downloadFile(item)}" />
                         </p:commandButton>
+                        <p:commandButton rendered="#{not item.folder}" title="View file"  icon="ui-icon-circle-zoomin" immediate="true" process="@this"
+                                         update=":dialogForm:fileView" oncomplete="PF('fileView').show()" value="View">
+                            <f:setPropertyActionListener value="#{item}" target="#{filesystemViewBean.selectedViewedFile}" />  
+                        </p:commandButton>
                     </p:column>
 
                 </p:dataTable>
+            </h:form>
+            <h:form id="dialogForm">
+                <p:dialog id="fileView" dynamic="true" widgetVar="fileView" width="700" maximizable="false" height="500">
+                    <f:facet name="header">File <h:outputText id="name" value="#{filesystemViewBean.selectedViewedFile.name}" /></f:facet>
+                    <pre><h:outputText id="text" value="#{filesystemViewBean.selectedViewedFileContents}" /></pre>
+                </p:dialog>
             </h:form>
         </ui:define>
     </ui:composition>

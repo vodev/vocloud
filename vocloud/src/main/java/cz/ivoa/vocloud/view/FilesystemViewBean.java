@@ -2,6 +2,7 @@ package cz.ivoa.vocloud.view;
 
 import cz.ivoa.vocloud.tools.Toolbox;
 import cz.ivoa.vocloud.filesystem.FilesystemManipulator;
+import cz.ivoa.vocloud.filesystem.model.FilesystemFile;
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -17,6 +18,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import org.apache.commons.io.IOUtils;
 import org.primefaces.context.RequestContext;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -31,6 +33,7 @@ import org.primefaces.model.menu.MenuModel;
 @Named
 @ViewScoped
 public class FilesystemViewBean implements Serializable {
+    private static final Logger LOG = Logger.getLogger(FilesystemViewBean.class.getName());
 
     @EJB
     protected FilesystemManipulator fsm;
@@ -41,6 +44,8 @@ public class FilesystemViewBean implements Serializable {
     protected List<FilesystemItem> items;
     protected List<FilesystemItem> selected;
     private boolean sampBtnEnabled = false;
+    
+    protected FilesystemFile selectedViewedFile;
     
     @PostConstruct
     protected void viewBeanInitialization() {
@@ -246,6 +251,39 @@ public class FilesystemViewBean implements Serializable {
     public boolean isSampBtnEnabled() {
         return sampBtnEnabled;
     }
+
+    public void setSelectedViewedFile(FilesystemItem item){
+        if (item == null || item.isFolder()){
+            item = null;
+            return;
+        }
+        this.selectedViewedFile = (FilesystemFile) item;
+    }
     
+    public FilesystemItem getSelectedViewedFile() {
+        return selectedViewedFile;
+    }
     
+    public String getSelectedViewedFileContents(){
+        if (selectedViewedFile == null){
+            return "Error: File does not exist";
+        }
+        if (selectedViewedFile.getSizeInBytes() > 500000) {//0.5 MB max
+            return "Error: Contents too long to be viewed";
+        }
+        InputStream stream = null;
+        try {
+            stream = fsm.getDownloadStream(selectedViewedFile);
+            String content = IOUtils.toString(stream, "UTF-8");
+            content = content.replaceAll("[\\p{Cntrl}&&[^\\r]&&[^\\n]]", "?");
+            return content;
+        } catch (Throwable ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            return "Error: Exception during reading file " + ex.getMessage();
+        } finally {
+            if (stream != null){
+                IOUtils.closeQuietly(stream);
+            }
+        }
+    }
 }

@@ -105,7 +105,7 @@
                     </ui:fragment>
                 </h:form>
                 <h:form id="dialogForm">
-                    <p:dialog id="fileView" widgetVar="fileView" width="700" maximizable="false" minimizable="true"  height="500"  >
+                    <p:dialog id="fileView" widgetVar="fileView" width="700" maximizable="false" height="500"  >
                         <f:facet name="header">View <h:outputText id="name" value="#{jobDetailsBean.selectedFile.name}" /></f:facet>
                         <pre><h:outputText id="text" value="#{jobDetailsBean.selectedFileContents}" /></pre>
                     </p:dialog>

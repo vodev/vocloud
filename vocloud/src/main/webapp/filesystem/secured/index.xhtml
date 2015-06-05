@@ -113,6 +113,10 @@
                             <f:setPropertyActionListener target="#{filesystemManageBean.itemToRename}" value="#{item.name}" />
                             <f:setPropertyActionListener target="#{filesystemManageBean.filesystemItemToRename}" value="#{item}" />
                         </p:commandButton>
+                        <p:commandButton rendered="#{not item.folder}" title="View file"  icon="ui-icon-circle-zoomin" immediate="true" process="@this"
+                                         update=":dialogViewForm:fileView" oncomplete="PF('fileView').show()" value="View">
+                            <f:setPropertyActionListener value="#{item}" target="#{filesystemManageBean.selectedViewedFile}" />  
+                        </p:commandButton>
                     </p:column>
 
                 </p:dataTable>
@@ -133,7 +137,13 @@
                             <p:defaultCommand target="renameBtn" />
                         </h:panelGrid>
                     </p:outputPanel>
-                </p:dialog>  
+                </p:dialog>
+            </h:form>
+            <h:form id="dialogViewForm">
+                <p:dialog id="fileView" dynamic="true" widgetVar="fileView" width="700" maximizable="false" height="500">
+                    <f:facet name="header">File <h:outputText id="name" value="#{filesystemManageBean.selectedViewedFile.name}" /></f:facet>
+                    <pre><h:outputText id="text" value="#{filesystemManageBean.selectedViewedFileContents}" /></pre>
+                </p:dialog>
             </h:form>
         </ui:define>
     </ui:composition>

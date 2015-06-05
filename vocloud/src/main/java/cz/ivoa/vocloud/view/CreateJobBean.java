@@ -12,6 +12,7 @@ import cz.ivoa.vocloud.filesystem.model.FilesystemFile;
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Comparator;
@@ -284,12 +285,18 @@ public class CreateJobBean implements Serializable {
         if (config.getSizeInBytes() > 500000) {//0.5 MB max
             return "Error: Contents too long to be viewed";
         }
+        InputStream stream = null;
         try {
-            String content = IOUtils.toString(fsm.getDownloadStream(config), "UTF-8");
+            stream = fsm.getDownloadStream(config);
+            String content = IOUtils.toString(stream, "UTF-8");
             return content;
-        } catch (IOException ex) {
+        } catch (Throwable ex) {
             LOG.log(Level.SEVERE, null, ex);
-            return "Exception during reading config - try again";
+            return "Error: Exception during reading file " + ex.getMessage();
+        } finally {
+            if (stream != null){
+                IOUtils.closeQuietly(stream);
+            }
         }
     }
     
