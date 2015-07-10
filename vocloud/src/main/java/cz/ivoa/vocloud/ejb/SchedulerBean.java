@@ -43,7 +43,7 @@ public class SchedulerBean {
 
         // find executing jobs
         watchedJobs.addAll(jf.findByPhase(Phase.EXECUTING));
-        updateExecutingJobs();
+//        updateExecutingJobs();//should not be necessary -- is invoked by timer
     }
 
     /**
