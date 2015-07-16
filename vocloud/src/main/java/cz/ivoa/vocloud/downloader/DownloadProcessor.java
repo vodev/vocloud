@@ -2,6 +2,9 @@ package cz.ivoa.vocloud.downloader;
 
 import cz.ivoa.vocloud.entity.DownloadJob;
 import cz.ivoa.vocloud.entity.DownloadState;
+import cz.ivoa.vocloud.entity.SSAPDownloadJob;
+import cz.ivoa.vocloud.entity.SSAPDownloadJobItem;
+import cz.ivoa.vocloud.entity.UrlDownloadJob;
 import cz.ivoa.vocloud.filesystem.FilesystemManipulator;
 import cz.ivoa.vocloud.tools.ContentTypeToExtensionConverter;
 import java.io.IOException;
@@ -12,7 +15,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,15 +53,15 @@ public class DownloadProcessor {
     //==============================ASYNCHRONOUS DOWNLOADING METHODS============
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Asynchronous
-    public void processDownloadJob(DownloadJob job) {
-        LOG.log(Level.INFO, "Downloading job {0}", job.getDownloadUrl());
+    public void processDownloadJob(UrlDownloadJob job) {
+        LOG.log(Level.INFO, "Downloading URL job {0}", job.getDownloadUrl());
         StringBuilder downloadLog = new StringBuilder();
         //change state
         job.setState(DownloadState.RUNNING);
         djb.edit(job);
         boolean success = false;
         try {
-            success = startDownloading(job.getDownloadUrl(), job.getSaveDir(), job.getFileName(), downloadLog);
+            success = startDownloading(job.getDownloadUrl(), job.getSaveDir(), null, downloadLog);
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "Runtime exception during job processing", ex);
             downloadLog.append("Runtime exception thrown\n").append(ex.toString()).append('\n');
@@ -82,13 +84,71 @@ public class DownloadProcessor {
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Asynchronous
-    public void processDownloadJobs(List<DownloadJob> jobs) {
-        //synchronously delegate to processDownloadJob method
-        for (DownloadJob job : jobs) {
-            processDownloadJob(job);//this method will be invoked synchronously - not called through proxy object
+    public void processDownloadJob(SSAPDownloadJob job) {
+        LOG.log(Level.INFO, "Downloading SSAP job");
+        StringBuilder downloadLog = new StringBuilder();
+        //change state
+        job.setState(DownloadState.RUNNING);
+        djb.edit(job);
+        boolean success = true;
+        for (SSAPDownloadJobItem item : job.getItems()) {
+            item.setDownloadState(DownloadState.RUNNING);
+            djb.edit(item);
+            boolean result = true;
+            try {
+                result = startDownloading(item.getDownloadUrl(), job.getSaveDir(), item.getFileName(), downloadLog);
+                if (!result) {
+                    success = false;
+                }
+            } catch (Exception ex) {
+                LOG.log(Level.WARNING, "Runtime exception during job processing", ex);
+                downloadLog.append("Runtime exception thrown\n").append(ex.toString()).append('\n');
+                success = false;
+            }
+            item.setFinishTime(new Date());
+            if (result) {
+                item.setDownloadState(DownloadState.FINISHED);
+            } else {
+                item.setDownloadState(DownloadState.FAILED);
+            }
+            djb.edit(item);
+        }
+        if (success) {
+            job.setState(DownloadState.FINISHED);
+            LOG.log(Level.INFO, "SSAP Download job was finished");
+        } else {
+            job.setState(DownloadState.FAILED);
+            LOG.log(Level.INFO, "SSAP Download job was finished with one or more exceptions");
+        }
+        job.setFinishTime(new Date());
+        String message = downloadLog.toString().trim();
+        if (!message.equals("")) {
+            job.setMessageLog(message);//todo create special object for logging and do not use simple stringbuilder class
+        }
+        djb.edit(job);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Asynchronous
+    public void processDownloadJob(DownloadJob job) {
+        if (job instanceof UrlDownloadJob) {
+            processDownloadJob((UrlDownloadJob) job);
+        } else if (job instanceof SSAPDownloadJob) {
+            processDownloadJob((SSAPDownloadJob) job);
+        } else {
+            LOG.log(Level.SEVERE, "Trying to download job of unknown type! {0}", job.getId());
         }
     }
 
+//
+//    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+//    @Asynchronous
+//    public void processDownloadJobs(List<DownloadJob> jobs) {
+//        //synchronously delegate to processDownloadJob method
+//        for (DownloadJob job : jobs) {
+//            processDownloadJob(job);//this method will be invoked synchronously - not called through proxy object
+//        }
+//    }
     //=================================UTIL=====================================
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     private String pathDirectoryCut(String originPath, final int directoryCut) {
@@ -174,13 +234,13 @@ public class DownloadProcessor {
                     Logger.getLogger(DownloadProcessor.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 //check if extension is set - if not - try to take extension from content type header
-                if (!fileName.matches(".+\\..+")){
+                if (!fileName.matches(".+\\..+")) {
                     //no extension set
                     String contentType = conn.getHeaderField("Content-Type");
                     //if header is set
-                    if (contentType != null){
+                    if (contentType != null) {
                         String extension = ContentTypeToExtensionConverter.getInstance().convertToExtension(contentType);
-                        if (extension != null){
+                        if (extension != null) {
                             //set extension
                             fileName += "." + extension;
                         }

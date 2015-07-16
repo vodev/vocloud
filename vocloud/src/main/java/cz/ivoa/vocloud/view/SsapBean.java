@@ -45,7 +45,6 @@ import org.primefaces.event.FileUploadEvent;
 public class SsapBean implements Serializable {
 
     private String targetFolder;
-    private String votableURL;
     private String downloadedVotable;
 
     private String inputMethod;
@@ -86,20 +85,12 @@ public class SsapBean implements Serializable {
         return targetFolder;
     }
 
-    public String getVotableURL() {
-        return votableURL;
-    }
-
     public String getDownloadedVotable() {
         return downloadedVotable;
     }
 
     public void setTargetFolder(String targetFolder) {
         this.targetFolder = targetFolder;
-    }
-
-    public void setVotableURL(String votableURL) {
-        this.votableURL = votableURL;
     }
 
     public void setInputMethod(String method) {
@@ -292,7 +283,7 @@ public class SsapBean implements Serializable {
         boolean success = false;
         if (!allowDatalink){
             //download jobs through accref value
-            success = downloadManager.enqueueVotableAccrefDownload(parsedVotable, targetFolder);
+            success = downloadManager.enqueueVotableAccrefDownload(downloadUrl, parsedVotable, targetFolder);
         } else {
             //datalink is allowed
             //first catch datalink parameters from the request
@@ -308,7 +299,7 @@ public class SsapBean implements Serializable {
                     paramMap.put(p.getName(), value);
                 }
             }
-            success = downloadManager.enqueueVotableDatalinkDownload(parsedVotable, paramMap, targetFolder);
+            success = downloadManager.enqueueVotableDatalinkDownload(downloadUrl, parsedVotable, paramMap, targetFolder);
         }
         if (success){
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);

@@ -1,6 +1,8 @@
 package cz.ivoa.vocloud.downloader;
 
 import cz.ivoa.vocloud.entity.DownloadJob;
+import cz.ivoa.vocloud.entity.SSAPDownloadJob;
+import cz.ivoa.vocloud.entity.UrlDownloadJob;
 import cz.ivoa.vocloud.ssap.model.IndexedSSAPVotable;
 import cz.ivoa.vocloud.ssap.model.Param;
 import cz.ivoa.vocloud.ssap.model.Record;
@@ -42,7 +44,9 @@ public class DownloadManager {
     public void init() {
         //initialization during startup
         List<DownloadJob> jobs = djb.findUnfinishedJobs();
-        proc.processDownloadJobs(jobs);//all remaining jobs will be downloaded sequentially in one ejb async thread
+        for (DownloadJob job: jobs){
+            proc.processDownloadJob(job);
+        }
     }
 
     private static final String[] supportedDownloadProtocols = {"HTTP", "HTTPS", "FTP"};
@@ -65,22 +69,22 @@ public class DownloadManager {
             return false;
         }
         //clear downloadURL of doubleslashes
-        DownloadJob job = djb.createNewDownloadJob(downloadURL, targetFolder);
+        UrlDownloadJob job = djb.createNewUrlDownloadJob(downloadURL, targetFolder);
         proc.processDownloadJob(job);//must get proxy business object to properly call async method
         return true;
     }
 
-    public boolean enqueueVotableAccrefDownload(IndexedSSAPVotable votable, String targetFolder) {
+    public boolean enqueueVotableAccrefDownload(String ssapUrl, IndexedSSAPVotable votable, String targetFolder) {
         List<String> accRefs = new ArrayList<>();
         for (Record r : votable.getRows()) {
             accRefs.add(votable.getAccrefColumn(r));
         }
-        List<DownloadJob> jobs = djb.createNewDownloadJobs(accRefs, targetFolder);
-        proc.processDownloadJobs(jobs);
+        SSAPDownloadJob job = djb.createNewSSAPDownloadJobs(ssapUrl, accRefs, targetFolder);
+        proc.processDownloadJob(job);
         return true;
     }
 
-    public boolean enqueueVotableDatalinkDownload(IndexedSSAPVotable votable, Map<String, String> paramMap, String targetFolder) {
+    public boolean enqueueVotableDatalinkDownload(String ssapUrl, IndexedSSAPVotable votable, Map<String, String> paramMap, String targetFolder) {
         //it is necessary to construct url by using input params
         String baseUrl = votable.getDatalinkResourceUrl();
         StringBuilder postfix = new StringBuilder();
@@ -113,9 +117,9 @@ public class DownloadManager {
                 urlsWithNames.add(new UrlWithName(url, name));
             }
             //create download jobs
-            List<DownloadJob> jobs = djb.createNewDownloadJobsWithNames(urlsWithNames, targetFolder);
-            
-            proc.processDownloadJobs(jobs);
+            SSAPDownloadJob job = djb.createNewSSAPDownloadJobsWithNames(ssapUrl, urlsWithNames, targetFolder);
+
+            proc.processDownloadJob(job);
             return true;
         } catch (UnsupportedEncodingException ex) {//should not be thrown
             Logger.getLogger(DownloadManager.class.getName()).log(Level.SEVERE, null, ex);
