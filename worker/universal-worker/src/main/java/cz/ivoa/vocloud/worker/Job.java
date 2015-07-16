@@ -13,7 +13,9 @@ import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -165,7 +167,7 @@ public class Job extends AbstractJob {
                         Thread.sleep(1000);
                         try {
                             process.exitValue();
-                            //it completed
+                            //it was completed
                             break;
                         } catch (IllegalThreadStateException ex) {
                             //not completed yet
@@ -233,7 +235,7 @@ public class Job extends AbstractJob {
         for (String command : commands) {
             tmp = command
                     .replace("${binaries-location}", workerSettings.getBinariesLocation())
-                    //                    .replace("${config-file}", PROCESS_DATA_FOLDER_NAME + "/config.json");
+//                    .replace("${config-file}", PROCESS_DATA_FOLDER_NAME + "/config.json");
                     .replace("${config-file}", "config.json");//todo remove after python fix
             resolved.add(tmp);
         }
@@ -253,7 +255,17 @@ public class Job extends AbstractJob {
             return;
         }
         downloadLogFile = new File(processDataDir, DOWNLOAD_LOG_FILE_NAME);
-        try (PrintStream log = new PrintStream(downloadLogFile, "UTF-8")) {
+        try (PrintStream log = new PrintStream(downloadLogFile, "UTF-8"){
+
+            private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            
+            @Override
+            public void println(String x) {
+                String timestamp = format.format(new Date());
+                super.println(timestamp + " " + x); //To change body of generated methods, choose Tools | Templates.
+            }
+            
+        }) {
             for (int i = 0; i < downloadArray.length(); i++) {
                 JSONObject downloadItem;
                 try {
@@ -312,7 +324,7 @@ public class Job extends AbstractJob {
 
     private void downloadRemoteResource(String urlStr, String folderPath, PrintStream log) {
         folderPath = folderPath.trim();
-        if (folderPath.startsWith("/")){
+        if (folderPath.startsWith("/")) {
             folderPath = folderPath.substring(1);
         }
         urlStr = urlStr.trim();
@@ -405,8 +417,8 @@ public class Job extends AbstractJob {
             String[] split = urlStr.split("/");
             String fileName = split[split.length - 1];
             try {
-            fileName = URLDecoder.decode(fileName, "UTF-8");
-            } catch (UnsupportedEncodingException ex){
+                fileName = URLDecoder.decode(fileName, "UTF-8");
+            } catch (UnsupportedEncodingException ex) {
                 LOG.log(Level.SEVERE, "Unsupported encoding", ex);
                 return;
             }
