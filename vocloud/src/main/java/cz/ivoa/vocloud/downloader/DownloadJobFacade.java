@@ -121,4 +121,24 @@ public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
         getEntityManager().merge(entity);
         em.flush();
     }
+     
+     public long countSSAPItems(DownloadJob job){
+         if (job == null || ! (job instanceof SSAPDownloadJob)){
+             throw new IllegalArgumentException("Passed job argument must not be null and it must be of type SSAPDownloadJob");
+         }
+         TypedQuery<Long> q = em.createNamedQuery("SSAPDownloadJobItem.countParentItems", Long.class);
+         q.setParameter("parentJobId", job.getId());
+         return q.getSingleResult();
+     }
+     
+     public List<SSAPDownloadJobItem> findAllSSAPItemsPaginated(DownloadJob job, int offset, int count){
+         if (job == null || ! (job instanceof SSAPDownloadJob)){
+             throw new IllegalArgumentException("Passed job argument must not be null and it must be of type SSAPDownloadJob");
+         }
+         TypedQuery<SSAPDownloadJobItem> q = em.createNamedQuery("SSAPDownloadJobItem.findAllByTimeOrdered", SSAPDownloadJobItem.class);
+         q.setParameter("parentJobId", job.getId());
+         q.setFirstResult(offset);
+         q.setMaxResults(count);
+         return q.getResultList();
+     }
 }

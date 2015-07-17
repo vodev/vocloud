@@ -13,6 +13,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -24,6 +26,10 @@ import javax.persistence.TemporalType;
 @Vetoed
 @Entity
 @Table(name = "ssap_download_item")
+@NamedQueries({
+    @NamedQuery(name = "SSAPDownloadJobItem.countParentItems", query = "SELECT COUNT(i) FROM SSAPDownloadJobItem i WHERE i.parent.id = :parentJobId"),
+    @NamedQuery(name = "SSAPDownloadJobItem.findAllByTimeOrdered", query = "SELECT i FROM SSAPDownloadJobItem i WHERE i.parent.id = :parentJobId ORDER BY i.finishTime DESC")
+})
 public class SSAPDownloadJobItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
