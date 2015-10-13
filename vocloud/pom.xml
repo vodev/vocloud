@@ -289,6 +289,34 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>docker-vocloud</id>
+            <properties>
+                <vocloud.appUrl>http://localhost:8080/vocloud</vocloud.appUrl>
+                <vocloud.filesystemDir>/var/local/vocloud/filesystem/</vocloud.filesystemDir>
+                <vocloud.jobsDir>/var/local/vocloud/jobs/</vocloud.jobsDir>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>2.6</version>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                </manifest>
+                                <manifestEntries>
+                                    <git-SHA-1>${buildNumber}</git-SHA-1>
+                                </manifestEntries>
+                            </archive>
+                            <warName>vocloud</warName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!--        <profile>
             <id>vocloud-local</id>
             <build>
