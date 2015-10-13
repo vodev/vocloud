@@ -14,11 +14,18 @@
         <ui:define name="content">
             <h:form id="mainForm">
                 <p:messages showDetail="true" />
-                <p:commandButton value="Refresh" icon="ui-icon-refresh" process="@this" update="dataTable" ajax="true" />
-                <p:dataTable id="dataTable" value="#{downloadQueueBean.model}" var="job" paginator="true" rows="50" lazy="true" resizableColumns="true">
+                <p:commandButton value="Refresh" icon="ui-icon-refresh" process="@this" update="dataTable" ajax="true" actionListener="#{downloadQueueBean.refresh()}" />
+                <p:commandButton value="Delete selected" icon="ui-icon-trash" update="dataTable" actionListener="#{downloadQueueBean.deleteSelected()}">
+                    <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
+                </p:commandButton>
+                <p:commandButton value="Delete all" icon="ui-icon-trash" update="dataTable" actionListener="#{downloadQueueBean.deleteAll()}">
+                    <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
+                </p:commandButton>
+                <p:dataTable id="dataTable" value="#{downloadQueueBean.model}" var="job" paginator="true" rows="50" lazy="true" resizableColumns="true" selection="#{downloadQueueBean.selectedJobs}" rowKey="#{job.id}">
                     <p:column style="width:16px">
                         <p:rowToggler rendered="#{job.isSSAP()}" />
                     </p:column>
+                    <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
                     <p:column headerText="State" width="90">
                         <h:outputText value="#{job.state}" />
                     </p:column>
@@ -46,6 +53,9 @@
                     </p:column>
                     <p:rowExpansion>
                         <p:dataTable value="#{downloadQueueBean.fetchLazySSAPModel(job)}" var="ssapJob" rows="50" resizableColumns="true" paginator="true" lazy="true">
+                            <f:facet name="header">
+                                Total #{downloadQueueBean.fetchLazySSAPModel(job).rowCount} records
+                            </f:facet>
                             <p:column headerText="State" width="90">
                                 <h:outputText value="#{ssapJob.downloadState}" />
                             </p:column>
@@ -65,7 +75,10 @@
                 <p:dialog id="logView" widgetVar="logView" width="700" maximizable="false" minimizable="true"  height="500">
                     <pre><h:outputText value="#{downloadQueueBean.shownMessageLog}" /></pre>
                 </p:dialog>
-
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>
             </h:form>
         </ui:define>
     </ui:composition>

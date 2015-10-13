@@ -3,6 +3,7 @@ package cz.ivoa.vocloud.entity;
 import java.util.ArrayList;
 import java.util.List;
 import javax.enterprise.inject.Vetoed;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -24,7 +25,7 @@ public class SSAPDownloadJob extends DownloadJob {
         //nothing to do here
     }
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.REMOVE)
     private List<SSAPDownloadJobItem> items = new ArrayList<>();
 
     public List<SSAPDownloadJobItem> getItems() {

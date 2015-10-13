@@ -16,6 +16,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 /**
@@ -135,10 +136,23 @@ public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
          if (job == null || ! (job instanceof SSAPDownloadJob)){
              throw new IllegalArgumentException("Passed job argument must not be null and it must be of type SSAPDownloadJob");
          }
-         TypedQuery<SSAPDownloadJobItem> q = em.createNamedQuery("SSAPDownloadJobItem.findAllByTimeOrdered", SSAPDownloadJobItem.class);
+         TypedQuery<SSAPDownloadJobItem> q = em.createNamedQuery("SSAPDownloadJobItem.findAllByIdOrdered", SSAPDownloadJobItem.class);
          q.setParameter("parentJobId", job.getId());
          q.setFirstResult(offset);
          q.setMaxResults(count);
          return q.getResultList();
+     }
+     
+     public void deleteDownloadJobs(List<DownloadJob> downloadJobs){
+         for (DownloadJob job: downloadJobs){
+             this.remove(job);
+         }
+     }
+     
+     public void deleteAllDownloadJobs(){
+         Query q1 = em.createQuery("DELETE FROM SSAPDownloadJobItem");
+         Query q2 = em.createQuery("DELETE FROM DownloadJob");
+         q1.executeUpdate();
+         q2.executeUpdate();
      }
 }

@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import org.primefaces.model.LazyDataModel;
@@ -24,6 +26,7 @@ public class DownloadQueueBean implements Serializable {
 
     private LazyDataModel<DownloadJob> model;
     private Map<DownloadJob, LazyDataModel<SSAPDownloadJobItem>> ssapModels;
+    private List<DownloadJob> selectedJobs;
 
     @EJB
     private DownloadJobFacade djf;
@@ -84,4 +87,28 @@ public class DownloadQueueBean implements Serializable {
         return tmpModel;
     }
 
+    public List<DownloadJob> getSelectedJobs() {
+        return selectedJobs;
+    }
+
+    public void setSelectedJobs(List<DownloadJob> selectedJobs) {
+        this.selectedJobs = selectedJobs;
+    }
+
+    public void refresh(){
+        this.selectedJobs = null;
+    }
+    //TODO delete only finished or failed jobs
+    public void deleteSelected(){
+        if (selectedJobs == null){
+            return;//do nothing if nothing is selected
+        }
+        djf.deleteDownloadJobs(selectedJobs);
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Jobs were successfully deleted"));
+    }
+    
+    public void deleteAll(){
+        djf.deleteAllDownloadJobs();
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Jobs were successfully deleted"));
+    }
 }

@@ -28,7 +28,7 @@ import javax.persistence.TemporalType;
 @Table(name = "ssap_download_item")
 @NamedQueries({
     @NamedQuery(name = "SSAPDownloadJobItem.countParentItems", query = "SELECT COUNT(i) FROM SSAPDownloadJobItem i WHERE i.parent.id = :parentJobId"),
-    @NamedQuery(name = "SSAPDownloadJobItem.findAllByTimeOrdered", query = "SELECT i FROM SSAPDownloadJobItem i WHERE i.parent.id = :parentJobId ORDER BY i.finishTime DESC")
+    @NamedQuery(name = "SSAPDownloadJobItem.findAllByIdOrdered", query = "SELECT i FROM SSAPDownloadJobItem i WHERE i.parent.id = :parentJobId ORDER BY i.id")
 })
 public class SSAPDownloadJobItem implements Serializable {
 
