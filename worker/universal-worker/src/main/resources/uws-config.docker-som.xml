@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ns:uws-settings
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xmlns:ns='http://vocloud.rk.cz/schema'
+    xsi:schemaLocation='http://vocloud.rk.cz/schema configSchema.xsd'>
+    <ns:vocloud-server-address>http://localhost:8080/vocloud2</ns:vocloud-server-address>
+    <ns:local-address>http://localhost:8080</ns:local-address>
+    <ns:max-jobs>2</ns:max-jobs>
+    <ns:description>Universal UWS worker</ns:description>
+    <ns:default-execution-duration>3600</ns:default-execution-duration>
+    <ns:max-execution-duration>3600</ns:max-execution-duration>
+        <ns:workers>
+            <ns:worker>
+                <ns:identifier>som</ns:identifier>
+                <ns:description>SOM</ns:description>
+                <ns:restricted>false</ns:restricted>
+                <ns:binaries-location>/usr/local/SOM</ns:binaries-location>
+                <ns:exec-command>
+                    <ns:command>python</ns:command>
+                    <ns:command>${binaries-location}/run.py</ns:command>
+                </ns:exec-command>
+            </ns:worker>
+        </ns:workers>
+</ns:uws-settings>
