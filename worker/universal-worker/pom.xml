@@ -117,7 +117,7 @@
             </build>
         </profile>
         <profile>
-            <id>preprocessing-docker</id>
+            <id>docker-preprocessing</id>
             <build>
                 <plugins>
                     <plugin>
@@ -131,7 +131,7 @@
                                 <configuration>
                                     <tasks>
                                         <delete file="${project.build.outputDirectory}/uws-config.xml"/>
-                                        <copy file="src/main/resources/uws-config.preprocessing-docker.xml"
+                                        <copy file="src/main/resources/uws-config.docker-preprocessing.xml"
                                               tofile="${project.build.outputDirectory}/uws-config.xml"/>
                                     </tasks>
                                 </configuration>
@@ -142,7 +142,7 @@
             </build>
         </profile>
         <profile>
-            <id>som-docker</id>
+            <id>docker-som</id>
             <build>
                 <plugins>
                     <plugin>
@@ -156,7 +156,7 @@
                                 <configuration>
                                     <tasks>
                                         <delete file="${project.build.outputDirectory}/uws-config.xml"/>
-                                        <copy file="src/main/resources/uws-config.som-docker.xml"
+                                        <copy file="src/main/resources/uws-config.docker-som.xml"
                                               tofile="${project.build.outputDirectory}/uws-config.xml"/>
                                     </tasks>
                                 </configuration>
@@ -167,7 +167,7 @@
             </build>
         </profile>
         <profile>
-            <id>rdf-docker</id>
+            <id>docker-rdf</id>
             <build>
                 <plugins>
                     <plugin>
@@ -181,7 +181,7 @@
                                 <configuration>
                                     <tasks>
                                         <delete file="${project.build.outputDirectory}/uws-config.xml"/>
-                                        <copy file="src/main/resources/uws-config.rdf-docker.xml"
+                                        <copy file="src/main/resources/uws-config.docker-rdf.xml"
                                               tofile="${project.build.outputDirectory}/uws-config.xml"/>
                                     </tasks>
                                 </configuration>
