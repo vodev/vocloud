@@ -181,7 +181,7 @@ public class Job extends AbstractJob {
                     //kill process if job is aborted
                     if (process != null) {
                         LOG.log(Level.INFO, "Calling kill signal to process");
-                        process.destroyForcibly();
+                        process.destroy();
                     }
                 } catch (IOException e) {
                     LOG.log(Level.SEVERE, "error when executing job", e);
