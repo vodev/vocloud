@@ -147,7 +147,7 @@ public class FolderTest {
 
     }
 
-    private final static String invalidFolderNameChars = "\\/:*?\"<>|";
+    private final static String invalidFolderNameChars = "\\/?\"<>|";
 
     /**
      * Testing that folder name does not support names with characters that are
