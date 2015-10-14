@@ -160,6 +160,7 @@ public class FolderTest {
         String post = "bar";
         String relativeDir = "folder/tmp";
         String folderName;
+        boolean failed = false;
         for (char c : invalidFolderNameChars.toCharArray()) {
             folderName = pre + c + post;
             try {
@@ -168,6 +169,9 @@ public class FolderTest {
                 continue;
             }
             LOG.log(Level.WARNING, "  character {0} seems to be valid in folder name", c);
+            failed = true;
+        }
+        if (failed){
             fail("Expected exception was not thrown");
         }
     }
