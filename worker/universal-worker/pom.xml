@@ -191,6 +191,31 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>docker-complete</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <delete file="${project.build.outputDirectory}/uws-config.xml"/>
+                                        <copy file="src/main/resources/uws-config.docker-complete.xml"
+                                              tofile="${project.build.outputDirectory}/uws-config.xml"/>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
