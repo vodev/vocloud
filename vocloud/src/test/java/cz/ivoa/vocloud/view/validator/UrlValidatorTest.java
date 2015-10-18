@@ -34,16 +34,16 @@ public class UrlValidatorTest {
         component = null;
     }
 
-    /**
-     * Testing that empty URL string is invalid.
-     */
-    @Test(expected = ValidatorException.class)
-    public void testValidateEmptyString() {
-        LOG.info("validate empty URL string");
-        String value = "";
-        validator.validate(context, component, value);
-        fail("Validation passed but it should not");
-    }
+//    /**
+//     * Testing that empty URL string is invalid.
+//     */
+//    @Test(expected = ValidatorException.class)
+//    public void testValidateEmptyString() {
+//        LOG.info("validate empty URL string");
+//        String value = "";
+//        validator.validate(context, component, value);
+//        fail("Validation passed but it should not");
+//    }
 
     /**
      * Testing that URL string with one space is invalid.

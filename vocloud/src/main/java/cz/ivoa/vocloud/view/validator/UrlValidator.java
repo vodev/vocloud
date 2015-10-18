@@ -21,7 +21,7 @@ public class UrlValidator implements Validator {
         StringBuilder url = new StringBuilder();
         String urlValue = value.toString();
         if (urlValue.length() == 0){
-            throw new ValidatorException(new FacesMessage("Invalid format of URL address", "URL string is empty"));
+            return;//empty url address is considered as correct and must be checked in another layer
         }
         if (!urlValue.matches("^[a-z]+://.*")) {
             url.append("http://");
