@@ -41,6 +41,7 @@ public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
         return em;
     }
     
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public UrlDownloadJob createNewUrlDownloadJob(String downloadUrl, String folderPath){
         UrlDownloadJob job = new UrlDownloadJob();
         job.setCreateTime(new Date());
@@ -48,6 +49,7 @@ public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
         job.setSaveDir(folderPath);
         job.setState(DownloadState.CREATED);
         this.create(job);
+        em.flush();
         return job;
     }
     
