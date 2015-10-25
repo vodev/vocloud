@@ -27,7 +27,7 @@
                 <ns:restricted>false</ns:restricted>
                 <ns:binaries-location>/home/voadmin/SOM</ns:binaries-location>
                 <ns:exec-command>
-                    <ns:command>python</ns:command>
+                    <ns:command>python3</ns:command>
                     <ns:command>${binaries-location}/run.py</ns:command>
                 </ns:exec-command>
             </ns:worker>
