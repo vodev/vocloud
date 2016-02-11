@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.1.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>610</x>
+      <y>540</y>
+      <w>200</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>BaseFS
+--
+-prefix:String
+--
++BaseFS(prfx:String)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>420</x>
+      <y>110</y>
+      <w>370</w>
+      <h>280</h>
+    </coordinates>
+    <panel_attributes>/AbstractFS/
+--
+_-files: AbstractFS_
+_-jobs: AbstractFS_
+--
+_+getFilesFS():AbstractFS_
+_+getJobsFS():AbstractFS_
+/+getFSFolder(path:String): FSItem/
+/+listFSFolderItems(path:String): List&lt;FSItem&gt;/
+/+createFolder(path:String)/
+/+delete(path:String)/
+/+copy(src:String,dest:String)/
+/+move(src:String,dest:String)/
+/+exists(path:String):boolean/
+/+link(src:String,dest:String)/
+/+getSize(path:String):Long/
+/+getDownloadStream(path:String):InputStream/
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>290</x>
+      <y>540</y>
+      <w>280</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>HadoopFS
+--
+-prefix:String
+--
++HadoopFS(prfx:String)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>380</x>
+      <y>380</y>
+      <w>180</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>160.0;10.0;160.0;70.0;10.0;70.0;10.0;160.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>530</x>
+      <y>380</y>
+      <w>180</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;70.0;160.0;70.0;160.0;160.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>160</x>
+      <y>190</y>
+      <w>190</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>Prefix is always 
+starting with slash 
+and in the end 
+there is no ending 
+slash
+ex1: /folder1/folder2
+ex2: /folder3/file1.csv
+bg=blue</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>910</x>
+      <y>320</y>
+      <w>360</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>/FSItem/
+--
+-fs:AbstractFS
+-path:String
+--
+/+isFolder():boolean/
+/+getSizeInBytes():Long/
+/+getLastMod():Date/
++getName():String
++getParentFolder():FSItem
+/+download():InputStream/
+/+createNewFile(name:String,input:InputStream)/
+/+createNewFolder(name:String)/</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>720</x>
+      <y>680</y>
+      <w>190</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>FSFile
+--
+--
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1140</x>
+      <y>670</y>
+      <w>100</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>FSFolder
+--
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>810</x>
+      <y>530</y>
+      <w>200</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>180.0;10.0;180.0;100.0;10.0;100.0;10.0;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>980</x>
+      <y>530</y>
+      <w>240</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;100.0;220.0;100.0;220.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>780</x>
+      <y>170</y>
+      <w>200</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;180.0;150.0</additional_attributes>
+  </element>
+</diagram>
