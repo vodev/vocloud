@@ -1,23 +1,9 @@
 package cz.ivoa.vocloud.view;
 
-import cz.ivoa.vocloud.tools.Toolbox;
 import cz.ivoa.vocloud.filesystem.FilesystemManipulator;
 import cz.ivoa.vocloud.filesystem.model.FilesystemFile;
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
+import cz.ivoa.vocloud.tools.Toolbox;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.context.RequestContext;
 import org.primefaces.model.DefaultStreamedContent;
@@ -25,6 +11,20 @@ import org.primefaces.model.StreamedContent;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
 import org.primefaces.model.menu.MenuModel;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import java.io.*;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -285,6 +285,37 @@ public class FilesystemViewBean implements Serializable {
             if (stream != null) {
                 IOUtils.closeQuietly(stream);
             }
+        }
+    }
+
+    public void downloadSelectedFiles(){
+        if (selected == null || selected.isEmpty()){
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "You must select files first - Note that downloading of folders is forbidden"));
+            return;//nothing selected
+        }
+        List<FilesystemItem> filteredItems = new ArrayList<>();
+        for (FilesystemItem item: selected){
+            if (!item.isFolder()){
+                //filter folders out
+                filteredItems.add(item);
+            }
+        }
+        //check again for empty list
+        if (filteredItems.isEmpty()){
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "You must select files first - Note that downloading of folders is forbidden"));
+            return;//nothing selected
+        }
+        ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+        ctx.responseReset();
+        ctx.setResponseContentType("application/zip");
+        String attachmentName = "attachment; filename=\"archive.zip\"";
+        ctx.setResponseHeader("Content-Disposition", attachmentName);
+        try {
+            OutputStream output = ctx.getResponseOutputStream();
+            fsm.setupZippedDownloadStream(selected, output);
+            FacesContext.getCurrentInstance().responseComplete();
+        } catch (IOException ex){
+            Logger.getLogger(FilesystemViewBean.class.getName()).log(Level.SEVERE, "Fatal exception during opening output zip stream", ex);
         }
     }
 }

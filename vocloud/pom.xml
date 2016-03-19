@@ -15,8 +15,8 @@
 
     <properties>
         <vocloud.appUrl>http://localhost:80/vocloud</vocloud.appUrl>
-        <vocloud.filesystemDir>../files/</vocloud.filesystemDir>
-        <vocloud.jobsDir>../jobs/</vocloud.jobsDir>
+        <vocloud.filesystemDir>/var/local/vocloud/filesystem/</vocloud.filesystemDir>
+        <vocloud.jobsDir>/var/local/vocloud/jobs/</vocloud.jobsDir>
         <org.seleniumhq.selenium.version>2.45.0</org.seleniumhq.selenium.version>
         <info.cukes.version>1.2.2</info.cukes.version>
     </properties>

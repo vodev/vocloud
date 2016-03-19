@@ -1,31 +1,27 @@
 package cz.ivoa.vocloud.filesystem;
 
 import cz.ivoa.vocloud.entity.UWSType;
-import cz.ivoa.vocloud.tools.Config;
 import cz.ivoa.vocloud.filesystem.model.FilesystemFile;
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import cz.ivoa.vocloud.filesystem.model.Folder;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import cz.ivoa.vocloud.tools.Config;
+import org.apache.commons.io.FileUtils;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import java.io.*;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import org.apache.commons.io.FileUtils;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
- *
  * @author radio.koza
  */
 @LocalBean
@@ -188,7 +184,6 @@ public class FilesystemManipulator {
     }
 
     /**
-     *
      * @param pathName
      * @param fileStream
      * @param close
@@ -285,28 +280,55 @@ public class FilesystemManipulator {
     public File getRootFolderDescriptor() {
         return filesystemDirectory;
     }
-    
-    public List<FilesystemFile> listPrecreatedConfigFiles(UWSType uwsType){
-        if (uwsType == null){
+
+    public List<FilesystemFile> listPrecreatedConfigFiles(UWSType uwsType) {
+        if (uwsType == null) {
             throw new IllegalArgumentException("Passed uwsType is null");
         }
-        if (filesystemConfigDir == null){
+        if (filesystemConfigDir == null) {
             throw new IllegalStateException("Configuration dir not set");
         }
         File uwsConfDir = filesystemDirectory.toPath()
                 .resolve(filesystemConfigDir)
                 .resolve(uwsType.getStringIdentifier()).toFile();
-        if (!uwsConfDir.exists() || !uwsConfDir.isDirectory()){
+        if (!uwsConfDir.exists() || !uwsConfDir.isDirectory()) {
             return new ArrayList<>();//no configuration directory for this uws type is specified
         }
         List<FilesystemFile> result = new ArrayList<>();
-        for (File i: uwsConfDir.listFiles()){
+        for (File i : uwsConfDir.listFiles()) {
             //throw out directories
-            if (i.isDirectory()){
+            if (i.isDirectory()) {
                 continue;
             }
             result.add(new FilesystemFile(i.getName(), filesystemConfigDir + '/' + uwsType.getStringIdentifier(), i.length(), new Date(i.lastModified())));
         }
         return result;
+    }
+
+    public void setupZippedDownloadStream(List<FilesystemItem> selectedItems, OutputStream outputStream) throws IOException {
+        ZipOutputStream zipOutput = new ZipOutputStream(new BufferedOutputStream(outputStream));
+        zipOutput.setMethod(ZipOutputStream.DEFLATED);
+        byte[] buffer = new byte[2048];
+        BufferedInputStream origin = null;
+        try {
+            for (FilesystemItem item : selectedItems) {
+                if (item.isFolder()){
+                    continue;
+                }
+                File file = filesystemDirectory.toPath().resolve(item.getPrefix()).resolve(item.getName()).toFile();
+                FileInputStream fis = new FileInputStream(file);
+                origin = new BufferedInputStream(fis, buffer.length);
+                ZipEntry entry = new ZipEntry("archive/" + item.getName());
+                zipOutput.putNextEntry(entry);
+                int count;
+                while ((count = origin.read(buffer)) != -1) {
+                    zipOutput.write(buffer, 0, count);
+                }
+                origin.close();
+            }
+            zipOutput.close();
+        } catch (IOException ex) {
+            throw new IOException("Exception during zipping files", ex);
+        }
     }
 }

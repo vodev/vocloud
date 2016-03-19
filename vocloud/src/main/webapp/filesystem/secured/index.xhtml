@@ -59,7 +59,7 @@
                 <p:menubar id="menubar">
                     <p:menuitem id="newFolderBtn" value="#{bundle.NewFolderMenuItem}" icon="ui-icon-folder-open" oncomplete="PF('renameOverlay').loadContents()"/>
                     <p:menuitem id="deleteSelectedBtn" value="Delete selected" icon="ui-icon-trash" oncomplete="PF('deleteDialog').show()"/>
-                    <p:menuitem id="sendToSAMPbtn" disabled="#{not filesystemManageBean.sampBtnEnabled}" value="Send through SAMP" 
+                    <p:menuitem id="sendToSAMPbtn" disabled="#{not filesystemManageBean.sampBtnEnabled}" value="Send through SAMP"
                                 icon="ui-icon-circle-arrow-n" action="#{filesystemManageBean.sendSelectedThroughSAMP}" update="messages"/>
                     <p:menuitem id="uploadFilesBtn" value="#{bundle.FileUploadMenuItem}" icon="ui-icon-arrowthick-1-n" action="upload-file">
                         <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
@@ -70,6 +70,7 @@
                     <p:menuitem id="SSAPDownloadBtn" action="ssap" value="#{bundle.SSAPDownloadMenuItem}" icon="ui-icon-arrowthick-1-s">
                         <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
                     </p:menuitem>
+                    <p:menuitem id="downloadSelectedBtn" value="#{bundle.DownloadSelectedMenuItem}" icon="ui-icon-arrowthick-1-s" action="#{filesystemManageBean.downloadSelectedFiles()}" ajax="false" />
                     <p:menuitem id="showDownloadQueueBtn" action="download-queue" value="#{bundle.ShowDownloadQueueMenuItem}" icon="ui-icon-clipboard" />
                 </p:menubar>
                 <p:overlayPanel id="newFolderPanel" for="newFolderBtn" hideEffect="fade" widgetVar="renameOverlay">
@@ -80,9 +81,9 @@
                 </p:overlayPanel>
                 <p:breadCrumb model="#{filesystemManageBean.breadcrumbModel}"/>
                 <p:dataTable id="dataTable" resizableColumns="true" var="item" value="#{filesystemManageBean.filesystemItemList}" selection="#{filesystemManageBean.selectedItems}" rowKey="#{item.name}">
-                    <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
+                    <p:column selectionMode="multiple" style="width:16px;text-align:center" />
                     <p:column width="12">
-                        <f:facet name="header">                            
+                        <f:facet name="header">
                             <h:commandLink rendered="#{not filesystemManageBean.inRoot}" action="#{filesystemManageBean.goBack()}" styleClass="ui-icon ui-icon-arrowreturnthick-1-w" style="position:relative; left: -5px"/>
                             <h:commandLink rendered="#{filesystemManageBean.inRoot}" styleClass="ui-icon ui-icon-home" style="position:relative; left: -5px"/>
                         </f:facet>
@@ -115,7 +116,7 @@
                         </p:commandButton>
                         <p:commandButton rendered="#{not item.folder}" title="View file"  icon="ui-icon-circle-zoomin" immediate="true" process="@this"
                                          update=":dialogViewForm:fileView" oncomplete="PF('fileView').show()" value="View">
-                            <f:setPropertyActionListener value="#{item}" target="#{filesystemManageBean.selectedViewedFile}" />  
+                            <f:setPropertyActionListener value="#{item}" target="#{filesystemManageBean.selectedViewedFile}" />
                         </p:commandButton>
                     </p:column>
 

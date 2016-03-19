@@ -106,7 +106,7 @@ public class JobFacade extends AbstractFacade<Job> {
         }
         //assign bestUWS
         job.setUws(bestUWS);
-        //persist new job to dabase
+        //persist new job to database
         create(job);
         //invoke asynchronous function to push job into specified uws
         sb.asyncPushJobToWorker(job, runImmediately);
