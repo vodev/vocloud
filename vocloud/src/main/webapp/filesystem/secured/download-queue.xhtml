@@ -54,7 +54,9 @@
                     <p:rowExpansion>
                         <p:dataTable value="#{downloadQueueBean.fetchLazySSAPModel(job)}" var="ssapJob" rows="50" resizableColumns="true" paginator="true" lazy="true">
                             <f:facet name="header">
-                                Total #{downloadQueueBean.fetchLazySSAPModel(job).rowCount} records
+                                Total #{downloadQueueBean.fetchLazySSAPModel(job).rowCount} records - Finished:
+                                <h:outputText value="#{downloadQueueBean.countFinished(job)}," />
+                                Failed: <h:outputText value="#{downloadQueueBean.countFailed(job)}" />
                             </f:facet>
                             <p:column headerText="State" width="90">
                                 <h:outputText value="#{ssapJob.downloadState}" />

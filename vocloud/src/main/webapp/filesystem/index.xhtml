@@ -61,6 +61,10 @@
                 </p:menubar>
                 <p:breadCrumb model="#{filesystemViewBean.breadcrumbModel}"/>
                 <p:dataTable resizableColumns="true" var="item" value="#{filesystemViewBean.filesystemItemList}" selection="#{filesystemViewBean.selectedItems}" rowKey="#{item.name}">
+                    <f:facet name="header">
+                        Total <h:outputText value="#{filesystemViewBean.filesCount}" /> file<h:outputText rendered="#{filesystemViewBean.filesCount != 1}" value="s" />
+                        and <h:outputText value="#{filesystemViewBean.foldersCount}" /> folder<h:outputText rendered="#{filesystemViewBean.foldersCount != 1}" value="s" />
+                    </f:facet>
                     <p:column disabledSelection="#{item.folder}" selectionMode="multiple" style="width:16px;text-align:center"/>
                     <p:column width="12">
                         <f:facet name="header">                            

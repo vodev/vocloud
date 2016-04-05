@@ -44,6 +44,7 @@ public class FilesystemViewBean implements Serializable {
     protected String prefix;
     protected List<FilesystemItem> items;
     protected List<FilesystemItem> selected;
+    protected int filesCount, foldersCount;
     private boolean sampBtnEnabled = false;
 
     protected FilesystemFile selectedViewedFile;
@@ -66,6 +67,15 @@ public class FilesystemViewBean implements Serializable {
             prefix = "";
             init();
             return;
+        }
+        //count items
+        filesCount = foldersCount = 0;
+        for (FilesystemItem i: items){
+            if (i.isFolder()) {
+                foldersCount++;
+            } else {
+                filesCount++;
+            }
         }
         //menu initialization
         breadcrumb = new DefaultMenuModel();
@@ -93,6 +103,14 @@ public class FilesystemViewBean implements Serializable {
 
     public String getPrefix() {
         return prefix;
+    }
+
+    public int getFilesCount() {
+        return filesCount;
+    }
+
+    public int getFoldersCount() {
+        return foldersCount;
     }
 
     public void setPrefix(String prefix) {
@@ -255,7 +273,6 @@ public class FilesystemViewBean implements Serializable {
 
     public void setSelectedViewedFile(FilesystemItem item) {
         if (item == null || item.isFolder()) {
-            item = null;
             return;
         }
         this.selectedViewedFile = (FilesystemFile) item;
@@ -318,4 +335,5 @@ public class FilesystemViewBean implements Serializable {
             Logger.getLogger(FilesystemViewBean.class.getName()).log(Level.SEVERE, "Fatal exception during opening output zip stream", ex);
         }
     }
+
 }

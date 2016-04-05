@@ -28,6 +28,8 @@ import javax.persistence.TemporalType;
 @Table(name = "ssap_download_item")
 @NamedQueries({
     @NamedQuery(name = "SSAPDownloadJobItem.countParentItems", query = "SELECT COUNT(i) FROM SSAPDownloadJobItem i WHERE i.parent.id = :parentJobId"),
+    @NamedQuery(name = "SSAPDownloadJobItem.countFinishedParentItems", query = "SELECT COUNT(i) FROM SSAPDownloadJobItem i WHERE i.parent.id = :parentJobId AND i.downloadState = 'FINISHED'"),
+    @NamedQuery(name = "SSAPDownloadJobItem.countFailedParentItems", query = "SELECT COUNT(i) FROM SSAPDownloadJobItem i WHERE i.parent.id = :parentJobId AND i.downloadState = 'FAILED'"),
     @NamedQuery(name = "SSAPDownloadJobItem.findAllByIdOrdered", query = "SELECT i FROM SSAPDownloadJobItem i WHERE i.parent.id = :parentJobId ORDER BY i.id")
 })
 public class SSAPDownloadJobItem implements Serializable {

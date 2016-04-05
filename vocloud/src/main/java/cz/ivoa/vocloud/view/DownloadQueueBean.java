@@ -26,6 +26,7 @@ public class DownloadQueueBean implements Serializable {
 
     private LazyDataModel<DownloadJob> model;
     private Map<DownloadJob, LazyDataModel<SSAPDownloadJobItem>> ssapModels;
+    private Map<DownloadJob, Statistics> ssapStatistics;
     private List<DownloadJob> selectedJobs;
 
     @EJB
@@ -36,6 +37,7 @@ public class DownloadQueueBean implements Serializable {
     @PostConstruct
     private void init() {
         ssapModels = new HashMap<>();
+        ssapStatistics = new HashMap<>();
         model = new LazyDataModel<DownloadJob>() {
             private static final long serialVersionUID = 1L;
 
@@ -83,6 +85,9 @@ public class DownloadQueueBean implements Serializable {
                 }
             };
             ssapModels.put(job, tmpModel);
+            int finished = (int) djf.countFinishedSSAPItems(job);
+            int failed = (int) djf.countFailedSSAPItems(job);
+            ssapStatistics.put(job, new Statistics(finished, failed));
         }
         return tmpModel;
     }
@@ -111,4 +116,40 @@ public class DownloadQueueBean implements Serializable {
         djf.deleteAllDownloadJobs();
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Jobs were successfully deleted"));
     }
+
+    public int countFinished(DownloadJob job){
+        Statistics stat = ssapStatistics.get(job);
+        if (stat == null){
+            return 0;
+        }
+        return stat.getFinishedCount();
+    }
+
+    public int countFailed(DownloadJob job){
+        Statistics stat = ssapStatistics.get(job);
+        if (stat == null){
+            return 0;
+        }
+        return stat.getFailedCount();
+    }
+
+    private static class Statistics {
+
+        private final int finishedCount;
+        private final int failedCount;
+
+        public Statistics(int finishedCount, int failedCount){
+            this.finishedCount = finishedCount;
+            this.failedCount = failedCount;
+        }
+
+        public int getFailedCount() {
+            return failedCount;
+        }
+
+        public int getFinishedCount() {
+            return finishedCount;
+        }
+    }
+
 }

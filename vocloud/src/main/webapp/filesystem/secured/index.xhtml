@@ -72,6 +72,9 @@
                     </p:menuitem>
                     <p:menuitem id="downloadSelectedBtn" value="#{bundle.DownloadSelectedMenuItem}" icon="ui-icon-arrowthick-1-s" action="#{filesystemManageBean.downloadSelectedFiles()}" ajax="false" />
                     <p:menuitem id="showDownloadQueueBtn" action="download-queue" value="#{bundle.ShowDownloadQueueMenuItem}" icon="ui-icon-clipboard" />
+                    <p:menuitem id="cloudDownloadBtn" action="cloud-download" value="Cloud Download - todo">
+                        <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
+                    </p:menuitem>
                 </p:menubar>
                 <p:overlayPanel id="newFolderPanel" for="newFolderBtn" hideEffect="fade" widgetVar="renameOverlay">
                     <h:panelGrid columns="2" cellpadding="10" cellspacing="5">
@@ -81,6 +84,10 @@
                 </p:overlayPanel>
                 <p:breadCrumb model="#{filesystemManageBean.breadcrumbModel}"/>
                 <p:dataTable id="dataTable" resizableColumns="true" var="item" value="#{filesystemManageBean.filesystemItemList}" selection="#{filesystemManageBean.selectedItems}" rowKey="#{item.name}">
+                    <f:facet name="header">
+                        Total <h:outputText value="#{filesystemManageBean.filesCount}" /> file<h:outputText rendered="#{filesystemManageBean.filesCount != 1}" value="s" />
+                        and <h:outputText value="#{filesystemManageBean.foldersCount}" /> folder<h:outputText rendered="#{filesystemManageBean.foldersCount != 1}" value="s" />
+                    </f:facet>
                     <p:column selectionMode="multiple" style="width:16px;text-align:center" />
                     <p:column width="12">
                         <f:facet name="header">

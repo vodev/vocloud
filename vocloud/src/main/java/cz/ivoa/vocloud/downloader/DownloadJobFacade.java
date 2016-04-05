@@ -1,16 +1,8 @@
 package cz.ivoa.vocloud.downloader;
 
 import cz.ivoa.vocloud.ejb.AbstractFacade;
-import cz.ivoa.vocloud.entity.DownloadJob;
-import cz.ivoa.vocloud.entity.DownloadState;
-import cz.ivoa.vocloud.entity.SSAPDownloadJob;
-import cz.ivoa.vocloud.entity.SSAPDownloadJobItem;
-import cz.ivoa.vocloud.entity.UrlDownloadJob;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Logger;
+import cz.ivoa.vocloud.entity.*;
+
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -18,6 +10,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  *
@@ -133,6 +130,24 @@ public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
          q.setParameter("parentJobId", job.getId());
          return q.getSingleResult();
      }
+
+    public long countFinishedSSAPItems(DownloadJob job){
+        if (job == null || ! (job instanceof SSAPDownloadJob)){
+            throw new IllegalArgumentException("Passed job argument must not be null and it must be of type SSAPDownloadJob");
+        }
+        TypedQuery<Long> q = em.createNamedQuery("SSAPDownloadJobItem.countFinishedParentItems", Long.class);
+        q.setParameter("parentJobId", job.getId());
+        return q.getSingleResult();
+    }
+
+    public long countFailedSSAPItems(DownloadJob job){
+        if (job == null || ! (job instanceof SSAPDownloadJob)){
+            throw new IllegalArgumentException("Passed job argument must not be null and it must be of type SSAPDownloadJob");
+        }
+        TypedQuery<Long> q = em.createNamedQuery("SSAPDownloadJobItem.countFailedParentItems", Long.class);
+        q.setParameter("parentJobId", job.getId());
+        return q.getSingleResult();
+    }
      
      public List<SSAPDownloadJobItem> findAllSSAPItemsPaginated(DownloadJob job, int offset, int count){
          if (job == null || ! (job instanceof SSAPDownloadJob)){
