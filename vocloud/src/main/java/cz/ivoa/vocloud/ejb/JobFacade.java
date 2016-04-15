@@ -108,8 +108,14 @@ public class JobFacade extends AbstractFacade<Job> {
         job.setUws(bestUWS);
         //persist new job to database
         create(job);
-        //invoke asynchronous function to push job into specified uws
-        sb.asyncPushJobToWorker(job, runImmediately);
+//        //invoke asynchronous function to push job into specified uws
+//        sb.asyncPushJobToWorker(job, runImmediately);
+        //job is now managed
+        //synchronous call of createJob
+        createJob(job, job.getConfigurationJson(), runImmediately);
+        if (runImmediately){
+            sb.addWatchedJob(job);
+        }
     }
 
     protected UWS findBestUwsJob(UWSType uwsType) {
@@ -606,11 +612,11 @@ public class JobFacade extends AbstractFacade<Job> {
         try {
             UWSJob response = UWSParserManager.getInstance().parseJob(Toolbox.httpPostWithBody(request, bodyParams));
             job.updateFromUWSJob(response);
-            edit(job);
+//            em.merge(job);
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Exception during creation of new job", ex);
             job.setPhase(Phase.ERROR);
-            edit(job);
+//            em.merge(job);
         }
     }
 
