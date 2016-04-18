@@ -31,7 +31,7 @@
                              value="#{remoteDownloadBean.resourceUrl}" autocomplete="false"/>
                 <p:outputLabel value="Authorization: " for="authCheckbox"/>
                 <p:selectBooleanCheckbox id="authCheckbox" value="#{remoteDownloadBean.showAuth}">
-                    <p:ajax update="authorization" immediate="true"/>
+                    <p:ajax update="authorization" process="@this"/>
                 </p:selectBooleanCheckbox>
             </h:panelGrid>
             <h:panelGroup id="authorization">

@@ -6,127 +6,167 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:composition template="/WEB-INF/template.xhtml">
-        <ui:define name="title">
-            <h:outputText value="#{bundle.SSAPTitle}" />
-        </ui:define>
+<ui:composition template="/WEB-INF/template.xhtml">
+    <ui:define name="title">
+        <h:outputText value="#{bundle.SSAPTitle}"/>
+    </ui:define>
 
-        <ui:define name="content">
-            <h:form>
-                <h:panelGrid cellpadding="10" cellspacing="5" columns="3">
-                    <h:outputText value="#{bundle.TargetDirectory}:"/>
-                    <h:outputText value="/#{ssapBean.targetFolder}" style="color: maroon; font-weight: bold" />
-                    <p:commandButton ajax="false" value="#{bundle.BackButton}" action="/filesystem/secured/index">
-                        <f:setPropertyActionListener target="#{requestScope['folderPrefix']}" value="#{ssapBean.targetFolder}"/>
-                    </p:commandButton>
+    <ui:define name="content">
+        <h:form>
+            <h:panelGrid cellpadding="10" cellspacing="5" columns="3">
+                <h:outputText value="#{bundle.TargetDirectory}:"/>
+                <h:outputText value="/#{ssapBean.targetFolder}" style="color: maroon; font-weight: bold"/>
+                <p:commandButton ajax="false" value="#{bundle.BackButton}" action="/filesystem/secured/index">
+                    <f:setPropertyActionListener target="#{requestScope['folderPrefix']}"
+                                                 value="#{ssapBean.targetFolder}"/>
+                </p:commandButton>
+            </h:panelGrid>
+        </h:form>
+        <h:form id="mainForm" enctype="multipart/form-data;charset=UTF-8" acceptcharset="UTF-8">
+            <p:messages/>
+            <p:panel header="Select VOTABLE input method">
+                <p:selectOneRadio id="selectMethodRadio" value="#{ssapBean.inputMethod}" columns="1" layout="grid"
+                                  required="true" requiredMessage="You must choose the input method">
+                    <p:ajax process="@this" update="@form"/>
+                    <f:selectItem itemLabel="Upload VOTABLE file" itemValue="upload"/>
+                    <f:selectItem itemLabel="Remote VOTABLE download" itemValue="downloadResource"/>
+                    <f:selectItem itemDisabled="true" itemLabel="Direct VOTABLE input" itemValue="directInput"/>
+                </p:selectOneRadio>
+            </p:panel>
+            <p:panel header="Upload VOTABLE file" rendered="#{ssapBean.inputMethod eq 'upload'}">
+                <h:panelGrid columns="2" cellpadding="10" cellspacing="2" rendered="#{not ssapBean.fileUploaded}">
+                    <p:outputLabel for="fileUploadWidget">Please upload VOTABLE file.</p:outputLabel>
+                    <p:fileUpload id="fileUploadWidget" fileUploadListener="#{ssapBean.handleFileUpload}"
+                                  mode="advanced" dragDropSupport="true" auto="true"
+                                  multiple="false" update="@form" process="@form"/>
                 </h:panelGrid>
-            </h:form>
-            <h:form id="mainForm" enctype="multipart/form-data;charset=UTF-8" acceptcharset="UTF-8">
-                <p:messages />
-                <p:panel header="Select VOTABLE input method">
-                    <p:selectOneRadio id="selectMethodRadio" value="#{ssapBean.inputMethod}" columns="1" layout="grid" required="true" requiredMessage="You must choose the input method">
-                        <p:ajax process="@this" update="@form" />
-                        <f:selectItem itemLabel="Upload VOTABLE file" itemValue="upload" />
-                        <f:selectItem itemLabel="Remote VOTABLE download" itemValue="downloadResource" />
-                        <f:selectItem itemDisabled="true" itemLabel="Direct VOTABLE input" itemValue="directInput" />
-                    </p:selectOneRadio>
-                </p:panel>
-                <p:panel header="Upload VOTABLE file" rendered="#{ssapBean.inputMethod eq 'upload'}">
-                    <h:panelGrid columns="2" cellpadding="10" cellspacing="2" rendered="#{not ssapBean.fileUploaded}">
-                        <p:outputLabel for="fileUploadWidget">Please upload VOTABLE file.</p:outputLabel>
-                        <p:fileUpload id="fileUploadWidget" fileUploadListener="#{ssapBean.handleFileUpload}" mode="advanced" dragDropSupport="true" auto="true"
-                                      multiple="false" update="@form" process="@form"/>
-                    </h:panelGrid>
-                    <ui:fragment rendered="#{ssapBean.fileUploaded}">
-                        <ui:fragment rendered="#{not ssapBean.votableParsed}">
-                            <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
-                                <p:outputLabel value="Processing uploaded file" />
-                                <h:graphicImage library="images" name="preloader.gif"/>
-                            </h:panelGrid>
-                            <p:poll update="@form" async="true" widgetVar="poll" process="@this" stop="#{not ssapBean.fileUploaded or ssapBean.votableParsed}"/>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{ssapBean.votableParsed}">
-                            <table cellspacing="2" cellpadding="10">
-                                <tbody>
-                                    <ui:repeat value="#{ssapBean.processedFileInfo}" var="record">
-                                        <tr>
-                                            <td>
-                                                <h:outputText value="#{record.label}" />
-                                            </td>
-                                            <td>
-                                                <h:outputText value="#{record.value}" />
-                                            </td>
-                                        </tr>
-                                    </ui:repeat>
-                                </tbody>
-                            </table>
-                            <p:commandButton ajax="true" value="Replace by new file" actionListener="#{ssapBean.replaceUploadedFile}" update="@form"/>
-                        </ui:fragment>
-                    </ui:fragment>
-
-                </p:panel>
-                <p:panel header="Remote VOTABLE download" rendered="#{ssapBean.inputMethod eq 'downloadResource'}">
-                    <ui:fragment rendered="#{not ssapBean.fileDownloadSet}">
+                <ui:fragment rendered="#{ssapBean.fileUploaded}">
+                    <ui:fragment rendered="#{not ssapBean.votableParsed}">
                         <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
-                            <p:outputLabel for="votableDownloadResourceUrl">URL address of SSAP query: </p:outputLabel>
-                            <p:inputText id="votableDownloadResourceUrl" required="true" requiredMessage="URL address of SSAP query must not be empty" value="#{ssapBean.downloadUrl}" validator="urlValidator" size="150"/>
+                            <p:outputLabel value="Processing uploaded file"/>
+                            <h:graphicImage library="images" name="preloader.gif"/>
                         </h:panelGrid>
-                        <p:commandButton ajax="true" value="Load VOTABLE" action="#{ssapBean.downloadVotable()}" update="@form" async="true" />
+                        <p:poll update="@form" async="true" widgetVar="poll" process="@this"
+                                stop="#{not ssapBean.fileUploaded or ssapBean.votableParsed}"/>
                     </ui:fragment>
-                    <ui:fragment rendered="#{ssapBean.fileDownloadSet and ssapBean.votableParsed}">
+                    <ui:fragment rendered="#{ssapBean.votableParsed}">
                         <table cellspacing="2" cellpadding="10">
                             <tbody>
-                                <ui:repeat value="#{ssapBean.processedFileInfo}" var="record">
-                                    <tr>
-                                        <td>
-                                            <h:outputText value="#{record.label}" />
-                                        </td>
-                                        <td>
-                                            <h:outputText value="#{record.value}" escape="false" />
-                                        </td>
-                                    </tr>
-                                </ui:repeat>
+                            <ui:repeat value="#{ssapBean.processedFileInfo}" var="record">
+                                <tr>
+                                    <td>
+                                        <h:outputText value="#{record.label}"/>
+                                    </td>
+                                    <td>
+                                        <h:outputText value="#{record.value}"/>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
                             </tbody>
                         </table>
-                        <p:commandButton ajax="true" value="Replace by new votable" actionListener="#{ssapBean.replaceDownloadedFile}" update="@form"/>
+                        <p:commandButton ajax="true" value="Replace by new file"
+                                         actionListener="#{ssapBean.replaceUploadedFile}" update="@form"/>
                     </ui:fragment>
-                </p:panel>
-                <p:panel header="Direct VOTABLE input" rendered="#{ssapBean.inputMethod eq 'directInput'}">
-                    direct input
-                </p:panel>
+                </ui:fragment>
 
-                <p:panel id="datalinkOptionsPanel" header="Datalink options" rendered="#{ssapBean.votableParsed and ssapBean.datalinkAvailable}">
+            </p:panel>
+            <p:panel header="Remote VOTABLE download" rendered="#{ssapBean.inputMethod eq 'downloadResource'}">
+                <ui:fragment rendered="#{not ssapBean.fileDownloadSet}">
                     <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
-                        <h:outputText value="Allow datalink protocol: " />
-                        <p:selectBooleanCheckbox value="#{ssapBean.allowDatalink}">
-                            <p:ajax process="@this" update="datalinkOptionsPanel,confirmationPanel" />
-                        </p:selectBooleanCheckbox>
+                        <p:outputLabel for="votableDownloadResourceUrl">URL address of SSAP query: </p:outputLabel>
+                        <p:inputText id="votableDownloadResourceUrl" required="true"
+                                     requiredMessage="URL address of SSAP query must not be empty"
+                                     value="#{ssapBean.downloadUrl}" validator="urlValidator" size="150"/>
                     </h:panelGrid>
-                    <h:panelGrid rendered="#{ssapBean.allowDatalink}" binding="#{ssapBean.datalinkPanelGrid}" columns="2" cellpadding="10" cellspacing="2"/>
-                </p:panel>
-                <p:panel id="confirmationPanel" header="Download confirmation" rendered="#{ssapBean.votableParsed}">
-                    <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
-                        <h:outputText value="Target download folder: " />
-                        <h:outputText value="/#{ssapBean.targetFolder}" />
+                    <p:commandButton ajax="true" value="Load VOTABLE" action="#{ssapBean.downloadVotable()}"
+                                     update="@form" async="true"/>
+                </ui:fragment>
+                <ui:fragment rendered="#{ssapBean.fileDownloadSet and ssapBean.votableParsed}">
+                    <table cellspacing="2" cellpadding="10">
+                        <tbody>
+                        <ui:repeat value="#{ssapBean.processedFileInfo}" var="record">
+                            <tr>
+                                <td>
+                                    <h:outputText value="#{record.label}"/>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{record.value}" escape="false"/>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                        </tbody>
+                    </table>
+                    <p:commandButton ajax="true" value="Replace by new votable"
+                                     actionListener="#{ssapBean.replaceDownloadedFile}" update="@form"/>
+                </ui:fragment>
+            </p:panel>
+            <p:panel header="Direct VOTABLE input" rendered="#{ssapBean.inputMethod eq 'directInput'}">
+                direct input
+            </p:panel>
 
-                        <h:outputText value="Download method: " />
-                        <h:outputText value="Datalink protocol" rendered="#{ssapBean.allowDatalink}" />
-                        <h:outputText value="Direct download with ACCREF value" rendered="#{not ssapBean.allowDatalink}" />
+            <p:panel id="datalinkOptionsPanel" header="Datalink options"
+                     rendered="#{ssapBean.votableParsed and ssapBean.datalinkAvailable}">
+                <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
+                    <h:outputText value="Allow datalink protocol: "/>
+                    <p:selectBooleanCheckbox value="#{ssapBean.allowDatalink}">
+                        <p:ajax process="@this" update="datalinkOptionsPanel,confirmationPanel"/>
+                    </p:selectBooleanCheckbox>
+                </h:panelGrid>
+                <h:panelGrid rendered="#{ssapBean.allowDatalink}" binding="#{ssapBean.datalinkPanelGrid}" columns="2"
+                             cellpadding="10" cellspacing="2"/>
+            </p:panel>
+            <p:panel id="authorizationPanel" header="Authorization" rendered="#{ssapBean.votableParsed}">
+                <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
+                    <p:outputLabel value="Allow authorization: " for="authCheckbox"/>
+                    <p:selectBooleanCheckbox id="authCheckbox" value="#{ssapBean.showAuth}">
+                        <p:ajax update="authorization,confirmationPanel" process="@this"/>
+                    </p:selectBooleanCheckbox>
+                </h:panelGrid>
+                <h:panelGroup id="authorization">
+                    <h:panelGroup rendered="#{ssapBean.showAuth}">
+                        <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
+                            <p:outputLabel value="Username: " for="serviceUsername"/>
+                            <p:inputText id="serviceUsername" value="#{ssapBean.username}"
+                                         placeholder="Username"
+                                         autocomplete="off"/>
+                            <p:outputLabel value="Password: " for="servicePass"/>
+                            <p:inputText id="servicePass" type="password" value="#{ssapBean.password}"
+                                         placeholder="Password" autocomplete="off"/>
+                        </h:panelGrid>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </p:panel>
+            <p:panel id="confirmationPanel" header="Download confirmation" rendered="#{ssapBean.votableParsed}">
+                <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
+                    <h:outputText value="Target download folder: "/>
+                    <h:outputText value="/#{ssapBean.targetFolder}"/>
 
-                        <p:commandButton disabled="#{not ssapBean.hasSomeData()}" value="Create download task" ajax="true" update="@form" actionListener="#{ssapBean.createDownloadTask()}" />
-                        <p:commandButton ajax="false" value="Back to filesystem management" action="/filesystem/secured/index">
-                            <f:setPropertyActionListener target="#{requestScope['folderPrefix']}" value="#{ssapBean.targetFolder}"/>
-                        </p:commandButton>
-                    </h:panelGrid>
-                </p:panel>
+                    <h:outputText value="Download method: "/>
+                    <h:outputText value="Datalink protocol" rendered="#{ssapBean.allowDatalink}"/>
+                    <h:outputText value="Direct download with ACCREF value" rendered="#{not ssapBean.allowDatalink}"/>
 
-                <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <h:outputText value="Service authorization: " />
+                    <h:outputText value="ENABLED" rendered="#{ssapBean.showAuth}"/>
+                    <h:outputText value="DISABLED" rendered="#{not ssapBean.showAuth}"/>
 
-                <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
-                    <p:graphicImage library="images" name="preloader.gif"/>
-                </p:dialog>
-            </h:form>
-        </ui:define>
-    </ui:composition>
+                    <p:commandButton disabled="#{not ssapBean.hasSomeData()}" value="Create download task" ajax="true"
+                                     update="@form" actionListener="#{ssapBean.createDownloadTask()}"/>
+                    <p:commandButton ajax="false" value="Back to filesystem management"
+                                     action="/filesystem/secured/index">
+                        <f:setPropertyActionListener target="#{requestScope['folderPrefix']}"
+                                                     value="#{ssapBean.targetFolder}"/>
+                    </p:commandButton>
+                </h:panelGrid>
+            </p:panel>
+
+            <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()"/>
+
+            <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false"
+                      showHeader="false">
+                <p:graphicImage library="images" name="preloader.gif"/>
+            </p:dialog>
+        </h:form>
+    </ui:define>
+</ui:composition>
 
 </html>

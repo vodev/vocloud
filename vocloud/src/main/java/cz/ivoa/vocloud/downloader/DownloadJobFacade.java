@@ -53,7 +53,7 @@ public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public SSAPDownloadJob createNewSSAPDownloadJobs(String votableUrl, List<String> downloadUrls, String folderPath){
+    public SSAPDownloadJob createNewSSAPDownloadJobs(String votableUrl, List<String> downloadUrls, String folderPath, String username, String password){
         if (downloadUrls == null || downloadUrls.isEmpty()){
             throw new IllegalArgumentException("downloadUrls must contain at least 1 element");
         }
@@ -61,6 +61,8 @@ public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
         parent.setCreateTime(new Date());
         parent.setSsapUrl(votableUrl);
         parent.setSaveDir(folderPath);
+        parent.setUsername(username);
+        parent.setPass(password);
         parent.setState(DownloadState.CREATED);
         em.persist(parent);
         List<SSAPDownloadJobItem> jobs = new ArrayList<>();
@@ -79,7 +81,7 @@ public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public SSAPDownloadJob createNewSSAPDownloadJobsWithNames(String votableUrl, List<UrlWithName> downloadUrls, String folderPath){
+    public SSAPDownloadJob createNewSSAPDownloadJobsWithNames(String votableUrl, List<UrlWithName> downloadUrls, String folderPath, String username, String password){
         if (downloadUrls == null || downloadUrls.isEmpty()){
             throw new IllegalArgumentException("downloadUrls must contain at least 1 element");
         }
@@ -87,6 +89,8 @@ public class DownloadJobFacade extends AbstractFacade<DownloadJob> {
         parent.setCreateTime(new Date());
         parent.setSsapUrl(votableUrl);
         parent.setSaveDir(folderPath);
+        parent.setUsername(username);
+        parent.setPass(password);
         parent.setState(DownloadState.CREATED);
         em.persist(parent);
         List<SSAPDownloadJobItem> jobs = new ArrayList<>();

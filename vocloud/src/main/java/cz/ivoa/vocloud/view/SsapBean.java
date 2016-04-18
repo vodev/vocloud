@@ -7,6 +7,7 @@ import cz.ivoa.vocloud.ssap.VotableParser;
 import cz.ivoa.vocloud.ssap.model.IndexedSSAPVotable;
 import cz.ivoa.vocloud.ssap.model.Option;
 import cz.ivoa.vocloud.ssap.model.Param;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
@@ -31,13 +32,13 @@ import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.io.input.CountingInputStream;
 import org.primefaces.component.inputtext.InputText;
 import org.primefaces.component.selectonemenu.SelectOneMenu;
 import org.primefaces.event.FileUploadEvent;
 
 /**
- *
  * @author radio.koza
  */
 @Named
@@ -60,7 +61,12 @@ public class SsapBean implements Serializable {
     private List<ResourceInfo> processedInfo;
     private IndexedSSAPVotable parsedVotable;
     private HtmlPanelGrid datalinkPanelGrid = new HtmlPanelGrid();
-    
+
+    //authorization fields
+    private boolean showAuth = false;
+    private String username;
+    private String password;
+
     //download manager
     @EJB
     private DownloadManager downloadManager;
@@ -143,8 +149,8 @@ public class SsapBean implements Serializable {
         }
         votableParsed = true;
     }
-    
-    public void downloadVotable(){
+
+    public void downloadVotable() {
         try {
             fileDownloadSet = true;
             HttpURLConnection conn = (HttpURLConnection) (new URL(downloadUrl).openConnection());
@@ -157,7 +163,7 @@ public class SsapBean implements Serializable {
             String queryStatus = parsedVotable.getQueryStatus();
             //throw hint if query status is error
             processedInfo.add(new ResourceInfo("Votable query status: ", queryStatus == null ? "undefined" : queryStatus));
-            if ("ERROR".equals(queryStatus)){
+            if ("ERROR".equals(queryStatus)) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Error query status", "Votable has ERROR status set"));
             }
             processedInfo.add(new ResourceInfo("Downloaded size: ", Toolbox.humanReadableByteCount(is.getByteCount(), false)));
@@ -177,7 +183,7 @@ public class SsapBean implements Serializable {
             //this should not happen thanks to validation
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Invalid format of URL address", "URL address is malformed"));
             fileDownloadSet = false;
-        } catch (IOException ex){
+        } catch (IOException ex) {
             Logger.getLogger(SsapBean.class.getName()).log(Level.WARNING, null, ex);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error in connection", "Connection to the resource failed"));
             fileDownloadSet = false;
@@ -222,7 +228,7 @@ public class SsapBean implements Serializable {
     public void replaceUploadedFile() {
         resetVariables();
     }
-    
+
     public void replaceDownloadedFile() {
         resetVariables();
     }
@@ -262,9 +268,9 @@ public class SsapBean implements Serializable {
                 for (Option o : p.getOptions()) {
                     item = new SelectItem();
                     item.setValue(o.getValue());
-                    if (o.getValue().equals(o.getName())){
+                    if (o.getValue().equals(o.getName())) {
                         item.setLabel(o.getName());
-                    } else if (o.getName().trim().isEmpty()){
+                    } else if (o.getName().trim().isEmpty()) {
                         item.setLabel(o.getValue());
                     } else {
                         item.setLabel(o.getName() + ": " + o.getValue());
@@ -281,9 +287,17 @@ public class SsapBean implements Serializable {
 
     public void createDownloadTask() {
         boolean success = false;
-        if (!allowDatalink){
+        //validate nonempty username and pass
+        if (showAuth && (username == null || username.trim().isEmpty() || password == null || password.isEmpty())) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Invalid authorization setup", "You must pass non empty username and password for authorization"));
+            return;
+        }
+        if (!showAuth){
+            username = password = null;
+        }
+        if (!allowDatalink) {
             //download jobs through accref value
-            success = downloadManager.enqueueVotableAccrefDownload(downloadUrl, parsedVotable, targetFolder);
+            success = downloadManager.enqueueVotableAccrefDownload(downloadUrl, parsedVotable, targetFolder, username, password);
         } else {
             //datalink is allowed
             //first catch datalink parameters from the request
@@ -295,13 +309,13 @@ public class SsapBean implements Serializable {
                 }
                 String value = request.getParameter("mainForm:datalinkProperty" + p.getName() + (p.getOptions().isEmpty() ? "" : "_input"));
                 //moreover select one menu has postfix _input at the end
-                if (value != null && !value.trim().equals("")){
+                if (value != null && !value.trim().equals("")) {
                     paramMap.put(p.getName(), value);
                 }
             }
-            success = downloadManager.enqueueVotableDatalinkDownload(downloadUrl, parsedVotable, paramMap, targetFolder);
+            success = downloadManager.enqueueVotableDatalinkDownload(downloadUrl, parsedVotable, paramMap, targetFolder, username, password);
         }
-        if (success){
+        if (success) {
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Successfully enqueued", "Download task was successfully enqueued"));
             FacesContext.getCurrentInstance().getApplication().getNavigationHandler()
@@ -336,7 +350,31 @@ public class SsapBean implements Serializable {
         this.downloadUrl = downloadURL;
     }
 
-    public static class ResourceInfo implements Serializable{
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isShowAuth() {
+        return showAuth;
+    }
+
+    public void setShowAuth(boolean showAuth) {
+        this.showAuth = showAuth;
+    }
+
+    public static class ResourceInfo implements Serializable {
 
         private final String label;
         private final String value;
@@ -355,5 +393,5 @@ public class SsapBean implements Serializable {
         }
 
     }
-    
+
 }

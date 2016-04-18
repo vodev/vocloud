@@ -77,17 +77,17 @@ public class DownloadManager {
         return true;
     }
 
-    public boolean enqueueVotableAccrefDownload(String ssapUrl, IndexedSSAPVotable votable, String targetFolder) {
+    public boolean enqueueVotableAccrefDownload(String ssapUrl, IndexedSSAPVotable votable, String targetFolder, String username, String password) {
         List<String> accRefs = new ArrayList<>();
         for (Record r : votable.getRows()) {
             accRefs.add(votable.getAccrefColumn(r));
         }
-        SSAPDownloadJob job = djb.createNewSSAPDownloadJobs(ssapUrl, accRefs, targetFolder);
+        SSAPDownloadJob job = djb.createNewSSAPDownloadJobs(ssapUrl, accRefs, targetFolder, username, password);
         proc.processDownloadJob(job);
         return true;
     }
 
-    public boolean enqueueVotableDatalinkDownload(String ssapUrl, IndexedSSAPVotable votable, Map<String, String> paramMap, String targetFolder) {
+    public boolean enqueueVotableDatalinkDownload(String ssapUrl, IndexedSSAPVotable votable, Map<String, String> paramMap, String targetFolder, String username, String password) {
         //it is necessary to construct url by using input params
         String baseUrl = votable.getDatalinkResourceUrl();
         StringBuilder postfix = new StringBuilder();
@@ -120,7 +120,7 @@ public class DownloadManager {
                 urlsWithNames.add(new UrlWithName(url, name));
             }
             //create download jobs
-            SSAPDownloadJob job = djb.createNewSSAPDownloadJobsWithNames(ssapUrl, urlsWithNames, targetFolder);
+            SSAPDownloadJob job = djb.createNewSSAPDownloadJobsWithNames(ssapUrl, urlsWithNames, targetFolder, username, password);
 
             proc.processDownloadJob(job);
             return true;
