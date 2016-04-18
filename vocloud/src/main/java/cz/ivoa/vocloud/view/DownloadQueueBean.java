@@ -2,6 +2,7 @@ package cz.ivoa.vocloud.view;
 
 import cz.ivoa.vocloud.downloader.DownloadJobFacade;
 import cz.ivoa.vocloud.entity.DownloadJob;
+import cz.ivoa.vocloud.entity.SSAPDownloadJob;
 import cz.ivoa.vocloud.entity.SSAPDownloadJobItem;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -70,6 +71,9 @@ public class DownloadQueueBean implements Serializable {
     public LazyDataModel<SSAPDownloadJobItem> fetchLazySSAPModel(final DownloadJob job) {
         if (job == null) {
             throw new IllegalArgumentException("passed job argument is null");
+        }
+        if (!(job instanceof SSAPDownloadJob)){
+            return null;//no lazy data model
         }
         LazyDataModel<SSAPDownloadJobItem> tmpModel = ssapModels.get(job);
         if (tmpModel == null) {

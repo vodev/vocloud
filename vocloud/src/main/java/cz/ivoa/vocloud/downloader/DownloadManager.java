@@ -6,6 +6,7 @@ import cz.ivoa.vocloud.entity.UrlDownloadJob;
 import cz.ivoa.vocloud.ssap.model.IndexedSSAPVotable;
 import cz.ivoa.vocloud.ssap.model.Param;
 import cz.ivoa.vocloud.ssap.model.Record;
+
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,7 +25,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 /**
- *
  * @author radio.koza
  */
 @Startup
@@ -44,7 +44,7 @@ public class DownloadManager {
     public void init() {
         //initialization during startup
         List<DownloadJob> jobs = djb.findUnfinishedJobs();
-        for (DownloadJob job: jobs){
+        for (DownloadJob job : jobs) {
             proc.processDownloadJob(job);
         }
     }
@@ -52,12 +52,15 @@ public class DownloadManager {
     private static final String[] supportedDownloadProtocols = {"HTTP", "HTTPS", "FTP"};
 
     /**
-     *
      * @param downloadURL
      * @param targetFolder
      * @return True if success, false otherwise
      */
     public boolean enqueueNewURLDownload(String downloadURL, String targetFolder) {
+        return enqueueNewURLDownload(downloadURL, targetFolder, null, null);
+    }
+
+    public boolean enqueueNewURLDownload(String downloadURL, String targetFolder, String username, String password) {
         try {
             URL url = new URL(downloadURL);
             //check protocol validity
@@ -69,7 +72,7 @@ public class DownloadManager {
             return false;
         }
         //clear downloadURL of doubleslashes
-        UrlDownloadJob job = djb.createNewUrlDownloadJob(downloadURL, targetFolder);
+        UrlDownloadJob job = djb.createNewUrlDownloadJob(downloadURL, targetFolder, username, password);
         proc.processDownloadJob(job);//must get proxy business object to properly call async method
         return true;
     }

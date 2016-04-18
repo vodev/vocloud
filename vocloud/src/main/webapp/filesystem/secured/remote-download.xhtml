@@ -6,30 +6,52 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:composition template="/WEB-INF/template.xhtml">
-        <ui:define name="title">
-            <h:outputText value="#{bundle.RemoteDownloadTitle}" />
-        </ui:define>
+<ui:composition template="/WEB-INF/template.xhtml">
+    <ui:define name="title">
+        <h:outputText value="#{bundle.RemoteDownloadTitle}"/>
+    </ui:define>
 
-        <ui:define name="content">
-            <h:form>
-                <h:panelGrid cellpadding="10" cellspacing="5" columns="3">
-                    <h:outputText value="#{bundle.TargetDirectory}:"/>
-                    <h:outputText value="/#{remoteDownloadBean.targetFolder}" style="color: maroon; font-weight: bold" />
-                    <p:commandButton ajax="false" value="#{bundle.BackButton}" action="/filesystem/secured/index">
-                        <f:setPropertyActionListener target="#{requestScope['folderPrefix']}" value="#{remoteDownloadBean.targetFolder}"/>
-                    </p:commandButton>
-                </h:panelGrid>
-            </h:form>
-            <h:form enctype="multipart/form-data;charset=UTF-8" acceptcharset="UTF-8">
-                <p:messages id="messages" autoUpdate="true" showSummary="false" showDetail="true" />
-                <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
-                    <p:outputLabel for="downloadURL" value="#{bundle.DownloadUrlLabel}" />
-                    <p:inputText id="downloadURL" maxlength="2000" size="100" required="true" requiredMessage="You must type url of wanted resource" value="#{remoteDownloadBean.resourceUrl}" autocomplete="false" />
-                </h:panelGrid>
-                <p:commandButton value="#{bundle.RemoteDownloadButton}" action="#{remoteDownloadBean.download()}" update="downloadURL" />
-            </h:form>
-        </ui:define>
-    </ui:composition>
+    <ui:define name="content">
+        <h:form>
+            <h:panelGrid cellpadding="10" cellspacing="5" columns="3">
+                <h:outputText value="#{bundle.TargetDirectory}:"/>
+                <h:outputText value="/#{remoteDownloadBean.targetFolder}" style="color: maroon; font-weight: bold"/>
+                <p:commandButton ajax="false" value="#{bundle.BackButton}" action="/filesystem/secured/index">
+                    <f:setPropertyActionListener target="#{requestScope['folderPrefix']}"
+                                                 value="#{remoteDownloadBean.targetFolder}"/>
+                </p:commandButton>
+            </h:panelGrid>
+        </h:form>
+        <h:form enctype="multipart/form-data;charset=UTF-8" acceptcharset="UTF-8">
+            <p:messages id="messages" autoUpdate="true" showSummary="false" showDetail="true"/>
+            <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
+                <p:outputLabel for="downloadURL" value="#{bundle.DownloadUrlLabel}"/>
+                <p:inputText id="downloadURL" maxlength="2000" size="100" required="true"
+                             requiredMessage="You must type url of wanted resource"
+                             value="#{remoteDownloadBean.resourceUrl}" autocomplete="false"/>
+                <p:outputLabel value="Authorization: " for="authCheckbox"/>
+                <p:selectBooleanCheckbox id="authCheckbox" value="#{remoteDownloadBean.showAuth}">
+                    <p:ajax update="authorization" immediate="true"/>
+                </p:selectBooleanCheckbox>
+            </h:panelGrid>
+            <h:panelGroup id="authorization">
+                <h:panelGroup rendered="#{remoteDownloadBean.showAuth}">
+                    <h:panelGrid columns="2" cellpadding="10" cellspacing="2">
+                        <p:outputLabel value="Username: " for="serviceUsername"/>
+                        <p:inputText id="serviceUsername" value="#{remoteDownloadBean.username}" placeholder="Username"
+                                     autocomplete="off"/>
+                        <p:outputLabel value="Password: " for="servicePass"/>
+                        <p:inputText id="servicePass" type="password" value="#{remoteDownloadBean.password}"
+                                     placeholder="Password" autocomplete="off"/>
+                    </h:panelGrid>
+                </h:panelGroup>
+            </h:panelGroup>
+
+
+            <p:commandButton value="#{bundle.RemoteDownloadButton}" action="#{remoteDownloadBean.download()}"
+                             update="downloadURL"/>
+        </h:form>
+    </ui:define>
+</ui:composition>
 
 </html>

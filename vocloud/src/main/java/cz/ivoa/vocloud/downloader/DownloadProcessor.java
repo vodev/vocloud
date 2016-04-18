@@ -1,12 +1,18 @@
 package cz.ivoa.vocloud.downloader;
 
-import cz.ivoa.vocloud.entity.DownloadJob;
-import cz.ivoa.vocloud.entity.DownloadState;
-import cz.ivoa.vocloud.entity.SSAPDownloadJob;
-import cz.ivoa.vocloud.entity.SSAPDownloadJobItem;
-import cz.ivoa.vocloud.entity.UrlDownloadJob;
+import cz.ivoa.vocloud.entity.*;
 import cz.ivoa.vocloud.filesystem.FilesystemManipulator;
 import cz.ivoa.vocloud.tools.ContentTypeToExtensionConverter;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPReply;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import javax.ejb.*;
+import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -18,21 +24,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.EJB;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPReply;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 /**
  *
@@ -61,7 +52,7 @@ public class DownloadProcessor {
         djb.edit(job);
         boolean success = false;
         try {
-            success = startDownloading(job.getDownloadUrl(), job.getSaveDir(), null, downloadLog);
+            success = startDownloading(job.getDownloadUrl(), job.getSaveDir(), null, downloadLog, job.getUsername(), job.getPass());
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "Runtime exception during job processing", ex);
             downloadLog.append("Runtime exception thrown\n").append(ex.toString()).append('\n');
@@ -96,7 +87,7 @@ public class DownloadProcessor {
             djb.edit(item);
             boolean result = true;
             try {
-                result = startDownloading(item.getDownloadUrl(), job.getSaveDir(), item.getFileName(), downloadLog);
+                result = startDownloading(item.getDownloadUrl(), job.getSaveDir(), item.getFileName(), downloadLog, job.getUsername(), job.getPass());
                 if (!result) {
                     success = false;
                 }
@@ -165,12 +156,19 @@ public class DownloadProcessor {
 
     //==================================HTTP downloading========================
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    private boolean processHttpLink(URL url, final int directoryCut, String saveDir, StringBuilder downloadLog, String fileName) {
+    private boolean processHttpLink(URL url, final int directoryCut, String saveDir, StringBuilder downloadLog, String fileName, String username, String password) {
         boolean success = true;
         HttpURLConnection conn = null;
         try {
             try {
                 conn = (HttpURLConnection) url.openConnection();
+                if (username != null && password != null){
+                    String userCredentials = String.format("%s:%s", username, password);
+                    byte[] basicAuthBytes = ("Basic " + userCredentials).getBytes("UTF-8");
+                    String base64Auth = DatatypeConverter.printBase64Binary(basicAuthBytes);
+                    conn.setRequestProperty("Authorization", base64Auth);
+                }
+
             } catch (IOException ex) {
                 downloadLog.append("Unable to open http connection with ").append(url.toExternalForm()).append("\n").append(ex.toString()).append('\n');
                 return false;
@@ -214,7 +212,7 @@ public class DownloadProcessor {
                 }
                 while (!queue.isEmpty()) {
                     try {
-                        if (!processHttpLink(new URL(queue.poll()), directoryCut, saveDir, downloadLog, null)) {
+                        if (!processHttpLink(new URL(queue.poll()), directoryCut, saveDir, downloadLog, null, username, password)) {
                             success = false;
                         }
                     } catch (IOException ex) {
@@ -322,16 +320,25 @@ public class DownloadProcessor {
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    private boolean processFtpLink(URL url, final int directoryCut, String baseDir, StringBuilder downloadLog) {
+    private boolean processFtpLink(URL url, final int directoryCut, String baseDir, StringBuilder downloadLog, String username, String password) {
         boolean success = true;
         FTPClient ftp = new FTPClient();
         ftp.setConnectTimeout(20000);
         try {
             ftp.connect(url.getHost());
-            if (!ftp.login("anonymous", "")) {//login credentials not supported yet - only anonymous login
-                ftp.logout();
-                downloadLog.append("Ftp login was unsuccessful\n");
-                return false;
+            if (username == null || password == null) {
+                if (!ftp.login("anonymous", "")) {//login credentials for anonymous user
+                    ftp.logout();
+                    downloadLog.append("Ftp login as anonymous user was unsuccessful\n");
+                    return false;
+                }
+            } else {
+                //login credentials are set - use them
+                if (!ftp.login(username, password)){
+                    ftp.logout();
+                    downloadLog.append("Ftp login as user " + username + " was unsuccessful with passed password");
+                    return false;
+                }
             }
         } catch (IOException ex) {
             downloadLog.append("Unable to connect to ftp server\n");
@@ -389,23 +396,23 @@ public class DownloadProcessor {
 
     //===========================MAIN DOWNLOADING START POINT===================
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    private boolean startDownloading(String link, String saveDir, String fileName, StringBuilder downloadLog) {
+    private boolean startDownloading(String link, String saveDir, String fileName, StringBuilder downloadLog, String username, String password) {
         boolean resultSuccess = false;
         try {
             URL url = new URL(link);
 
             String path = url.getPath();
             if (path.matches(".+/$")) {
-                path = path.substring(0, path.length() - 1);
+                path = path.substring(0, path.length() - 1);//cut last slash if it is last character of path
             }
-            int directoryCut = path.split("/").length - 1;
+            int directoryCut = path.split("/").length - 1;//divide path by slashes
             switch (url.getProtocol().toUpperCase()) {
                 case "HTTP":
                 case "HTTPS":
-                    resultSuccess = processHttpLink(url, directoryCut, saveDir, downloadLog, fileName);
+                    resultSuccess = processHttpLink(url, directoryCut, saveDir, downloadLog, fileName, username, password);
                     break;
                 case "FTP":
-                    resultSuccess = processFtpLink(url, directoryCut, saveDir, downloadLog);
+                    resultSuccess = processFtpLink(url, directoryCut, saveDir, downloadLog, username, password);
                     break;
                 default:
                     LOG.log(Level.WARNING, "Unknown download protocol {0}", url.getProtocol().toUpperCase());

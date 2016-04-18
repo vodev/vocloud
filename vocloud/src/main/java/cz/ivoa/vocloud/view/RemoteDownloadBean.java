@@ -20,6 +20,12 @@ public class RemoteDownloadBean implements Serializable {
     private String targetFolder;
     private String resourceUrl;
 
+    private boolean showAuth = false;
+
+    //authorization fields
+    private String username;
+    private String password;
+
     @EJB
     private DownloadManager manager;
     
@@ -44,8 +50,45 @@ public class RemoteDownloadBean implements Serializable {
         this.resourceUrl = resourceUrl;
     }
 
+    public boolean isShowAuth() {
+        return showAuth;
+    }
+
+    public void setShowAuth(boolean showAuth) {
+        this.showAuth = showAuth;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public void download() {
-        boolean result = manager.enqueueNewURLDownload(resourceUrl, targetFolder);
+        //validate username and pass if authorization mode is chosen
+        if (showAuth) {
+            if (username == null || username.trim().isEmpty() || password == null || password.isEmpty()){
+                //show error message
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,  "Authorization error", "You must enter non empty username and password"));
+                return;
+            }
+        }
+        boolean result;
+        if (showAuth){
+            result = manager.enqueueNewURLDownload(resourceUrl, targetFolder, username.trim(), password);
+        } else {
+            result = manager.enqueueNewURLDownload(resourceUrl, targetFolder);
+        }
         if (result){
             resourceUrl = "";
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("New download was successfully enqueued"));
