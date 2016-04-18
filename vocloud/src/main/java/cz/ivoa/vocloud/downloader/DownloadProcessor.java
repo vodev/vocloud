@@ -164,8 +164,8 @@ public class DownloadProcessor {
                 conn = (HttpURLConnection) url.openConnection();
                 if (username != null && password != null){
                     String userCredentials = String.format("%s:%s", username, password);
-                    byte[] basicAuthBytes = ("Basic " + userCredentials).getBytes("UTF-8");
-                    String base64Auth = DatatypeConverter.printBase64Binary(basicAuthBytes);
+                    byte[] basicAuthBytes = userCredentials.getBytes("UTF-8");
+                    String base64Auth = "Basic " + DatatypeConverter.printBase64Binary(basicAuthBytes);
                     conn.setRequestProperty("Authorization", base64Auth);
                 }
 
