@@ -60,7 +60,10 @@
                     <p:menuitem id="sendToSAMPbtn" disabled="#{not filesystemViewBean.sampBtnEnabled}" value="Send through SAMP" icon="ui-icon-circle-arrow-n" action="#{filesystemViewBean.sendSelectedThroughSAMP}" update="messages"/>
                 </p:menubar>
                 <p:breadCrumb model="#{filesystemViewBean.breadcrumbModel}"/>
-                <p:dataTable resizableColumns="true" var="item" value="#{filesystemViewBean.filesystemItemList}" selection="#{filesystemViewBean.selectedItems}" rowKey="#{item.name}">
+                <p:dataTable resizableColumns="true" var="item" value="#{filesystemViewBean.filesystemItemList}" selection="#{filesystemViewBean.selectedItems}" rowKey="#{item.name}"
+                             rows="200"
+                             paginator="true" paginatorAlwaysVisible="false"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
                     <f:facet name="header">
                         Total <h:outputText value="#{filesystemViewBean.filesCount}" /> file<h:outputText rendered="#{filesystemViewBean.filesCount != 1}" value="s" />
                         and <h:outputText value="#{filesystemViewBean.foldersCount}" /> folder<h:outputText rendered="#{filesystemViewBean.foldersCount != 1}" value="s" />
