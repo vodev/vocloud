@@ -58,23 +58,30 @@
                 </h:panelGroup>
                 <p:menubar id="menubar">
                     <p:menuitem id="newFolderBtn" value="#{bundle.NewFolderMenuItem}" icon="ui-icon-folder-open" oncomplete="PF('renameOverlay').loadContents()"/>
-                    <p:menuitem id="deleteSelectedBtn" value="Delete selected" icon="ui-icon-trash" oncomplete="PF('deleteDialog').show()"/>
+                    <p:submenu label="Append new files" icon="	ui-icon-circle-plus">
+                        <p:menuitem id="SSAPDownloadBtn" action="ssap" value="#{bundle.SSAPDownloadMenuItem}" icon="ui-icon-arrowthick-1-s">
+                            <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
+                        </p:menuitem>
+                        <p:menuitem id="remoteDownloadBtn" action="remote-download" value="#{bundle.RemoteDownloadMenuItem}" icon="ui-icon-arrowthick-1-s">
+                            <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
+                        </p:menuitem>
+                        <p:separator />
+                        <p:menuitem id="uploadFilesBtn" value="#{bundle.FileUploadMenuItem}" icon="ui-icon-arrowthick-1-n" action="upload-file">
+                            <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
+                        </p:menuitem>
+                    </p:submenu>
+                    <p:submenu label="Delete files" icon="ui-icon-trash">
+                        <p:menuitem id="deleteSelectedBtn" value="Delete selected" icon="ui-icon-trash" oncomplete="PF('deleteSelectedDialog').show()"/>
+                        <p:menuitem id="deleteAll" value="Delete all" icon="ui-icon-trash" oncomplete="PF('deleteAllDialog').show()" />
+                    </p:submenu>
+                    <p:submenu label="Download data" icon="ui-icon-circle-arrow-s">
+                        <p:menuitem id="massDownloadButton" value="#{bundle.MassDownloadMenuItem}" icon="ui-icon-arrowthick-1-s" action="cloud-download">
+                            <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
+                        </p:menuitem>
+                        <p:menuitem id="downloadSelectedBtn" value="#{bundle.DownloadSelectedMenuItem}" icon="ui-icon-arrowthick-1-s" action="#{filesystemManageBean.downloadSelectedFiles()}" ajax="false" />
+                    </p:submenu>
                     <p:menuitem id="sendToSAMPbtn" disabled="#{not filesystemManageBean.sampBtnEnabled}" value="Send through SAMP"
                                 icon="ui-icon-circle-arrow-n" action="#{filesystemManageBean.sendSelectedThroughSAMP}" update="messages"/>
-                    <p:menuitem id="uploadFilesBtn" value="#{bundle.FileUploadMenuItem}" icon="ui-icon-arrowthick-1-n" action="upload-file">
-                        <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
-                    </p:menuitem>
-                    <p:menuitem id="remoteDownloadBtn" action="remote-download" value="#{bundle.RemoteDownloadMenuItem}" icon="ui-icon-arrowthick-1-s">
-                        <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
-                    </p:menuitem>
-                    <p:menuitem id="SSAPDownloadBtn" action="ssap" value="#{bundle.SSAPDownloadMenuItem}" icon="ui-icon-arrowthick-1-s">
-                        <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
-                    </p:menuitem>
-                    <p:menuitem id="downloadSelectedBtn" value="#{bundle.DownloadSelectedMenuItem}" icon="ui-icon-arrowthick-1-s" action="#{filesystemManageBean.downloadSelectedFiles()}" ajax="false" />
-                    <p:menuitem id="showDownloadQueueBtn" action="download-queue" value="#{bundle.ShowDownloadQueueMenuItem}" icon="ui-icon-clipboard" />
-                    <p:menuitem id="cloudDownloadBtn" action="cloud-download" value="Cloud Download - todo">
-                        <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
-                    </p:menuitem>
                 </p:menubar>
                 <p:overlayPanel id="newFolderPanel" for="newFolderBtn" hideEffect="fade" widgetVar="renameOverlay">
                     <h:panelGrid columns="2" cellpadding="10" cellspacing="5">
@@ -83,7 +90,10 @@
                     </h:panelGrid>
                 </p:overlayPanel>
                 <p:breadCrumb model="#{filesystemManageBean.breadcrumbModel}"/>
-                <p:dataTable id="dataTable" resizableColumns="true" var="item" value="#{filesystemManageBean.filesystemItemList}" selection="#{filesystemManageBean.selectedItems}" rowKey="#{item.name}">
+                <p:dataTable id="dataTable" resizableColumns="true" var="item" value="#{filesystemManageBean.filesystemItemList}" selection="#{filesystemManageBean.selectedItems}" rowKey="#{item.name}"
+                             rows="200"
+                             paginator="true" paginatorAlwaysVisible="false"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
                     <f:facet name="header">
                         Total <h:outputText value="#{filesystemManageBean.filesCount}" /> file<h:outputText rendered="#{filesystemManageBean.filesCount != 1}" value="s" />
                         and <h:outputText value="#{filesystemManageBean.foldersCount}" /> folder<h:outputText rendered="#{filesystemManageBean.foldersCount != 1}" value="s" />
@@ -130,10 +140,15 @@
                 </p:dataTable>
 
 
-                <p:confirmDialog showEffect="fade" hideEffect="fade" widgetVar="deleteDialog" header="Delete items" message="Do you really want to delete selected items?" severity="alert">
-                    <p:commandButton id="confirm" value="#{bundle.YesChoice}" icon="ui-icon-check" oncomplete="PF('deleteDialog').hide()" actionListener="#{filesystemManageBean.deleteSelected()}"
+                <p:confirmDialog showEffect="fade" hideEffect="fade" widgetVar="deleteSelectedDialog" header="Delete items" message="Do you really want to delete selected items?" severity="alert">
+                    <p:commandButton id="confirmSelected" value="#{bundle.YesChoice}" icon="ui-icon-check" oncomplete="PF('deleteSelectedDialog').hide()" actionListener="#{filesystemManageBean.deleteSelected()}"
                                      update="@form"/>
-                    <p:commandButton id="decline" value="#{bundle.NoChoice}" icon="ui-icon-close" onclick="PF('deleteDialog').hide()"/>
+                    <p:commandButton id="declineSelected" value="#{bundle.NoChoice}" icon="ui-icon-close" onclick="PF('deleteSelectedDialog').hide()"/>
+                </p:confirmDialog>
+                <p:confirmDialog showEffect="fade" hideEffect="fade" widgetVar="deleteAllDialog" header="Delete all inside folder" message="Do you really want to delete all items?" severity="alert">
+                    <p:commandButton id="confirmDelAll" value="#{bundle.YesChoice}" icon="ui-icon-check" oncomplete="PF('deleteAllDialog').hide()" actionListener="#{filesystemManageBean.deleteAll()}"
+                                     update="@form"/>
+                    <p:commandButton id="declineDelAll" value="#{bundle.NoChoice}" icon="ui-icon-close" onclick="PF('deleteAllDialog').hide()"/>
                 </p:confirmDialog>
             </h:form>
             <h:form id="dialogForm">

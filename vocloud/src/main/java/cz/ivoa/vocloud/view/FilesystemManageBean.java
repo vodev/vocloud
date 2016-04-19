@@ -2,6 +2,7 @@ package cz.ivoa.vocloud.view;
 
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import cz.ivoa.vocloud.filesystem.model.Folder;
+
 import java.nio.file.InvalidPathException;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
@@ -10,7 +11,6 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
 /**
- *
  * @author radio.koza
  */
 @Named
@@ -140,4 +140,18 @@ public class FilesystemManageBean extends FilesystemViewBean {
         init();
     }
 
+    public void deleteAll() {
+        boolean successFlag = true;
+        for (FilesystemItem item : items) {
+            if (!fsm.tryToDeleteFilesystemItem(item)) {
+                successFlag = false;
+            }
+        }
+        if (successFlag) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Deletion was successful"));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Some files or folders were not deleted successfully"));
+        }
+        init();
+    }
 }
