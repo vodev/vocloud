@@ -70,7 +70,7 @@
                             <f:setPropertyActionListener target="#{requestScope['targetFolder']}" value="#{filesystemManageBean.prefix}" />
                         </p:menuitem>
                     </p:submenu>
-                    <p:submenu label="Delete files" icon="ui-icon-trash">
+                    <p:submenu label="Delete items" icon="ui-icon-trash">
                         <p:menuitem id="deleteSelectedBtn" value="Delete selected" icon="ui-icon-trash" oncomplete="PF('deleteSelectedDialog').show()"/>
                         <p:menuitem id="deleteAll" value="Delete all" icon="ui-icon-trash" oncomplete="PF('deleteAllDialog').show()" />
                     </p:submenu>
