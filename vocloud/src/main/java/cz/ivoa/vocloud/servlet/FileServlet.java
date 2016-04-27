@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLDecoder;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * FileServlet
@@ -58,7 +59,7 @@ public class FileServlet extends HttpServlet {
         Job job = jf.find(Long.parseLong(jobId));
         String user = request.getRemoteUser();
         UserAccount userAcc = uaf.findByUsername(user);
-        if (userAcc == null || (!job.getOwner().equals(userAcc) && !userAcc.getGroupName().equals(UserGroupName.ADMIN))) {
+        if (userAcc == null || (!userAcc.getGroupName().equals(UserGroupName.ADMIN)) && !job.getOwner().equals(userAcc)) {
             response.sendError(403);
             return;
         }
@@ -89,7 +90,28 @@ public class FileServlet extends HttpServlet {
         try {
             // Open streams.
             input = new BufferedInputStream(new FileInputStream(file), DEFAULT_BUFFER_SIZE);
-            output = new BufferedOutputStream(response.getOutputStream(), DEFAULT_BUFFER_SIZE);
+            //check compression availability
+            String accHeader = request.getHeader("Accept-Encoding");
+            boolean gzipSupported = false;
+            if (accHeader != null){
+                //find out if gzip compression is supported
+                String[] accepted = accHeader.split(",");
+                for (String i: accepted){
+                    if (i.trim().equals("gzip")){
+                        gzipSupported = true;
+                        break;
+                    }
+                }
+
+            }
+            if (gzipSupported){
+                response.setHeader("Content-Encoding", "gzip");
+                output = new BufferedOutputStream(new GZIPOutputStream(response.getOutputStream()), DEFAULT_BUFFER_SIZE);
+            } else {
+                //send data without compression
+                output = new BufferedOutputStream(response.getOutputStream(), DEFAULT_BUFFER_SIZE);
+            }
+
 
             // Write file contents to response.
             byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
