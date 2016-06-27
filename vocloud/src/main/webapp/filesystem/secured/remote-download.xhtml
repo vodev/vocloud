@@ -16,10 +16,10 @@
             <h:panelGrid cellpadding="10" cellspacing="5" columns="3">
                 <h:outputText value="#{bundle.TargetDirectory}:"/>
                 <h:outputText value="/#{remoteDownloadBean.targetFolder}" style="color: maroon; font-weight: bold"/>
-                <p:commandButton ajax="false" value="#{bundle.BackButton}" action="/filesystem/secured/index">
-                    <f:setPropertyActionListener target="#{requestScope['folderPrefix']}"
-                                                 value="#{remoteDownloadBean.targetFolder}"/>
-                </p:commandButton>
+                <p:button value="#{bundle.BackButton}" outcome="/filesystem/secured/index">
+                    <f:param name="path"
+                             value="#{remoteDownloadBean.targetFolder}"/>
+                </p:button>
             </h:panelGrid>
         </h:form>
         <h:form enctype="multipart/form-data;charset=UTF-8" acceptcharset="UTF-8">

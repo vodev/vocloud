@@ -16,10 +16,10 @@
             <h:panelGrid cellpadding="10" cellspacing="5" columns="3">
                 <h:outputText value="#{bundle.TargetDirectory}:"/>
                 <h:outputText value="/#{ssapBean.targetFolder}" style="color: maroon; font-weight: bold"/>
-                <p:commandButton ajax="false" value="#{bundle.BackButton}" action="/filesystem/secured/index">
-                    <f:setPropertyActionListener target="#{requestScope['folderPrefix']}"
-                                                 value="#{ssapBean.targetFolder}"/>
-                </p:commandButton>
+                <p:button value="#{bundle.BackButton}" outcome="/filesystem/secured/index">
+                    <f:param name="path"
+                             value="#{ssapBean.targetFolder}"/>
+                </p:button>
             </h:panelGrid>
         </h:form>
         <h:form id="mainForm" enctype="multipart/form-data;charset=UTF-8" acceptcharset="UTF-8">
@@ -145,7 +145,7 @@
                     <h:outputText value="Datalink protocol" rendered="#{ssapBean.allowDatalink}"/>
                     <h:outputText value="Direct download with ACCREF value" rendered="#{not ssapBean.allowDatalink}"/>
 
-                    <h:outputText value="Service authorization: " />
+                    <h:outputText value="Service authorization: "/>
                     <h:outputText value="ENABLED" rendered="#{ssapBean.showAuth}"/>
                     <h:outputText value="DISABLED" rendered="#{not ssapBean.showAuth}"/>
 

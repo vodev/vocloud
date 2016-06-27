@@ -14,7 +14,7 @@
     <ui:define name="content">
         <h:outputStylesheet>
             .ui-datalist {
-                width:300px;
+                width: 300px;
                 margin-top: 20px;
             }
         </h:outputStylesheet>
@@ -22,10 +22,10 @@
             <h:panelGrid cellpadding="10" cellspacing="5" columns="3">
                 <h:outputText value="Source Directory:"/>
                 <h:outputText value="/#{cloudDownloadBean.targetFolder}" style="color: maroon; font-weight: bold"/>
-                <p:commandButton ajax="false" value="#{bundle.BackButton}" action="/filesystem/secured/index">
-                    <f:setPropertyActionListener target="#{requestScope['folderPrefix']}"
-                                                 value="#{cloudDownloadBean.targetFolder}"/>
-                </p:commandButton>
+                <p:button value="#{bundle.BackButton}" outcome="/filesystem/secured/index">
+                    <f:param name="path"
+                             value="#{cloudDownloadBean.targetFolder}"/>
+                </p:button>
 
                 <h:outputText value="Number of files:"/>
                 <h:outputText value="#{cloudDownloadBean.filesCount}"/>
@@ -56,7 +56,8 @@
                     <f:facet name="header">
                         Generated archive links
                     </f:facet>
-                    <h:commandLink value="#{archive.archiveName}" ajax="false" action="#{cloudDownloadBean.downloadArchive(archive.archiveIndex)}" />
+                    <h:commandLink value="#{archive.archiveName}" ajax="false"
+                                   action="#{cloudDownloadBean.downloadArchive(archive.archiveIndex)}"/>
                 </p:dataList>
             </h:panelGroup>
         </h:form>

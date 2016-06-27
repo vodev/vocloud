@@ -8,7 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author voadmin
  */
 public class Configuration {
@@ -33,9 +32,8 @@ public class Configuration {
         return properties;
     }
 
-    public @Produces
-    @Config
-    String getConfiguration(InjectionPoint p) {
+    @Produces @Config
+    public String getConfiguration(InjectionPoint p) {
         Properties config = getProperties();
 
         // class specific key
@@ -48,7 +46,6 @@ public class Configuration {
                 logger.log(Level.WARNING, "property not set {0}", key);
             }
         }
-
         return config.getProperty(key);
     }
 }

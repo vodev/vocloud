@@ -50,6 +50,10 @@
                 };
                 //]]>
             </script>
+            <f:metadata>
+                <f:viewParam name="path" value="#{filesystemManageBean.path}" />
+                <f:viewAction action="#{filesystemManageBean.onLoad}" />
+            </f:metadata>
             <h:form id="form">
                 <p:remoteCommand name="enableSAMP" update="menubar" actionListener="#{filesystemManageBean.enableSamp(true)}" />
                 <p:remoteCommand name="disableSAMP" update="menubar" actionListener="#{filesystemManageBean.enableSamp(false)}" />
@@ -102,7 +106,7 @@
                     <p:column width="12">
                         <f:facet name="header">
                             <h:commandLink rendered="#{not filesystemManageBean.inRoot}" action="#{filesystemManageBean.goBack()}" styleClass="ui-icon ui-icon-arrowreturnthick-1-w" style="position:relative; left: -5px"/>
-                            <h:commandLink rendered="#{filesystemManageBean.inRoot}" styleClass="ui-icon ui-icon-home" style="position:relative; left: -5px"/>
+                            <h:link rendered="#{filesystemManageBean.inRoot}" styleClass="ui-icon ui-icon-home" style="position:relative; left: -5px"/>
                         </f:facet>
                         <h:panelGroup styleClass="ui-icon ui-icon-folder-collapsed" rendered="#{item.folder}" />
                         <h:panelGroup styleClass="ui-icon ui-icon-document" rendered="#{not item.folder}" />

@@ -5,7 +5,6 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-
     <ui:composition template="/WEB-INF/template.xhtml">
         <ui:define name="title">
             <h:outputText value="#{bundle.ViewFilesystemTitle}" />
@@ -50,6 +49,11 @@
                 };
                 //]]>
             </script>
+            <f:metadata>
+                <f:viewParam name="path" value="#{filesystemViewBean.path}" />
+                <f:viewAction action="#{filesystemViewBean.onLoad}" />
+            </f:metadata>
+
             <h:form id="form">
                 <p:remoteCommand name="enableSAMP" update="menubar" actionListener="#{filesystemViewBean.enableSamp(true)}" />
                 <p:remoteCommand name="disableSAMP" update="menubar" actionListener="#{filesystemViewBean.enableSamp(false)}" />
@@ -72,7 +76,7 @@
                     <p:column width="12">
                         <f:facet name="header">                            
                             <h:commandLink rendered="#{not filesystemViewBean.inRoot}" action="#{filesystemViewBean.goBack()}" styleClass="ui-icon ui-icon-arrowreturnthick-1-w" style="position:relative; left: -5px"/>
-                            <h:commandLink rendered="#{filesystemViewBean.inRoot}" styleClass="ui-icon ui-icon-home" style="position:relative; left: -5px"/>
+                            <h:link rendered="#{filesystemViewBean.inRoot}" styleClass="ui-icon ui-icon-home" style="position:relative; left: -5px"/>
                         </f:facet>
                         <h:panelGroup styleClass="ui-icon ui-icon-folder-collapsed" rendered="#{item.folder}" />
                         <h:panelGroup styleClass="ui-icon ui-icon-document" rendered="#{not item.folder}" />

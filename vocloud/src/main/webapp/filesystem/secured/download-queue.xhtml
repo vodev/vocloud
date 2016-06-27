@@ -6,83 +6,93 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:composition template="/WEB-INF/template.xhtml">
-        <ui:define name="title">
-            <h:outputText value="#{bundle.DownloadQueueTitle}" />
-        </ui:define>
+<ui:composition template="/WEB-INF/template.xhtml">
+    <ui:define name="title">
+        <h:outputText value="#{bundle.DownloadQueueTitle}"/>
+    </ui:define>
 
-        <ui:define name="content">
-            <h:form id="mainForm">
-                <p:messages showDetail="true" />
-                <p:commandButton value="Refresh" icon="ui-icon-refresh" process="@this" update="dataTable" ajax="true" actionListener="#{downloadQueueBean.refresh()}" />
-                <p:commandButton value="Delete selected" icon="ui-icon-trash" update="dataTable" actionListener="#{downloadQueueBean.deleteSelected()}">
-                    <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
-                </p:commandButton>
-                <p:commandButton value="Delete all" icon="ui-icon-trash" update="dataTable" actionListener="#{downloadQueueBean.deleteAll()}">
-                    <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
-                </p:commandButton>
-                <p:dataTable id="dataTable" value="#{downloadQueueBean.model}" var="job" paginator="true" rows="50" lazy="true" resizableColumns="true" selection="#{downloadQueueBean.selectedJobs}" rowKey="#{job.id}">
-                    <p:column style="width:16px">
-                        <p:rowToggler rendered="#{job.isSSAP()}" />
-                    </p:column>
-                    <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
-                    <p:column headerText="State" width="90">
-                        <h:outputText value="#{job.state}" />
-                    </p:column>
-                    <p:column headerText="Created" width="140">
-                        <h:outputText value="#{job.createTime}">
-                            <f:convertDateTime type="both"  timeZone="CET" />
-                        </h:outputText>
-                    </p:column>
-                    <p:column headerText="Finished" width="140">
-                        <h:outputText rendered="#{job.finishTime != null}" value="#{job.finishTime}">
-                            <f:convertDateTime type="both"  timeZone="CET" />
-                        </h:outputText>
-                    </p:column>
-                    <p:column headerText="Target directory">
-                        <h:outputText value="/#{job.saveDir}" />
-                    </p:column>
-                    <p:column headerText="Download URL" styleClass="scrollableCell">
-                        <div>
-                            <p:link target="_blank" href="#{job.downloadUrl}" value="#{job.downloadUrl}" />
-                        </div>
-                    </p:column>
-                    <p:column headerText="Download log" width="120">
-                        <h:outputText value="Empty" rendered="#{job.messageLog == null}" />
-                        <p:commandButton rendered="#{job.messageLog != null}" value="Show log" actionListener="#{downloadQueueBean.showMessageLog(job)}" oncomplete="PF('logView').show();" update=":mainForm:logView" />
-                    </p:column>
-                    <p:rowExpansion>
-                        <p:dataTable value="#{downloadQueueBean.fetchLazySSAPModel(job)}" var="ssapJob" rows="50" resizableColumns="true" paginator="true" lazy="true">
-                            <f:facet name="header">
-                                Total #{downloadQueueBean.fetchLazySSAPModel(job).rowCount} records - Finished:
-                                <h:outputText value="#{downloadQueueBean.countFinished(job)}," />
-                                Failed: <h:outputText value="#{downloadQueueBean.countFailed(job)}" />
-                            </f:facet>
-                            <p:column headerText="State" width="90">
-                                <h:outputText value="#{ssapJob.downloadState}" />
-                            </p:column>
-                            <p:column headerText="Finished" width="140">
-                                <h:outputText rendered="#{ssapJob.finishTime != null}" value="#{ssapJob.finishTime}">
-                                    <f:convertDateTime type="both"  timeZone="CET" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Download URL" styleClass="scrollableCell">
-                                <div>
-                                    <p:link target="_blank" href="#{ssapJob.downloadUrl}" value="#{ssapJob.downloadUrl}" />
-                                </div>
-                            </p:column>
-                        </p:dataTable>
-                    </p:rowExpansion>
-                </p:dataTable>
-                <p:dialog id="logView" widgetVar="logView" width="700" maximizable="false" minimizable="true"  height="500">
-                    <pre><h:outputText value="#{downloadQueueBean.shownMessageLog}" /></pre>
-                </p:dialog>
-                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
-                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
-                </p:confirmDialog>
-            </h:form>
-        </ui:define>
-    </ui:composition>
+    <ui:define name="content">
+        <h:form id="mainForm">
+            <p:messages showDetail="true"/>
+            <p:commandButton value="Refresh" icon="ui-icon-refresh" process="@this" update="dataTable" ajax="true"
+                             actionListener="#{downloadQueueBean.refresh()}"/>
+            <p:commandButton value="Delete selected" icon="ui-icon-trash" update="dataTable"
+                             actionListener="#{downloadQueueBean.deleteSelected()}">
+                <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert"/>
+            </p:commandButton>
+            <p:commandButton value="Delete all" icon="ui-icon-trash" update="dataTable"
+                             actionListener="#{downloadQueueBean.deleteAll()}">
+                <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert"/>
+            </p:commandButton>
+            <p:dataTable id="dataTable" value="#{downloadQueueBean.model}" var="job" paginator="true" rows="50"
+                         lazy="true" resizableColumns="true" selection="#{downloadQueueBean.selectedJobs}"
+                         rowKey="#{job.id}">
+                <p:column style="width:16px">
+                    <p:rowToggler rendered="#{job.isSSAP()}"/>
+                </p:column>
+                <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
+                <p:column headerText="State" width="90">
+                    <h:outputText value="#{job.state}"/>
+                </p:column>
+                <p:column headerText="Created" width="140">
+                    <h:outputText value="#{job.createTime}">
+                        <f:convertDateTime type="both" timeZone="CET"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Finished" width="140">
+                    <h:outputText rendered="#{job.finishTime != null}" value="#{job.finishTime}">
+                        <f:convertDateTime type="both" timeZone="CET"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Target directory">
+                    <h:link value="/#{job.saveDir}" outcome="/filesystem/secured/index">
+                        <f:param name="path" value="#{job.saveDir}" />
+                    </h:link>
+                </p:column>
+                <p:column headerText="Download URL" styleClass="scrollableCell">
+                    <div>
+                        <p:link target="_blank" href="#{job.downloadUrl}" value="#{job.downloadUrl}"/>
+                    </div>
+                </p:column>
+                <p:column headerText="Download log" width="120">
+                    <h:outputText value="Empty" rendered="#{job.messageLog == null}"/>
+                    <p:commandButton rendered="#{job.messageLog != null}" value="Show log"
+                                     actionListener="#{downloadQueueBean.showMessageLog(job)}"
+                                     oncomplete="PF('logView').show();" update=":mainForm:logView"/>
+                </p:column>
+                <p:rowExpansion>
+                    <p:dataTable value="#{downloadQueueBean.fetchLazySSAPModel(job)}" var="ssapJob" rows="50"
+                                 resizableColumns="true" paginator="true" lazy="true">
+                        <f:facet name="header">
+                            Total #{downloadQueueBean.fetchLazySSAPModel(job).rowCount} records - Finished:
+                            <h:outputText value="#{downloadQueueBean.countFinished(job)},"/>
+                            Failed: <h:outputText value="#{downloadQueueBean.countFailed(job)}"/>
+                        </f:facet>
+                        <p:column headerText="State" width="90">
+                            <h:outputText value="#{ssapJob.downloadState}"/>
+                        </p:column>
+                        <p:column headerText="Finished" width="140">
+                            <h:outputText rendered="#{ssapJob.finishTime != null}" value="#{ssapJob.finishTime}">
+                                <f:convertDateTime type="both" timeZone="CET"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Download URL" styleClass="scrollableCell">
+                            <div>
+                                <p:link target="_blank" href="#{ssapJob.downloadUrl}" value="#{ssapJob.downloadUrl}"/>
+                            </div>
+                        </p:column>
+                    </p:dataTable>
+                </p:rowExpansion>
+            </p:dataTable>
+            <p:dialog id="logView" widgetVar="logView" width="700" maximizable="false" minimizable="true" height="500">
+                <pre><h:outputText value="#{downloadQueueBean.shownMessageLog}"/></pre>
+            </p:dialog>
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>
+                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>
+            </p:confirmDialog>
+        </h:form>
+    </ui:define>
+</ui:composition>
 
 </html>

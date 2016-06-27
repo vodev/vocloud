@@ -27,7 +27,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author radio.koza
  */
 @Named
@@ -49,28 +48,32 @@ public class FilesystemViewBean implements Serializable {
 
     protected FilesystemFile selectedViewedFile;
 
-    @PostConstruct
-    protected void viewBeanInitialization() {
-        //look for folderPrefix set from other windows
-        prefix = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("folderPrefix");
+    public String onLoad() {
         if (prefix == null) {
             prefix = "";
         }
-        init();
+        //do prefix validation
+        if (!init()) {
+            return getLocalRedirect();
+        }
+        return null;//no redirect
     }
 
-    protected void init() {
-        items = fsm.listFilesystemItems(prefix);
+    protected boolean init() {
+        try {
+            items = fsm.listFilesystemItems(prefix);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
         //check validity of directory
         if (items == null) {
             //reset to nominal state
             prefix = "";
-            init();
-            return;
+            return false;
         }
         //count items
         filesCount = foldersCount = 0;
-        for (FilesystemItem i: items){
+        for (FilesystemItem i : items) {
             if (i.isFolder()) {
                 foldersCount++;
             } else {
@@ -91,6 +94,7 @@ public class FilesystemViewBean implements Serializable {
             menuItem.setCommand("#{" + getThisNamedBeanName() + ".goToFolderIndex(" + (++counter) + ")}");
             breadcrumb.addElement(menuItem);
         }
+        return true;
     }
 
     protected String getThisNamedBeanName() {
@@ -142,31 +146,29 @@ public class FilesystemViewBean implements Serializable {
         return a.getName().compareTo(b.getName());
     }
 
-    public void goToFolder(FilesystemItem item) {
+    public String goToFolder(FilesystemItem item) {
         //check that item is folder
         if (!item.isFolder()) {
             throw new IllegalArgumentException("Presentation tier is in inconsistent state - passed item is not folder");
         }
         prefix += item.getName() + "/";
-        //call initialization of view bean
-        init();
+        return redirectToPath(prefix);
     }
 
     public boolean isInRoot() {
         return prefix.equals("");
     }
 
-    public void goBack() {
+    public String goBack() {
         if (isInRoot()) {
             //do nothing
-            return;
+            return getLocalRedirect();
         }
         prefix = prefix.replaceAll("[^/]+/\\z", "");
-        //call initialization of view bean
-        init();
+        return redirectToPath(prefix);
     }
 
-    public void goToFolderIndex(int folderIndex) {
+    public String goToFolderIndex(int folderIndex) {
         if (folderIndex < 0) {
             throw new IllegalArgumentException("Folder index must not be negative value");
         }
@@ -184,8 +186,7 @@ public class FilesystemViewBean implements Serializable {
                 prefix += folders[i] + "/";
             }
         }
-        //call initialization of view bean
-        init();
+        return redirectToPath(prefix);
     }
 
     public StreamedContent downloadFile(FilesystemItem item) {
@@ -305,20 +306,20 @@ public class FilesystemViewBean implements Serializable {
         }
     }
 
-    public void downloadSelectedFiles(){
-        if (selected == null || selected.isEmpty()){
+    public void downloadSelectedFiles() {
+        if (selected == null || selected.isEmpty()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "You must select files first - Note that downloading of folders is forbidden"));
             return;//nothing selected
         }
         List<FilesystemItem> filteredItems = new ArrayList<>();
-        for (FilesystemItem item: selected){
-            if (!item.isFolder()){
+        for (FilesystemItem item : selected) {
+            if (!item.isFolder()) {
                 //filter folders out
                 filteredItems.add(item);
             }
         }
         //check again for empty list
-        if (filteredItems.isEmpty()){
+        if (filteredItems.isEmpty()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "You must select files first - Note that downloading of folders is forbidden"));
             return;//nothing selected
         }
@@ -331,9 +332,30 @@ public class FilesystemViewBean implements Serializable {
             OutputStream output = ctx.getResponseOutputStream();
             fsm.setupZippedDownloadStream(selected, output);
             FacesContext.getCurrentInstance().responseComplete();
-        } catch (IOException ex){
+        } catch (IOException ex) {
             Logger.getLogger(FilesystemViewBean.class.getName()).log(Level.SEVERE, "Fatal exception during opening output zip stream", ex);
         }
     }
+
+    protected String getViewId() {
+        return FacesContext.getCurrentInstance().getViewRoot().getViewId();
+    }
+
+    protected String getLocalRedirect() {
+        return getViewId() + "?faces-redirect=true";
+    }
+
+    protected String redirectToPath(String path) {
+        return getLocalRedirect() + "&path=" + path;
+    }
+
+    public String getPath() {
+        return prefix;
+    }
+
+    public void setPath(String path) {
+        prefix = path;
+    }
+
 
 }
