@@ -64,6 +64,12 @@
             <to-view-id>/help.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
+        <navigation-case>
+            <from-outcome>settings</from-outcome>
+            <to-view-id>/settings.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+
     </navigation-rule>
     
 

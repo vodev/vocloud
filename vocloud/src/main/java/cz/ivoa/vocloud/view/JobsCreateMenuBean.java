@@ -5,6 +5,7 @@ import cz.ivoa.vocloud.ejb.UserSessionBean;
 import cz.ivoa.vocloud.entity.UWSType;
 import cz.ivoa.vocloud.entity.UserAccount;
 import cz.ivoa.vocloud.entity.UserGroupName;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,11 +15,11 @@ import javax.enterprise.context.RequestScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
+
 import org.primefaces.component.menuitem.UIMenuItem;
 import org.primefaces.component.submenu.UISubmenu;
 
 /**
- *
  * @author radio.koza
  */
 @Named
@@ -36,7 +37,7 @@ public class JobsCreateMenuBean {
     @PostConstruct
     private void init() {
         UserAccount userAcc = usb.getUser();
-        if (userAcc == null){
+        if (userAcc == null) {
             //user is not logged in - unnecessary to setup this bean
             return;
         }
@@ -53,42 +54,34 @@ public class JobsCreateMenuBean {
         if (!restrictedAccess) {
             for (UWSType type : possibleUnrestrictedTypes) {
                 possibleTypeIds.add(type.getStringIdentifier());
-                UIMenuItem item = new UIMenuItem();
-                item.setAjax(false);
-                item.setId(type.getStringIdentifier());
-                item.setValue(type.getShortDescription());
-                item.setActionExpression(FacesContext.getCurrentInstance().getApplication().getExpressionFactory().
-                        createMethodExpression(FacesContext.getCurrentInstance().getELContext(), "#{jobsCreateMenuBean.navigateToCreateJob('" + type.getStringIdentifier() + "')}", String.class, new Class[]{String.class}));
-                jobsCreateSubmenu.getChildren().add(item);
+                jobsCreateSubmenu.getChildren().add(constructMenuItem(type));
             }
         } else {
             UISubmenu basic = new UISubmenu();
             basic.setLabel("Standard jobs");
             for (UWSType type : possibleUnrestrictedTypes) {
                 possibleTypeIds.add(type.getStringIdentifier());
-                UIMenuItem item = new UIMenuItem();
-                item.setAjax(false);
-                item.setId(type.getStringIdentifier());
-                item.setValue(type.getShortDescription());
-                item.setActionExpression(FacesContext.getCurrentInstance().getApplication().getExpressionFactory().
-                        createMethodExpression(FacesContext.getCurrentInstance().getELContext(), "#{jobsCreateMenuBean.navigateToCreateJob('" + type.getStringIdentifier() + "')}", String.class, new Class[]{String.class}));
-                basic.getChildren().add(item);
+                basic.getChildren().add(constructMenuItem(type));
             }
             jobsCreateSubmenu.getChildren().add(basic);
             UISubmenu restricted = new UISubmenu();
             restricted.setLabel("Restricted jobs");
             for (UWSType type : possibleRestrictedTypes) {
                 possibleTypeIds.add(type.getStringIdentifier());
-                UIMenuItem item = new UIMenuItem();
-                item.setAjax(false);
-                item.setId(type.getStringIdentifier());
-                item.setValue(type.getShortDescription());
-                item.setActionExpression(FacesContext.getCurrentInstance().getApplication().getExpressionFactory().
-                        createMethodExpression(FacesContext.getCurrentInstance().getELContext(), "#{jobsCreateMenuBean.navigateToCreateJob('" + type.getStringIdentifier() + "')}", String.class, new Class[]{String.class}));
-                restricted.getChildren().add(item);
+                restricted.getChildren().add(constructMenuItem(type));
             }
             jobsCreateSubmenu.getChildren().add(restricted);
         }
+    }
+
+    private UIMenuItem constructMenuItem(UWSType type) {
+        UIMenuItem item = new UIMenuItem();
+        item.setAjax(false);
+        item.setId(type.getStringIdentifier());
+        item.setValue(type.getShortDescription());
+        item.setActionExpression(FacesContext.getCurrentInstance().getApplication().getExpressionFactory().
+                createMethodExpression(FacesContext.getCurrentInstance().getELContext(), "#{jobsCreateMenuBean.navigateToCreateJob('" + type.getStringIdentifier() + "')}", String.class, new Class[]{String.class}));
+        return item;
     }
 
     public UISubmenu getSubmenuBinding() {
