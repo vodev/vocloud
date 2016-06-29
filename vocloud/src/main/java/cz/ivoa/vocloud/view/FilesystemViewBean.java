@@ -1,6 +1,7 @@
 package cz.ivoa.vocloud.view;
 
 import cz.ivoa.vocloud.filesystem.FilesystemManipulator;
+import cz.ivoa.vocloud.filesystem.exception.IllegalPathException;
 import cz.ivoa.vocloud.filesystem.model.FilesystemFile;
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import cz.ivoa.vocloud.tools.Toolbox;
@@ -12,7 +13,6 @@ import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
 import org.primefaces.model.menu.MenuModel;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
@@ -62,7 +62,7 @@ public class FilesystemViewBean implements Serializable {
     protected boolean init() {
         try {
             items = fsm.listFilesystemItems(prefix);
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalPathException ex) {
             return false;
         }
         //check validity of directory

@@ -1,6 +1,7 @@
 package cz.ivoa.vocloud.view;
 
 import cz.ivoa.vocloud.filesystem.FilesystemManipulator;
+import cz.ivoa.vocloud.filesystem.exception.IllegalPathException;
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import cz.ivoa.vocloud.tools.Toolbox;
 
@@ -23,6 +24,7 @@ import java.util.logging.Logger;
 @ViewScoped
 public class CloudDownloadBean implements Serializable {
 
+    private static final Logger LOG = Logger.getLogger(CloudDownloadBean.class.getName());
     private static final int ARCHIVE_COUNT_LIMIT = 100;
 
     private String targetFolder;
@@ -38,22 +40,26 @@ public class CloudDownloadBean implements Serializable {
     @PostConstruct
     protected void init() {
         targetFolder = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("targetFolder");
-        if (targetFolder == null){
+        if (targetFolder == null) {
             return;
         }
-        List<FilesystemItem> items = fsm.listFilesystemItems(targetFolder);
-        //check validity of directory
-        if (items == null) {
-            return;//fail
-        }
-        //count items
-        files = new ArrayList<>();
-
-        for (FilesystemItem i: items){
-            if (!i.isFolder()) {
-                files.add(i);
-                filesSize += i.getSizeInBytes();
+        try {
+            List<FilesystemItem> items = fsm.listFilesystemItems(targetFolder);
+            //check validity of directory
+            if (items == null) {
+                return;//fail
             }
+            //count items
+            files = new ArrayList<>();
+
+            for (FilesystemItem i : items) {
+                if (!i.isFolder()) {
+                    files.add(i);
+                    filesSize += i.getSizeInBytes();
+                }
+            }
+        } catch (IllegalPathException ex) {
+            LOG.severe("Illegal path for initialization of mass download");
         }
     }
 
@@ -66,7 +72,7 @@ public class CloudDownloadBean implements Serializable {
     }
 
     public int getFilesCount() {
-        if (files == null){
+        if (files == null) {
             return 0;
         }
         return files.size();
@@ -80,22 +86,22 @@ public class CloudDownloadBean implements Serializable {
         this.archiveCount = archiveCount;
     }
 
-    public boolean isLinksGenerated(){
+    public boolean isLinksGenerated() {
         return linksGenerated;
     }
 
-    public void chooseDifferentCount(){
+    public void chooseDifferentCount() {
         archiveLinks = null;
         linksGenerated = false;
     }
 
-    private int[] archiveFileCounts(){
+    private int[] archiveFileCounts() {
         int[] counts = new int[archiveCount];
         int factor = files.size() / archiveCount;
-        for (int i = 0; i < counts.length; i++){
+        for (int i = 0; i < counts.length; i++) {
             counts[i] = factor;
         }
-        for (int i = 0; i < files.size() % archiveCount; i++){
+        for (int i = 0; i < files.size() % archiveCount; i++) {
             counts[i] += 1;
         }
         return counts;
@@ -105,17 +111,17 @@ public class CloudDownloadBean implements Serializable {
         return archiveLinks;
     }
 
-    public void generateLinks(){
+    public void generateLinks() {
         //do validation
-        if (archiveCount < 1){
+        if (archiveCount < 1) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "Archive count must be at least 1"));
             return;
         }
-        if (archiveCount > ARCHIVE_COUNT_LIMIT){
+        if (archiveCount > ARCHIVE_COUNT_LIMIT) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "Archive count must not be greater than " + ARCHIVE_COUNT_LIMIT));
             return;
         }
-        if (archiveCount > files.size()){
+        if (archiveCount > files.size()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "Archive count must not be greater than count of files"));
             return;
         }
@@ -123,7 +129,7 @@ public class CloudDownloadBean implements Serializable {
         Archive arch;
         int[] counts = archiveFileCounts();
         int pointer = 0;
-        for (int i = 0; i < archiveCount; i++){
+        for (int i = 0; i < archiveCount; i++) {
             arch = new Archive(i, pointer, pointer + counts[i]);
             pointer += counts[i];
             archiveLinks.add(arch);
@@ -131,7 +137,7 @@ public class CloudDownloadBean implements Serializable {
         linksGenerated = true;
     }
 
-    public void downloadArchive(int archiveIndex){
+    public void downloadArchive(int archiveIndex) {
         Archive archive = archiveLinks.get(archiveIndex);
         ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
         ctx.responseReset();
@@ -139,19 +145,19 @@ public class CloudDownloadBean implements Serializable {
         String attachmentName = "attachment; filename=\"" + archive.getArchiveName() + "\"";
         ctx.setResponseHeader("Content-Disposition", attachmentName);
         List<FilesystemItem> selected = new ArrayList<>(archive.getLastIndexExcl() - archive.getFirstIndexIncl());
-        for (int i = archive.getFirstIndexIncl(); i < archive.getLastIndexExcl(); i++){
+        for (int i = archive.getFirstIndexIncl(); i < archive.getLastIndexExcl(); i++) {
             selected.add(files.get(i));
         }
         try {
             OutputStream output = ctx.getResponseOutputStream();
             fsm.setupZippedDownloadStream(selected, output);
             FacesContext.getCurrentInstance().responseComplete();
-        } catch (IOException ex){
+        } catch (IOException ex) {
             Logger.getLogger(FilesystemViewBean.class.getName()).log(Level.SEVERE, "Fatal exception during opening output zip stream", ex);
         }
     }
 
-    public static class Archive{
+    public static class Archive {
         private static final String ARCHIVE_NAME_PREFIX = "archive";
         private static final String ARCHIVE_NAME_POSTFIX = ".zip";
 
@@ -177,7 +183,7 @@ public class CloudDownloadBean implements Serializable {
             return lastIndexExcl;
         }
 
-        public String getArchiveName(){
+        public String getArchiveName() {
             return ARCHIVE_NAME_PREFIX + (archiveIndex + 1) + ARCHIVE_NAME_POSTFIX;
         }
     }

@@ -1,6 +1,7 @@
 package cz.ivoa.vocloud.filesystem;
 
 import cz.ivoa.vocloud.entity.UWSType;
+import cz.ivoa.vocloud.filesystem.exception.IllegalPathException;
 import cz.ivoa.vocloud.filesystem.model.FilesystemFile;
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import cz.ivoa.vocloud.filesystem.model.Folder;
@@ -64,7 +65,7 @@ public class FilesystemManipulator {
         }
     }
 
-    public List<FilesystemItem> listFilesystemItems(String prefix) {
+    public List<FilesystemItem> listFilesystemItems(String prefix) throws IllegalPathException {
         if (filesystemDirectory == null) {
             throw new IllegalStateException("Filesystem directory is uninitialized");
         }
@@ -74,15 +75,19 @@ public class FilesystemManipulator {
         }
         List<Folder> folders = new ArrayList<>();
         List<FilesystemFile> fsFiles = new ArrayList<>();
-        for (File i : files) {
-            if (i.isDirectory()) {
-                folders.add(new Folder(i.getName(), prefix));
-            } else if (i.isFile()) {
-                fsFiles.add(new FilesystemFile(i.getName(), prefix, i.length(), new Date(i.lastModified())));
-            } else {
-                //partially deleted file - cached but not present
-                LOG.log(Level.WARNING, "Nor directory nor file! {0}", i.getPath());
+        try {
+            for (File i : files) {
+                if (i.isDirectory()) {
+                    folders.add(new Folder(i.getName(), prefix));
+                } else if (i.isFile()) {
+                    fsFiles.add(new FilesystemFile(i.getName(), prefix, i.length(), new Date(i.lastModified())));
+                } else {
+                    //partially deleted file - cached but not present
+                    LOG.log(Level.WARNING, "Nor directory nor file! {0}", i.getPath());
+                }
             }
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalPathException(ex);
         }
         //merge collections
         List<FilesystemItem> result = new ArrayList<>(files.length);
@@ -91,7 +96,7 @@ public class FilesystemManipulator {
         return result;
     }
 
-    public List<FilesystemItem> listFilesystemItems() {
+    public List<FilesystemItem> listFilesystemItems() throws IllegalPathException {
         //consider prefix as ""
         return listFilesystemItems("");
     }
@@ -312,7 +317,7 @@ public class FilesystemManipulator {
         BufferedInputStream origin = null;
         try {
             for (FilesystemItem item : selectedItems) {
-                if (item.isFolder()){
+                if (item.isFolder()) {
                     continue;
                 }
                 File file = filesystemDirectory.toPath().resolve(item.getPrefix()).resolve(item.getName()).toFile();
