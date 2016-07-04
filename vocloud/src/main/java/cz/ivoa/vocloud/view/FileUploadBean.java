@@ -45,10 +45,10 @@ public class FileUploadBean implements Serializable {
         try {
             finalName = fsm.saveUploadedFile(targetFolder, fileName, event.getFile().getInputstream());
             if (finalName.equals(fileName)) {
-                FacesMessage message = new FacesMessage("Succesful", fileName + " was uploaded.");
+                FacesMessage message = new FacesMessage("Successful", fileName + " was uploaded.");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             } else {
-                FacesMessage message = new FacesMessage("Succesful", fileName + " was saved successfully as " + finalName);
+                FacesMessage message = new FacesMessage("Successful", fileName + " was saved successfully as " + finalName);
                 FacesContext.getCurrentInstance().addMessage(null, message);
             }
         } catch (IOException ex) {
