@@ -156,7 +156,7 @@ public class FilesystemViewBean implements Serializable {
     }
 
     public boolean isInRoot() {
-        return prefix.equals("");
+        return "".equals(prefix);
     }
 
     public String goBack() {

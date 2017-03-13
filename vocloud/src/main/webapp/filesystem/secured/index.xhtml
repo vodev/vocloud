@@ -86,6 +86,9 @@
                     </p:submenu>
                     <p:menuitem id="sendToSAMPbtn" disabled="#{not filesystemManageBean.sampBtnEnabled}" value="Send through SAMP"
                                 icon="ui-icon-circle-arrow-n" action="#{filesystemManageBean.sendSelectedThroughSAMP}" update="messages"/>
+                    <p:menuitem id="plotSpectra" value="Plot selected spectra"
+                                icon="ui-icon-image" actionListener="#{filesystemManageBean.plotSelectedSpectra()}"
+                                update="messages,:spectraPlotForm:spectraPlotDialog"/>
                 </p:menubar>
                 <p:overlayPanel id="newFolderPanel" for="newFolderBtn" hideEffect="fade" widgetVar="renameOverlay">
                     <h:panelGrid columns="2" cellpadding="10" cellspacing="5">
@@ -127,7 +130,7 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="#{bundle.FileOperation}" width="300">
+                    <p:column headerText="#{bundle.FileOperation}" width="400">
                         <p:commandButton disabled="#{item.folder}" value="#{bundle.FileDownload}" ajax="false" icon="ui-icon-arrowthick-1-s">
                             <p:fileDownload value="#{filesystemManageBean.downloadFile(item)}" />
                         </p:commandButton>
@@ -136,7 +139,7 @@
                             <f:setPropertyActionListener target="#{filesystemManageBean.filesystemItemToRename}" value="#{item}" />
                         </p:commandButton>
                         <p:commandButton rendered="#{not item.folder}" title="View file"  icon="ui-icon-circle-zoomin" immediate="true" process="@this"
-                                         update=":dialogViewForm:fileView" oncomplete="PF('fileView').show()" value="View">
+                                         update=":dialogViewForm:fileView" oncomplete="PF('fileView').show()" value="View content">
                             <f:setPropertyActionListener value="#{item}" target="#{filesystemManageBean.selectedViewedFile}" />
                         </p:commandButton>
                     </p:column>
@@ -170,6 +173,11 @@
                 <p:dialog id="fileView" dynamic="true" widgetVar="fileView" width="700" maximizable="false" height="500">
                     <f:facet name="header">File <h:outputText id="name" value="#{filesystemManageBean.selectedViewedFile.name}" /></f:facet>
                     <pre><h:outputText id="text" value="#{filesystemManageBean.selectedViewedFileContents}" /></pre>
+                </p:dialog>
+            </h:form>
+            <h:form id="spectraPlotForm">
+                <p:dialog id="spectraPlotDialog" dynamic="true" widgetVar="spectraPlotDialog" width="800" maximizable="false" height="600">
+                    <iframe src="#{filesystemManageBean.plotViewSrc}" style="width: 100%; height: 100%"></iframe>
                 </p:dialog>
             </h:form>
         </ui:define>

@@ -17,6 +17,7 @@
         <vocloud.appUrl>http://localhost:80/vocloud</vocloud.appUrl>
         <vocloud.filesystemDir>/var/local/vocloud/filesystem/</vocloud.filesystemDir>
         <vocloud.jobsDir>/var/local/vocloud/jobs/</vocloud.jobsDir>
+        <vocloud.spectraPlotterUrl>http://localhost:7000/viewer/</vocloud.spectraPlotterUrl>
         <org.seleniumhq.selenium.version>2.45.0</org.seleniumhq.selenium.version>
         <info.cukes.version>1.2.2</info.cukes.version>
     </properties>
@@ -61,7 +62,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>5.1</version>
+            <version>5.3</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>

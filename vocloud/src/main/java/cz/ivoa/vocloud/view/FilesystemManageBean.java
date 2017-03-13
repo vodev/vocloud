@@ -2,12 +2,18 @@ package cz.ivoa.vocloud.view;
 
 import cz.ivoa.vocloud.filesystem.model.FilesystemItem;
 import cz.ivoa.vocloud.filesystem.model.Folder;
+import cz.ivoa.vocloud.tools.Config;
+import org.primefaces.context.RequestContext;
 
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.file.InvalidPathException;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
@@ -17,9 +23,16 @@ import javax.inject.Named;
 @ViewScoped
 public class FilesystemManageBean extends FilesystemViewBean {
 
+    private static final Logger LOG = Logger.getLogger(FilesystemManageBean.class.getName());
+
     private String folderName;
     private String itemToRename;
     private FilesystemItem filesystemItemToRename;
+    private String plotViewSrc;
+
+    @Inject
+    @Config
+    private String spectraPlotterUrl;
 
     @Override
     protected String getThisNamedBeanName() {
@@ -46,6 +59,10 @@ public class FilesystemManageBean extends FilesystemViewBean {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "Name of the new folder is invalid"));
             return false;
         }
+    }
+
+    public String getPlotViewSrc() {
+        return plotViewSrc;
     }
 
     public String getFolderName() {
@@ -153,5 +170,38 @@ public class FilesystemManageBean extends FilesystemViewBean {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Some files or folders were not deleted successfully"));
         }
         init();
+    }
+
+    public void plotSelectedSpectra() {
+        if (selected == null || selected.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Failed", "You must select files first"));
+        } else {
+            for (FilesystemItem item : selected) {
+                if (item.isFolder()) {
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                    "Failed",
+                                    "You can plot only files, not folders"));
+                }
+            }
+            boolean first = true;
+            StringBuilder builder = new StringBuilder();
+
+            for (FilesystemItem item : selected) {
+                if (!first) {
+                    builder.append(',');
+                }
+                first = false;
+                builder.append(item.getPrefix()).append('/').append(item.getName());
+            }
+            try {
+                this.plotViewSrc = spectraPlotterUrl + "view?spectra="
+                        + URLEncoder.encode(builder.toString(), "UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                LOG.severe("Unsupported encoding: " + ex.toString());
+            }
+            RequestContext context = RequestContext.getCurrentInstance();
+            context.execute("PF('spectraPlotDialog').show();");
+        }
     }
 }
