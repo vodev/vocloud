@@ -323,7 +323,7 @@
                 <vocloud.appUrl>http://localhost:8080/vocloud-betelgeuse</vocloud.appUrl>
                 <vocloud.filesystemDir>/var/local/vocloud/filesystem/</vocloud.filesystemDir>
                 <vocloud.jobsDir>/var/local/vocloud/jobs/</vocloud.jobsDir>
-                <vocloud.spectraPlotterUrl>http://vocloud-dev.asu.cas.cz/viewer/</vocloud.spectraPlotterUrl>
+                <vocloud.spectraPlotterUrl>https://vocloud-dev.asu.cas.cz/viewer/</vocloud.spectraPlotterUrl>
             </properties>
             <build>
                 <plugins>
