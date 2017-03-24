@@ -192,10 +192,11 @@ public class FilesystemManageBean extends FilesystemViewBean {
                     builder.append(',');
                 }
                 first = false;
-                builder.append(item.getPrefix()).append('/').append(item.getName());
+                builder.append(item.getName());
             }
             try {
-                this.plotViewSrc = spectraPlotterUrl + "view?spectra="
+                this.plotViewSrc = spectraPlotterUrl + "view?prefix="
+                        + URLEncoder.encode(prefix, "UTF-8") + "&spectra="
                         + URLEncoder.encode(builder.toString(), "UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 LOG.severe("Unsupported encoding: " + ex.toString());
