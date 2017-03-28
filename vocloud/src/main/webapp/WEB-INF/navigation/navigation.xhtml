@@ -12,6 +12,7 @@
             <p:menuitem rendered="#{request.remoteUser != null}" ajax="false" action="/jobs/index?faces-redirect=true" value="#{bundle.MenuItemJobs}" icon="ui-icon-document" />
             <p:menuitem rendered='#{request.remoteUser != null and (request.isUserInRole("MANAGER") or request.isUserInRole("ADMIN"))}' ajax="false" action="/filesystem/secured/download-queue?faces-redirect=true" value="#{bundle.MenuItemDownloadJobs}" icon="ui-icon-circle-arrow-s" />
             <p:submenu rendered="#{request.remoteUser != null}" binding="#{jobsCreateMenuBean.submenuBinding}" icon="ui-icon-disk" />
+            <p:menuitem rendered='#{request.remoteUser != null and (request.isUserInRole("MANAGER") or request.isUserInRole("ADMIN"))}' ajax="false" action="#{jupyterBean.redirect}" value="#{bundle.MenuItemJupyter}" />
             <p:menuitem rendered="#{request.remoteUser != null}" ajax="false" action="settings" value="#{bundle.MenuItemSettings}" icon="ui-icon-gear" />
             <p:submenu rendered='#{request.isUserInRole("ADMIN")}' label="#{bundle.SubmenuAdmin}">
                 <p:menuitem ajax="false" action="admin-users" value="#{bundle.MenuItemUsers}" />
