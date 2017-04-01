@@ -65,7 +65,7 @@ public class AuthToken implements Serializable {
     }
 
     public static String randomToken() {
-        return new BigInteger(256, RANDOM).toString(32);
+        return new BigInteger(260, RANDOM).toString(32);
     }
 
     @Override
