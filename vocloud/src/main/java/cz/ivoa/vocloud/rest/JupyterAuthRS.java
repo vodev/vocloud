@@ -37,7 +37,7 @@ public class JupyterAuthRS {
             return renderError("Invalid or expired token");
         }
         //token is valid
-        return Response.status(200).entity(tokenObj).build();
+        return Response.status(200).header("Cache-Control", "no-store").entity(tokenObj).build();
     }
 
 
