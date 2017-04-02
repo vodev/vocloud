@@ -55,7 +55,6 @@ public class TokenAuthBean {
      */
     @Lock(LockType.WRITE)
     public void removeToken(AuthToken tokenObj) {
-        System.out.println("token removal body");
         if (tokenObj == null) {
             throw new IllegalArgumentException("tokenObj must not be null");
         }
@@ -126,9 +125,7 @@ public class TokenAuthBean {
             return null;
         }
         //remove the token
-        System.out.println("calling remove token");
         removeToken(tokenObj);
-        System.out.println("end calling");
         return tokenObj;
     }
 
