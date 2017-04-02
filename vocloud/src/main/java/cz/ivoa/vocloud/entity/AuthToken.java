@@ -61,7 +61,7 @@ public class AuthToken implements Serializable {
             return false;
         }
         Calendar curr = Calendar.getInstance();
-        return curr.compareTo(created) / 1000 > duration;
+        return (curr.getTimeInMillis() - created.getTimeInMillis()) / 1000 > duration;
     }
 
     public static String randomToken() {
