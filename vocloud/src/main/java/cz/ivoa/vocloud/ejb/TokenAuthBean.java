@@ -13,6 +13,7 @@ import java.util.*;
 @Singleton
 @LocalBean
 @ConcurrencyManagement(ConcurrencyManagementType.CONTAINER)
+@TransactionManagement(TransactionManagementType.BEAN)
 public class TokenAuthBean {
     private static final int CLEANSE_TIMEOUT = 5000; //timeout in milliseconds
     public static final int DEFAULT_DURATION = 300; //token implicit duration in seconds
@@ -54,10 +55,11 @@ public class TokenAuthBean {
      */
     @Lock(LockType.WRITE)
     public void removeToken(AuthToken tokenObj) {
+        System.out.println("token removal body");
         if (tokenObj == null) {
             throw new IllegalArgumentException("tokenObj must not be null");
         }
-        Integer index = indexToken.get(tokenObj.getUsername());
+        Integer index = indexToken.get(tokenObj.getToken());
         if (index == null) {
             return; //token is not in storage
         }
@@ -117,14 +119,16 @@ public class TokenAuthBean {
      * @return <code>{@link AuthToken}</code> instance of the found and consumed token or <code>null</code>
      * if no such token was found.
      */
-    @Lock(LockType.READ)
+    @Lock(LockType.WRITE)
     public AuthToken consumeToken(String token) {
         AuthToken tokenObj = findByToken(token);
         if (tokenObj == null) {
-            return null;//no need for locking, token was not found
+            return null;
         }
         //remove the token
+        System.out.println("calling remove token");
         removeToken(tokenObj);
+        System.out.println("end calling");
         return tokenObj;
     }
 
