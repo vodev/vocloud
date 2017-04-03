@@ -1,83 +1,82 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      >
+>
 
-    <body>
+<body>
 
-        <ui:composition template="./WEB-INF/template.xhtml">
+<ui:composition template="./WEB-INF/template.xhtml">
 
-            <ui:define name="title">
-                Register
-            </ui:define>
+    <ui:define name="title">
+        Register
+    </ui:define>
 
-            <ui:define name="content">
-                <p>Register to VO-CLOUD web service.</p>
-                <h:form id="panel">
-                    <h:panelGrid columns="1" styleClass="grid" cellpadding="3">
-                        <p:panel header="Personal details">
-                            <h:panelGrid columns="3" columnClasses="label, value, message" styleClass="grid" cellpadding="3">
-                                <h:outputText value="First name:" />
-                                <p:inputText id="fn" required="true" label="Firstname"
-                                             value="#{register.user.firstName}" />
-                                <p:message id="fnMessage" for="fn" />  
+    <ui:define name="content">
+        <p>Register to VO-CLOUD web service.</p>
+        <h:form id="panel">
+            <h:panelGrid columns="1" styleClass="grid" cellpadding="3">
+                <p:panel header="Personal details">
+                    <h:panelGrid columns="3" columnClasses="label, value, message" styleClass="grid" cellpadding="3">
+                        <h:outputText value="First name:"/>
+                        <p:inputText id="fn" required="true" label="Firstname"
+                                     value="#{register.user.firstName}"/>
+                        <p:message id="fnMessage" for="fn"/>
 
-                                <h:outputText value="Last name:" />
-                                <p:inputText id="s" required="true" label="Last name"
-                                             value="#{register.user.lastName}" />
-                                <p:message id="sMessage" for="s" />  
+                        <h:outputText value="Last name:"/>
+                        <p:inputText id="s" required="true" label="Last name"
+                                     value="#{register.user.lastName}"/>
+                        <p:message id="sMessage" for="s"/>
 
-                                <h:outputText value="Organization:" />
-                                <p:inputText id="org" required="false" label="Organization"
-                                             value="#{register.user.organization}" />
-                                <p:message id="orgMessage" for="org" />  
-                            </h:panelGrid>
-                        </p:panel>
-
-                        <p:panel header="Login info">
-                            <h:panelGrid columns="3" columnClasses="label, value, message" styleClass="grid" cellpadding="3">
-                                <h:outputText value="Username:" />
-                                <p:inputText id="username" required="true" label="Login"
-                                             value="#{register.user.username}" validator="#{register.validateUniqUsername}">
-                                </p:inputText>
-                                <p:message id="usernameMessage" for="username" />  
-
-                                <h:outputText value="Password:" />
-                                <p:password id="pass" required="true" label="Password" match="pass2" feedback="true"
-                                            value="#{register.user.pass}" />
-                                <p:message id="passMessage" for="pass" />  
-
-                                <h:outputText value="Password check:" />
-                                <p:password  id="pass2" required="true" label="Confirm password"/>
-                                <p:message id="pass2Message" for="pass2" />  
-
-                                <h:outputText value="E-mail:" />
-                                <p:inputText id="email" required="true" label="E-mail"
-                                             value="#{register.user.email}" validator="#{register.validateUniqEmail}"/>
-                                <p:message id="emailMessage" for="email" /> 
-                            </h:panelGrid>
-
-                        </p:panel>
-
-                        <p:panel header="Captcha">
-                            <p>Enter text on picture to confirm your humanity.</p>
-
-                            <p:captcha id="c" label="captcha" theme="white" />
-                            <p:message id="cMessage" for="c" />
-                        </p:panel>
-
-                        <p:messages globalOnly="true"/>
+                        <h:outputText value="Organization:"/>
+                        <p:inputText id="org" required="false" label="Organization"
+                                     value="#{register.user.organization}"/>
+                        <p:message id="orgMessage" for="org"/>
                     </h:panelGrid>
-                    <p:commandButton value="Register" ajax="false" actionListener="#{register.register}"/>  
+                </p:panel>
 
-                </h:form>
-            </ui:define>
+                <p:panel header="Login info">
+                    <h:panelGrid columns="3" columnClasses="label, value, message" styleClass="grid" cellpadding="3">
+                        <h:outputText value="Username:"/>
+                        <p:inputText id="username" required="true" label="Login"
+                                     value="#{register.user.username}" validator="#{register.validateUniqUsername}">
+                        </p:inputText>
+                        <p:message id="usernameMessage" for="username"/>
+
+                        <h:outputText value="Password:"/>
+                        <p:password id="pass" required="true" label="Password" match="pass2" feedback="true"
+                                    value="#{register.user.pass}"/>
+                        <p:message id="passMessage" for="pass"/>
+
+                        <h:outputText value="Password check:"/>
+                        <p:password id="pass2" required="true" label="Confirm password"/>
+                        <p:message id="pass2Message" for="pass2"/>
+
+                        <h:outputText value="E-mail:"/>
+                        <p:inputText id="email" required="true" label="E-mail"
+                                     value="#{register.user.email}" validator="#{register.validateUniqEmail}"/>
+                        <p:message id="emailMessage" for="email"/>
+                    </h:panelGrid>
+
+                </p:panel>
+
+                <p:panel header="Captcha">
+                    <p:captcha id="c" label="captcha" theme="white"/>
+                    <p:message id="cMessage" for="c"/>
+                </p:panel>
+
+                <p:messages globalOnly="true"/>
+            </h:panelGrid>
+            <p:commandButton value="Register" ajax="false" actionListener="#{register.register}"/>
+
+        </h:form>
+    </ui:define>
 
 
-        </ui:composition>
+</ui:composition>
 
-    </body>
+</body>
 </html>

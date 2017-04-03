@@ -89,6 +89,11 @@
             <description/>
             <url-pattern>/filesystem/*</url-pattern>
         </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>jupyter</web-resource-name>
+            <description/>
+            <url-pattern>/jupyter.xhtml</url-pattern>
+        </web-resource-collection>
         <auth-constraint>
             <description/>
             <role-name>ADMIN</role-name>
@@ -117,11 +122,11 @@
     </context-param>
     <context-param>
         <param-name>primefaces.PRIVATE_CAPTCHA_KEY</param-name>
-        <param-value>6Lf_h9ASAAAAAPXvMsAqwoBZrLq-wbef1dL-mJq4</param-value>
+        <param-value>6LdIWRsUAAAAAFTqc0nGcA4WNsq0mBpr5Pr_BhFa</param-value>
     </context-param>
     <context-param>
         <param-name>primefaces.PUBLIC_CAPTCHA_KEY</param-name>
-        <param-value>6Lf_h9ASAAAAACiCHyE-ksaR6Q1WtQeEuEsjqLyV</param-value>
+        <param-value>6LdIWRsUAAAAAIC0Q92AaF6xpVagMz7BfBcEFoNl</param-value>
     </context-param>
     <context-param>
         <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
