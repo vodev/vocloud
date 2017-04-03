@@ -17,9 +17,7 @@
         <vocloud.filesystemDir>/var/local/vocloud/filesystem/</vocloud.filesystemDir>
         <vocloud.jobsDir>/var/local/vocloud/jobs/</vocloud.jobsDir>
         <vocloud.spectraPlotterUrl>http://localhost:7000/viewer/</vocloud.spectraPlotterUrl>
-        <!-- must be changed in packaging using -Djupyter.secrettoken=token123 parameter -->
-        <jupyter.secrettoken>secret123</jupyter.secrettoken>
-        <jupyter.url>http://localhost:8888/vocloud-jupyter</jupyter.url>
+        <jupyterhub.baseUrl>http://localhost/vocloud-jupyterhub</jupyterhub.baseUrl>
         <org.seleniumhq.selenium.version>2.45.0</org.seleniumhq.selenium.version>
         <info.cukes.version>1.2.2</info.cukes.version>
     </properties>
@@ -315,7 +313,7 @@
                 <vocloud.filesystemDir>/var/local/vocloud/filesystem/</vocloud.filesystemDir>
                 <vocloud.jobsDir>/var/local/vocloud/jobs/</vocloud.jobsDir>
                 <vocloud.spectraPlotterUrl>https://vocloud-dev.asu.cas.cz/viewer/</vocloud.spectraPlotterUrl>
-                <jupyter.url>https://vocloud-dev.asu.cas.cz/vocloud-jupyter</jupyter.url>
+                <jupyter.url>https://vocloud-dev.asu.cas.cz/vocloud-jupyterhub</jupyter.url>
             </properties>
             <build>
                 <plugins>

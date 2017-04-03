@@ -1,5 +1,6 @@
 package cz.ivoa.vocloud.view;
 
+import cz.ivoa.vocloud.ejb.TokenAuthBean;
 import cz.ivoa.vocloud.ejb.UserAccountFacade;
 import cz.ivoa.vocloud.entity.UserAccount;
 import cz.ivoa.vocloud.entity.UserGroupName;
@@ -22,36 +23,55 @@ public class JupyterBean {
     @EJB
     private UserAccountFacade uaf;
 
-    @Inject
-    @Config
-    private String jupyterToken;
+    @EJB
+    private TokenAuthBean tokenAuthBean;
 
     @Inject
     @Config
-    private String jupyterUrl;
+    private String jupyterhubBaseUrl;
 
-    public void redirect() {
+    @Inject
+    @Config
+    private String jupyterhubServiceName;
+
+    private String url = null;
+    private String username = null;
+    private String password = null;
+
+    public String logIn() {
         String user = FacesContext.getCurrentInstance().getExternalContext().getRemoteUser();
         UserAccount userAcc = uaf.findByUsername(user);
-        if (userAcc == null || userAcc.getGroupName().equals(UserGroupName.USER)) {
+        if (userAcc == null ||
+                (!userAcc.getGroupName().equals(UserGroupName.MANAGER) &&
+                        !userAcc.getGroupName().equals(UserGroupName.ADMIN))) {
             try {
                 FacesContext.getCurrentInstance().getExternalContext()
                         .responseSendError(403, "Unauthorized");
             } catch (IOException ex) {
                 Logger.getLogger(this.getClass()).error("IOException during 403 call", ex);
             }
-            return;
+            return "/index?faces-redirect=true";
         }
         // user is authenticated
-        String url = jupyterUrl;
+        url = jupyterhubBaseUrl;
         if (!url.endsWith("/")) {
             url += "/";
         }
-        url += "login?token=" + jupyterToken;
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(url);
-        } catch (IOException ex) {
-            Logger.getLogger(this.getClass()).error("IOException during redirect to jupyter", ex);
-        }
+        url += "hub/login";
+        username = user;
+        password = tokenAuthBean.generateToken(username, jupyterhubServiceName);
+        return null;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }
