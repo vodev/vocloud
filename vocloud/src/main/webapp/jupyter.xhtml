@@ -9,7 +9,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="initial-scale=1.0"/>
     <link rel="shortcut icon" type="image/x-icon" href="#{resource['images/favicon.ico']}"/>
-    <h:outputStylesheet name="css/loader.css" />
+    <h:outputStylesheet name="css/loader.css"/>
     <title>Logging in into JupyterHub</title>
     <script type="text/javascript">
         window.onload = function () {
@@ -30,7 +30,7 @@
         Logging into JupyterHub. Please wait...
     </div>
     <div>
-    If nothing happens, click <p:link outcome="/index">here</p:link> to return to VOCLOUD.
+        If nothing happens, click <p:link outcome="/index">here</p:link> to return to VOCLOUD.
     </div>
     <div class='uil-default-css' style='transform:scale(0.5);'>
         <div style='top:80px;left:93px;width:14px;height:40px;background:#000000;-webkit-transform:rotate(0deg) translate(0,-60px);transform:rotate(0deg) translate(0,-60px);border-radius:10px;position:absolute;'></div>
@@ -49,7 +49,7 @@
 
 
     <form method="post" id="loginForm" action="#{jupyterBean.url}">
-        <input type="hidden" name="username" value="#{jupyterBean.username}"/>
+        <input type="hidden" id="username" name="username" value="#{jupyterBean.username}"/>
         <input type="hidden" name="password" value="#{jupyterBean.password}"/>
     </form>
 

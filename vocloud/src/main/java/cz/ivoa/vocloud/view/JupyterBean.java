@@ -7,12 +7,18 @@ import cz.ivoa.vocloud.entity.UserGroupName;
 import cz.ivoa.vocloud.tools.Config;
 import org.jboss.logging.Logger;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by radiokoza on 29.3.17.
@@ -20,6 +26,8 @@ import java.io.IOException;
 @Named
 @RequestScoped
 public class JupyterBean {
+    private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(FilesystemViewBean.class.getName());
+
     @EJB
     private UserAccountFacade uaf;
 
@@ -38,6 +46,13 @@ public class JupyterBean {
     private String username = null;
     private String password = null;
 
+    @PostConstruct
+    public void init() {
+        if (!jupyterhubBaseUrl.endsWith("/")) {
+            jupyterhubBaseUrl += "/";
+        }
+    }
+
     public String logIn() {
         String user = FacesContext.getCurrentInstance().getExternalContext().getRemoteUser();
         UserAccount userAcc = uaf.findByUsername(user);
@@ -53,14 +68,41 @@ public class JupyterBean {
             return "/index?faces-redirect=true";
         }
         // user is authenticated
-        url = jupyterhubBaseUrl;
-        if (!url.endsWith("/")) {
-            url += "/";
-        }
-        url += "hub/login";
+        url = jupyterhubBaseUrl + "hub/login";
         username = user;
         password = tokenAuthBean.generateToken(username, jupyterhubServiceName);
+        //logout from jupyterhub
+        jupyterhubLogout();
         return null;
+    }
+
+    /**
+     * Invalidates jupyterhub cookies that user possibly have from the last login.
+     */
+    private void jupyterhubLogout() {
+        Pattern pattern = Pattern.compile("https?://[^/]*(/.*)");
+        Matcher matcher = pattern.matcher(jupyterhubBaseUrl);
+        if (!matcher.matches()) {
+            LOG.severe("Unable to invalidate jupyterhub cookies due to matcher error. Unable to " +
+                    "cookie path prefix from " + jupyterhubBaseUrl);
+            return;
+        }
+        String prefix = matcher.group(1);
+        while (prefix.endsWith("/")) {
+            prefix = prefix.substring(0, prefix.length() - 1);
+        }
+        String[][] cookies = {//name -> path
+                {"jupyter-hub-token", prefix + "/hub/"},
+                {"jupyterhub-services", prefix + "/services"},
+                {"jupyter-hub-token-" + username, prefix + "/user/" + username}
+        };
+        ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+        Map<String, Object> prop = new HashMap<>();
+        prop.put("maxAge", 0);
+        for (String[] cookie : cookies) {
+            prop.put("path", cookie[1]);
+            ctx.addResponseCookie(cookie[0], "", prop);
+        }
     }
 
     public String getUrl() {
