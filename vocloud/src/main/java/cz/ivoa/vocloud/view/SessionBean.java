@@ -4,6 +4,7 @@ import cz.ivoa.vocloud.ejb.JobFacade;
 import cz.ivoa.vocloud.ejb.UserSessionBean;
 import cz.ivoa.vocloud.entity.UserAccount;
 import cz.ivoa.vocloud.tools.Config;
+import cz.ivoa.vocloud.tools.Toolbox;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -17,7 +18,6 @@ import java.util.Date;
 import javax.inject.Inject;
 
 /**
- *
  * @author voadmin
  */
 @ManagedBean(name = "sessionBean")
@@ -62,7 +62,7 @@ public class SessionBean implements Serializable {
             loggedIn = true;
             FacesContext currentInstance = FacesContext.getCurrentInstance();
             HttpServletRequest request = (HttpServletRequest) currentInstance.getExternalContext().getRequest();
-            user.setLastIp(request.getRemoteAddr());
+            user.setLastIp(Toolbox.realIp(request));
             user.setLastLogin(new Date());
             usb.login();
         }

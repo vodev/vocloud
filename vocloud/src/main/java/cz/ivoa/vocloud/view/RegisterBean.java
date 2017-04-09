@@ -4,6 +4,7 @@ import cz.ivoa.vocloud.ejb.UserAccountFacade;
 import cz.ivoa.vocloud.entity.UserAccount;
 import cz.ivoa.vocloud.entity.UserGroupName;
 import cz.ivoa.vocloud.tools.Config;
+import cz.ivoa.vocloud.tools.Toolbox;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -18,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 
 /**
- *
  * @author voadmin
  */
 @ManagedBean(name = "register")
@@ -56,7 +56,8 @@ public class RegisterBean implements Serializable {
 
         try {
             HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            user.setRegisteredIp(request.getRemoteAddr());
+
+            user.setRegisteredIp(Toolbox.realIp(request));
 
             uaf.create(user);
             currentInstance.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
@@ -75,8 +76,8 @@ public class RegisterBean implements Serializable {
     }
 
     public void validateUniqUsername(FacesContext context,
-            UIComponent toValidate,
-            Object value) {
+                                     UIComponent toValidate,
+                                     Object value) {
         String username = (String) value;
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                 "Username is already registered.", null);
@@ -88,8 +89,8 @@ public class RegisterBean implements Serializable {
     }
 
     public void validateUniqEmail(FacesContext context,
-            UIComponent toValidate,
-            Object value) {
+                                  UIComponent toValidate,
+                                  Object value) {
         String email = (String) value;
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                 "E-mail is already registered.", null);

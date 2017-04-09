@@ -1,5 +1,6 @@
 package cz.ivoa.vocloud.tools;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -20,8 +21,8 @@ import java.util.zip.ZipOutputStream;
  * To change this template, choose Tools | Templates and open the template in
  * the editor.
  */
+
 /**
- *
  * @author voadmin
  */
 public class Toolbox {
@@ -124,7 +125,7 @@ public class Toolbox {
         Logger.getLogger(Toolbox.class.getName()).log(Level.INFO, "Downloading from {0}", address);
         URL url = new URL(address);
         try (ReadableByteChannel rbc = Channels.newChannel(url.openStream());
-                FileOutputStream fos = new FileOutputStream(out)) {
+             FileOutputStream fos = new FileOutputStream(out)) {
             long stepToDownload = 1 << 24;
             long offset = 0;
             long downloaded;
@@ -251,9 +252,9 @@ public class Toolbox {
 
     /**
      * converts size in bytes to human readable form
-     *
+     * <p>
      * works like in du command
-     *
+     * <p>
      * FROM: http://stackoverflow.com/questions/3758606
      *
      * @param bytes
@@ -268,5 +269,21 @@ public class Toolbox {
         int exp = (int) (Math.log(bytes) / Math.log(unit));
         String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
+
+    /**
+     * Obtain real ip of the client either by taking it from the proxy X-Forwarded-For HTTP header
+     * or if it is not present by falling back to remoteAddr of servlet API.
+     *
+     * @param request Instance of the HTTP servlet request.
+     * @return IP address of assumed client. Never <code>null</code>.
+     */
+    public static String realIp(HttpServletRequest request) {
+        String header = request.getHeader("X-Forwarded-For");
+        if (header == null) {
+            //fall back to remote addr
+            return request.getRemoteAddr();
+        }
+        return header.split(",")[0];
     }
 }
