@@ -76,7 +76,7 @@
                         <f:facet name="header">
                             Folder structure
                         </f:facet>
-                        <p:column width="12">
+                        <p:column style="width: 35px">
                             <h:panelGroup styleClass="ui-icon ui-icon-folder-collapsed" rendered="#{node.folder}" />
                             <h:panelGroup styleClass="ui-icon ui-icon-document" rendered="#{not node.folder}" />
                         </p:column>
@@ -86,12 +86,10 @@
                         <p:column headerText="Size">
                             <h:outputText value="#{node.size}" />
                         </p:column>
-                        <p:column headerText="Download" style="width: 1px; text-align: center">
+                        <p:column headerText="Operations">
                             <p:commandButton rendered="#{not node.folder}" ajax="false" icon="ui-icon-arrowthick-1-s" title="Download #{node.name}">
                                 <p:fileDownload value="#{jobDetailsBean.downloadFile(node.targetFile)}" />
                             </p:commandButton>
-                        </p:column>
-                        <p:column headerText="View" style="width: 1px; text-align: center" >
                             <p:commandButton rendered="#{not node.folder}" title="View file"  icon="ui-icon-newwin"
                                              update=":dialogForm" oncomplete="PF('fileView').show()">
                                 <f:setPropertyActionListener value="#{node.targetFile}" target="#{jobDetailsBean.selectedFile}" />  
