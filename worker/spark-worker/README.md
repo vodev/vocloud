@@ -178,3 +178,39 @@ The following JSON is an example of the spark job configuration.
     ]
 }
 ```
+
+Most of the configuration JSON file is optional. The only mandatory part is `job_config` object
+part that specifies the configuration file of the Spark application. The content of this object
+will be written in the temporary file and the path will be passed to the `spark-submit` script 
+as the last parameter. If the configuration does not contain the `copy_output` item, the whole
+configuration file is considered as the config for the `spark-submit` script - in this case it would be:
+
+```json
+{
+    "dataset": "hdfs:///user/workflow-test/lof-input/preprocessed.csv",
+    "min_pts": 15,
+    "output": "hdfs:///user/workflow-test/output/lof_kepler-out.csv"
+}
+```
+
+-  `download_files` - Specifies files that should be downloaded from the vocloud filesystem (or some other URL) and saved to the
+hdfs to the specified path before the spark job itself is executed. It must contain array where each item is object containing two
+mandatory items:
+    - `urls` - Array of string containing the remote file path. It supports `http`/`https` protocol and 
+    if the path has scheme `vocloud` the files are downloaded from the vocloud's filesystem. Note: in order
+    to do so it is necessary that worker has properly set the path to the vocloud server and the server
+    is directly visible on the network.
+    - `folder` - Target path on hdfs where the files specified in the `urls` part should be saved.
+    Save fails if the path already exists.
+- `spark_params` - Allows user to override parameters passed to the `spark-submit` script. It contains
+JSON object where each item `"name": "value"` is translated to the parameter `--name value`. The only exception
+is an item named `conf` that if present must contain additional JSON object where each item `"name": "value"` is
+translated to `--conf name=value`. Parameters here can override the default one specified in the xml
+ configuration file.
+- `job_config` - Specifies the configuration for the Spark job itself. See above.
+- `copy_output` - Allows user to obtain files from the hdfs back to the vocloud. It must contain
+JSON array containing JSON objects containing following items:
+    - `path` - Path to the file or folder on the HDFS.
+    - `merge_parts` [optional] - Spark jobs usually produce results as folder containing `part_xxx` files.
+     If this item is set to `true` the worker merges these parts together to produce a single file.
+      This item is optional, default value is set to `false`.
