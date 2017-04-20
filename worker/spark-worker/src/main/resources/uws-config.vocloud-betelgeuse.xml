@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ns:uws-settings
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns:ns='http://vocloud.ivoa.cz/spark/schema'
+        xsi:schemaLocation='http://vocloud.ivoa.cz/spark/schema configSchema.xsd'>
+    <ns:vocloud-server-address>http://localhost:8080/vocloud-betelgeuse</ns:vocloud-server-address>
+    <ns:local-address>http://localhost:8080</ns:local-address>
+    <ns:max-jobs>4</ns:max-jobs>
+    <ns:description>Spark UWS worker</ns:description>
+    <ns:spark-executable>/opt/spark/bin/spark-submit</ns:spark-executable>
+    <ns:submit-params>
+        <conf name="spark.driver.maxResultSize">12g</conf>
+        <conf name="spark.yarn.executor.memoryOverhead">4096</conf>
+        <master>yarn</master>
+        <driver-memory>4g</driver-memory>
+        <deploy-mode>client</deploy-mode>
+        <num-executors>5</num-executors>
+        <executor-cores>3</executor-cores>
+        <executor-memory>4g</executor-memory>
+    </ns:submit-params>
+    <ns:workers>
+        <ns:worker>
+            <ns:identifier>spark-preprocessing</ns:identifier>
+            <ns:description>Spark preprocessing</ns:description>
+            <ns:submit-params>
+                <packages>com.databricks:spark-avro_2.10:2.0.1</packages>
+                <py-files>
+                    /home/hadoop/workflow-test/preprocessing/vocloud_spark_import/dist/vocloud_spark_preprocess-0.1.0-py2.7.egg
+                </py-files>
+            </ns:submit-params>
+            <ns:submit-target>
+                /home/hadoop/workflow-test/preprocessing/vocloud_spark_import/bin/vocloud_preprocess.py
+            </ns:submit-target>
+        </ns:worker>
+    </ns:workers>
+</ns:uws-settings>

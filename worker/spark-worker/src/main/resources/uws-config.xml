@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ns:uws-settings
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns:ns='http://vocloud.rk.cz/schema/spark-worker'
+        xsi:schemaLocation='http://vocloud.rk.cz/schema/spark-worker configSchema.xsd'>
+    <ns:vocloud-server-address>http://localhost:80/vocloud</ns:vocloud-server-address>
+    <ns:local-address>http://localhost:80</ns:local-address>
+    <ns:max-jobs>4</ns:max-jobs>
+    <ns:description>Spark UWS worker</ns:description>
+    <ns:workers>
+        <ns:worker>
+            <ns:identifier>spark-preprocessing</ns:identifier>
+            <ns:description>Spark preprocessing</ns:description>
+            <ns:restricted>true</ns:restricted>
+            <ns:binaries-location></ns:binaries-location>
+            <ns:exec-command>
+                <ns:command>python</ns:command>
+                <ns:command>-h</ns:command>
+                <ns:command>></ns:command>
+                <ns:command>manpage.txt</ns:command>
+            </ns:exec-command>
+        </ns:worker>
+        <ns:worker>
+            <ns:identifier>mirror</ns:identifier>
+            <ns:description>Mirror test</ns:description>
+            <ns:restricted>false</ns:restricted>
+            <ns:binaries-location>c:\\Users\radio.koza\Desktop\Sources\Python\VertikalniText</ns:binaries-location>
+            <ns:exec-command>
+                <ns:command>python</ns:command>
+                <ns:command>${binaries-location}\main.py</ns:command>
+                <ns:command>${config-file}</ns:command>
+                <ns:command>output.txt</ns:command>
+            </ns:exec-command>
+        </ns:worker>
+        <ns:worker>
+            <ns:identifier>mirrorres</ns:identifier>
+            <ns:description>Mirror restricted</ns:description>
+            <ns:restricted>false</ns:restricted>
+            <ns:binaries-location>c:\\Users\radio.koza\Desktop\Sources\Python\VertikalniText</ns:binaries-location>
+            <ns:exec-command>
+                <ns:command>python</ns:command>
+                <ns:command>${binaries-location}\main.py</ns:command>
+                <ns:command>${config-file}</ns:command>
+                <ns:command>output.txt</ns:command>
+            </ns:exec-command>
+        </ns:worker>
+    </ns:workers>
+</ns:uws-settings>

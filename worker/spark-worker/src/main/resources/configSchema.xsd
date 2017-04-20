@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://vocloud.ivoa.cz/spark/schema"
+            xmlns:tns="http://vocloud.ivoa.cz/spark/schema"
+            elementFormDefault="qualified">
+    <xsd:complexType name="params-list">
+        <xsd:sequence>
+            <!--<xsd:element name="conf" minOccurs="0" maxOccurs="unbounded">-->
+            <!--<xsd:complexType>-->
+            <!--<xsd:simpleContent>-->
+            <!--<xsd:extension base="xsd:string">-->
+            <!--<xsd:attribute name="name" type="xsd:string"/>-->
+            <!--</xsd:extension>-->
+            <!--</xsd:simpleContent>-->
+            <!--</xsd:complexType>-->
+            <!--</xsd:element>-->
+            <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="worker">
+        <xsd:sequence>
+            <xsd:element name="identifier" type="xsd:token"/>
+            <xsd:element name="description" type="xsd:string"/>
+            <xsd:element name="submit-params" type="tns:params-list" minOccurs="0"/>
+            <xsd:element name="submit-target" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="uws-settings">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="vocloud-server-address" type="xsd:anyURI" minOccurs="0"/>
+                <xsd:element name="local-address" type="xsd:anyURI"/>
+                <xsd:element name="max-jobs" type="xsd:positiveInteger" default="4"/>
+                <xsd:element name="description" type="xsd:string"/>
+                <xsd:element name="spark-executable" type="xsd:string"/>
+                <xsd:element name="submit-params" type="tns:params-list" minOccurs="0"/>
+                <xsd:element name="workers">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="worker" maxOccurs="unbounded" minOccurs="0" type="tns:worker"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>
