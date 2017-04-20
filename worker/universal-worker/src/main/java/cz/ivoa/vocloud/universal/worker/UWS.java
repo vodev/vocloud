@@ -1,7 +1,7 @@
-package cz.ivoa.vocloud.worker;
+package cz.ivoa.vocloud.universal.worker;
 
-import cz.ivoa.vocloud.schema.UwsSettings;
-import cz.ivoa.vocloud.schema.Worker;
+import cz.ivoa.vocloud.universal.schema.Worker;
+import cz.ivoa.vocloud.universal.schema.UwsSettings;
 import uws.UWSException;
 import uws.UWSToolBox;
 import uws.job.JobList;
@@ -43,7 +43,7 @@ public class UWS extends HttpServlet {
         if (settings == null) {
             //load default
             try {
-                JAXBContext jxb = JAXBContext.newInstance("cz.ivoa.vocloud.schema");
+                JAXBContext jxb = JAXBContext.newInstance("cz.ivoa.vocloud.universal.schema");
                 Unmarshaller un = jxb.createUnmarshaller();
                 settings = (UwsSettings) un.unmarshal(UWS.class.getResourceAsStream("/uws-config.xml"));
             } catch (JAXBException ex) {

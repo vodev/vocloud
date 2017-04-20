@@ -1,6 +1,6 @@
-package cz.ivoa.vocloud.worker;
+package cz.ivoa.vocloud.universal.worker;
 
-import cz.ivoa.vocloud.schema.Worker;
+import cz.ivoa.vocloud.universal.schema.Worker;
 import uws.UWSException;
 import uws.job.AbstractJob;
 import uws.job.Result;

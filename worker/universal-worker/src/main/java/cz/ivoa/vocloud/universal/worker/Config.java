@@ -1,6 +1,6 @@
-package cz.ivoa.vocloud.worker;
+package cz.ivoa.vocloud.universal.worker;
 
-import cz.ivoa.vocloud.schema.UwsSettings;
+import cz.ivoa.vocloud.universal.schema.UwsSettings;
 
 /**
  * Config

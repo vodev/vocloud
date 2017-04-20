@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://vocloud.rk.cz/schema"
-            xmlns:tns="http://vocloud.rk.cz/schema"
+            targetNamespace="http://vocloud.ivoa.cz/universal/schema"
+            xmlns:tns="http://vocloud.ivoa.cz/universal/schema"
             elementFormDefault="qualified">
     
     <xsd:complexType name="worker">
