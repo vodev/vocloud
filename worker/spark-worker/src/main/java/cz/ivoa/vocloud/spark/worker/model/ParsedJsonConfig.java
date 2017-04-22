@@ -1,6 +1,7 @@
 package cz.ivoa.vocloud.spark.worker.model;
 
 import javax.json.*;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.logging.Logger;
 /**
  * Created by radiokoza on 21.4.17.
  */
-public class ParsedJsonConfig {
+public class ParsedJsonConfig implements Serializable {
     private static final Logger LOG = Logger.getLogger(ParsedJsonConfig.class.getName());
 
     private final List<CopyOutputPath> copyOutputPaths;
@@ -21,10 +22,8 @@ public class ParsedJsonConfig {
     public ParsedJsonConfig(String json) {
         this.copyOutputPaths = new ArrayList<>();
         this.downloadRules = new ArrayList<>();
-        try {
-            JsonReader jsonReader = Json.createReader(new StringReader(json));
+        try (JsonReader jsonReader = Json.createReader(new StringReader(json))) {
             JsonObject root = jsonReader.readObject();
-            jsonReader.close();
             parseJsonConfig(root);
         } catch (JsonException ex) {
             jobConfig = json;
@@ -37,9 +36,9 @@ public class ParsedJsonConfig {
 
     private static String jsonToStr(JsonObject obj) {
         StringWriter writer = new StringWriter();
-        JsonWriter jsonWriter = Json.createWriter(writer);
-        jsonWriter.writeObject(obj);
-        jsonWriter.close();
+        try (JsonWriter jsonWriter = Json.createWriter(writer)) {
+            jsonWriter.writeObject(obj);
+        }
         return writer.toString();
     }
 
@@ -83,4 +82,15 @@ public class ParsedJsonConfig {
         }
     }
 
+    public List<CopyOutputPath> getCopyOutputPaths() {
+        return copyOutputPaths;
+    }
+
+    public List<DownloadFileRule> getDownloadRules() {
+        return downloadRules;
+    }
+
+    public String getJobConfig() {
+        return jobConfig;
+    }
 }

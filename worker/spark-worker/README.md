@@ -84,9 +84,10 @@ Let us explain the configuration file format on the example:
         xsi:schemaLocation='http://vocloud.ivoa.cz/spark/schema configSchema.xsd'>
     <ns:vocloud-server-address>http://localhost:8080/vocloud-betelgeuse</ns:vocloud-server-address>
     <ns:local-address>http://localhost:8080</ns:local-address>
+    <ns:spark-executable>/opt/spark/bin/spark-submit</ns:spark-executable>
+    <ns:hadoop-default-fs>hdfs://betelgeuse:9000</ns:haddop-default-fs>
     <ns:max-jobs>4</ns:max-jobs>
     <ns:description>Spark UWS worker</ns:description>
-    <ns:spark-executable>/opt/spark/bin/spark-submit</ns:spark-executable>
     <ns:submit-params>
         <conf name="spark.driver.maxResultSize">12g</conf>
         <conf name="spark.yarn.executor.memoryOverhead">4096</conf>
@@ -123,6 +124,7 @@ Let us explain the configuration file format on the example:
 (e.g. YARN) can have additional restrictions to the count of jobs/resources requirement.
 - `description` - Description of this UWS worker.
 - `spark-executable` - Path to the `spark-submit` script on the filesystem.
+- `hadoop-default-fs` - URL locator of the HDFS filesystem.
 - `submit-params` [optional] - This complex tag can be either in the root `uws-settings` tag or in the `worker` tag (see later).
 It specifies implicit parameters to be passed to the `spark-submit`. Parameters from the root tag can be overriden
 by the parameters specified in the `worker` tag and both parameter specification can be overridden by the parameters
@@ -130,13 +132,13 @@ specified in the job's configuration file. Parameters are specified in the follo
 `<param-name>param-value</param-name>`. This statement is translated to `--param-name param-value` in the `spark-submit`
 script. Note: `<conf>` tag have special form: `<conf name="conf-name">conf-value</conf>` that is translated to
 `--conf conf-name=conf-value`. There can be multiple `<conf>` tags.
-- `<workers>` - Contains sequence of `<worker>` tags.
-- `<worker>` - Contains configuration for the single worker type instance. It contains following tags:
+- `workers` - Contains sequence of `<worker>` tags.
+- `worker` - Contains configuration for the single worker type instance. It contains following tags:
 
-    - `<identifier>` - Identification if the worker. Must not contain space character.
-    - `<description>` - Description of the worker.
-    - `<submit-params>` - Same as in the root tag.
-    - `<submit-target>` - Path to the file that should be passed to the `spark-submit` script. 
+    - `identifier` - Identification if the worker. Must not contain space character.
+    - `description` - Description of the worker.
+    - `submit-params` - Same as in the root tag.
+    - `submit-target` - Path to the file that should be passed to the `spark-submit` script. 
     
 Job configuration
 -----------------

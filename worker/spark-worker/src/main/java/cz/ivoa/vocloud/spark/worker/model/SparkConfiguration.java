@@ -7,8 +7,11 @@ import org.w3c.dom.Element;
 
 import javax.json.*;
 import javax.json.stream.JsonParsingException;
+import java.io.Serializable;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,7 +19,7 @@ import java.util.logging.Logger;
 /**
  * Created by radiokoza on 21.4.17.
  */
-public class SparkConfiguration {
+public class SparkConfiguration implements Serializable {
     private static final Logger LOG = Logger.getLogger(SparkConfiguration.class.getName());
 
     private final Map<String, String> genericParameters;
@@ -33,11 +36,20 @@ public class SparkConfiguration {
         importJsonParameters(config);
     }
 
+    private String getStringValue(JsonValue value){
+        if (value.getValueType().equals(JsonValue.ValueType.STRING)){
+            return ((JsonString)value).getString();
+        } else {
+            return value.toString();
+        }
+    }
+
     private void importJsonParameters(String config) {
         try {
-            JsonReader jsonReader = Json.createReader(new StringReader(config));
-            JsonObject json = jsonReader.readObject();
-            jsonReader.close();
+            JsonObject json;
+            try (JsonReader jsonReader = Json.createReader(new StringReader(config))) {
+                json = jsonReader.readObject();
+            }
             if (!json.containsKey("spark_params")) {
                 //no configuration parameters in json
                 return;
@@ -49,13 +61,13 @@ public class SparkConfiguration {
                     JsonObject confObject = (JsonObject) i.getValue();
                     for (Map.Entry<String, JsonValue> c : confObject.entrySet()) {
                         String name = c.getKey();
-                        String value = ((JsonString) c.getValue()).getString();
+                        String value = getStringValue(c.getValue());
                         confParameters.put(name, value);
                     }
                 } else {
                     //generic tag
                     String name = i.getKey();
-                    String value = ((JsonString) i.getValue()).getString();
+                    String value = getStringValue(i.getValue());
                     genericParameters.put(name, value);
                 }
             }
@@ -69,6 +81,9 @@ public class SparkConfiguration {
     }
 
     private void importParameters(ParamsList paramsList) {
+        if (paramsList == null) {
+            return;
+        }
         for (Element elem : paramsList.getAny()) {
             //detect conf element
             if (elem.getTagName().equals("conf")) {
@@ -82,5 +97,18 @@ public class SparkConfiguration {
                 genericParameters.put(name, value);
             }
         }
+    }
+
+    public List<String> commandsList() {
+        List<String> commands = new ArrayList<>();
+        //add generic parameters
+        for (Map.Entry<String, String> i : genericParameters.entrySet()) {
+            commands.add(String.format("--%s %s", i.getKey(), i.getValue()));
+        }
+        //add conf parameters
+        for (Map.Entry<String, String> i : confParameters.entrySet()) {
+            commands.add(String.format("--conf %s=%s", i.getKey(), i.getValue()));
+        }
+        return commands;
     }
 }

@@ -31,9 +31,10 @@
             <xsd:sequence>
                 <xsd:element name="vocloud-server-address" type="xsd:anyURI" minOccurs="0"/>
                 <xsd:element name="local-address" type="xsd:anyURI"/>
+                <xsd:element name="spark-executable" type="xsd:string"/>
+                <xsd:element name="hadoop-default-fs" type="xsd:string"/>
                 <xsd:element name="max-jobs" type="xsd:positiveInteger" default="4"/>
                 <xsd:element name="description" type="xsd:string"/>
-                <xsd:element name="spark-executable" type="xsd:string"/>
                 <xsd:element name="submit-params" type="tns:params-list" minOccurs="0"/>
                 <xsd:element name="workers">
                     <xsd:complexType>

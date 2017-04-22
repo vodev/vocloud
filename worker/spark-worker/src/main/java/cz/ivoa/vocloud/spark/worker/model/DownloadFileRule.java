@@ -1,11 +1,12 @@
 package cz.ivoa.vocloud.spark.worker.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by radiokoza on 21.4.17.
  */
-public class DownloadFileRule {
+public class DownloadFileRule implements Serializable {
     private final List<String> urls;
     private final String folder;
 

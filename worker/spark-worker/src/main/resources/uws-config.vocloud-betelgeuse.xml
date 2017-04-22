@@ -5,9 +5,10 @@
         xsi:schemaLocation='http://vocloud.ivoa.cz/spark/schema configSchema.xsd'>
     <ns:vocloud-server-address>http://localhost:8080/vocloud-betelgeuse</ns:vocloud-server-address>
     <ns:local-address>http://localhost:8080</ns:local-address>
+    <ns:spark-executable>/opt/spark/bin/spark-submit</ns:spark-executable>
+    <ns:hadoop-default-fs>hdfs://betelgeuse:9000</ns:hadoop-default-fs>
     <ns:max-jobs>4</ns:max-jobs>
     <ns:description>Spark UWS worker</ns:description>
-    <ns:spark-executable>/opt/spark/bin/spark-submit</ns:spark-executable>
     <ns:submit-params>
         <conf name="spark.driver.maxResultSize">12g</conf>
         <conf name="spark.yarn.executor.memoryOverhead">4096</conf>
