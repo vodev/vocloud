@@ -9,6 +9,9 @@
     <ns:hadoop-default-fs>hdfs://betelgeuse:9000</ns:hadoop-default-fs>
     <ns:max-jobs>4</ns:max-jobs>
     <ns:description>Spark UWS worker</ns:description>
+    <ns:environment>
+        <HADOOP_CONF_DIR>/opt/hadoop/etc/hadoop</HADOOP_CONF_DIR>
+    </ns:environment>
     <ns:submit-params>
         <conf name="spark.driver.maxResultSize">12g</conf>
         <conf name="spark.yarn.executor.memoryOverhead">4096</conf>
@@ -26,11 +29,11 @@
             <ns:submit-params>
                 <packages>com.databricks:spark-avro_2.10:2.0.1</packages>
                 <py-files>
-                    /home/hadoop/workflow-test/preprocessing/vocloud_spark_import/dist/vocloud_spark_preprocess-0.1.0-py2.7.egg
+                    /usr/local/workers/spark-preprocessing/dist/vocloud_spark_preprocess-0.1.0-py2.7.egg
                 </py-files>
             </ns:submit-params>
             <ns:submit-target>
-                /home/hadoop/workflow-test/preprocessing/vocloud_spark_import/bin/vocloud_preprocess.py
+                /usr/local/workers/spark-preprocessing/bin/vocloud_preprocess.py
             </ns:submit-target>
         </ns:worker>
     </ns:workers>

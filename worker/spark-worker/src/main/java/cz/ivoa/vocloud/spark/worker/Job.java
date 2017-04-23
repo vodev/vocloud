@@ -5,6 +5,7 @@ import cz.ivoa.vocloud.spark.worker.model.CopyOutputPath;
 import cz.ivoa.vocloud.spark.worker.model.DownloadFileRule;
 import cz.ivoa.vocloud.spark.worker.model.ParsedJsonConfig;
 import cz.ivoa.vocloud.spark.worker.model.SparkConfiguration;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.*;
 import uws.UWSException;
 import uws.job.AbstractJob;
@@ -189,6 +190,7 @@ public class Job extends AbstractJob {
                 printSubmitCommand(commands);
                 //use substitution for commands
                 ProcessBuilder pb = new ProcessBuilder(commands);
+                pb.environment().putAll(sparkConfiguration.getEnvironment());
                 pb.directory(workingDir);
 
                 try {
@@ -266,11 +268,31 @@ public class Job extends AbstractJob {
         try {
             for (CopyOutputPath path : parsedJsonConfig.getCopyOutputPaths()) {
                 try (FileSystem fs = FileSystem.get(hadoopConfiguration)) {
-                    FileUtil.copy(fs, new Path(path.getPath()), workingDir, false, hadoopConfiguration);
+                    Path hdfsPath = new Path(path.getPath());
+                    if (fs.exists(hdfsPath)) {
+                        if (fs.isDirectory(hdfsPath) && path.isMergeParts()) {
+                            try (OutputStream out = new FileOutputStream(new File(workingDir, path.getOutputName()))) {
+                                FileStatus contents[] = fs.listStatus(hdfsPath);
+                                for (FileStatus fileStatus : contents) {
+                                    //ignore directories
+                                    if (fileStatus.isDirectory()) {
+                                        continue;
+                                    }
+                                    try (InputStream in = fs.open(fileStatus.getPath())) {
+                                        IOUtils.copy(in, out);
+                                    }
+                                }
+                            }
+                        } else {
+                            FileUtil.copy(fs, new Path(path.getPath()),
+                                    new File(workingDir, path.getOutputName()),
+                                    false, hadoopConfiguration);
+                        }
+                    }
                 }
-                //TODO implement merge
             }
         } catch (IOException ex) {
+            LOG.log(Level.WARNING, "IOException in copyOutput function", ex);
             throw new UWSException(UWSException.BAD_REQUEST, ex, "exception during copying files from HDFS");
         }
     }
@@ -388,10 +410,11 @@ public class Job extends AbstractJob {
                 return;
             }
             String hdfsPath = conc(folderPath, fileName);
-            if (downloadFile(conn, hdfsPath)) {
+            String error = downloadFile(conn, hdfsPath);
+            if (error == null) {
                 log.println("File " + fileName + " was successfully downloaded to " + folderPath);
             } else {
-                log.println("Failed to download file " + fileName + " to folder " + folderPath);
+                log.println("Failed to download file " + fileName + " to folder " + folderPath + ". Reason: " + error);
             }
             conn.disconnect();
         }
@@ -406,7 +429,7 @@ public class Job extends AbstractJob {
         return prefix + '/' + value;
     }
 
-    private boolean downloadFile(HttpURLConnection conn, String hdfsPath) {
+    private String downloadFile(HttpURLConnection conn, String hdfsPath) {
         int bufferSize = 1 << 16;
         try (FileSystem file = FileSystem.get(hadoopConfiguration);
              FSDataOutputStream fos = file.create(new Path(hdfsPath), false, bufferSize);
@@ -420,9 +443,10 @@ public class Job extends AbstractJob {
                 buffer.clear();
                 bytesRead = rbc.read(buffer);
             }
-            return true;
-        } catch (IOException e) {
-            return false;
+            return null;
+        } catch (IOException ex) {
+            LOG.log(Level.WARNING, "File download failed", ex);
+            return ex.getMessage();
         }
     }
 

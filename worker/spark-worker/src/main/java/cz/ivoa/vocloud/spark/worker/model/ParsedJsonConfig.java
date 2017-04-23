@@ -77,9 +77,22 @@ public class ParsedJsonConfig implements Serializable {
         for (JsonValue i : arr) {
             JsonObject rule = (JsonObject) i;
             String path = rule.getString("path");
+            String outputName = rule.getString("output_name", defaultOutputName(path));
             boolean mergeParts = rule.getBoolean("merge_parts", false);
-            copyOutputPaths.add(new CopyOutputPath(path, mergeParts));
+            copyOutputPaths.add(new CopyOutputPath(path, outputName, mergeParts));
         }
+    }
+
+    private String defaultOutputName(String path) {
+        path = path.trim();
+        while (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+        if (path.equals("")) {
+            return "root";
+        }
+        String[] split = path.split("/");
+        return split[split.length - 1];
     }
 
     public List<CopyOutputPath> getCopyOutputPaths() {

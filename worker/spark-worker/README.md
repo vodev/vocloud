@@ -88,6 +88,9 @@ Let us explain the configuration file format on the example:
     <ns:hadoop-default-fs>hdfs://betelgeuse:9000</ns:haddop-default-fs>
     <ns:max-jobs>4</ns:max-jobs>
     <ns:description>Spark UWS worker</ns:description>
+    <ns:environment>
+        <HADOOP_CONF_DIR>/opt/hadoop/etc/hadoop</HADOOP_CONF_DIR>
+    </ns:environment>
     <ns:submit-params>
         <conf name="spark.driver.maxResultSize">12g</conf>
         <conf name="spark.yarn.executor.memoryOverhead">4096</conf>
@@ -120,11 +123,14 @@ Let us explain the configuration file format on the example:
   This URL is necessary when the worker needs to download some data from the vocloud server. Note that in order to do so
   you will have to arrange the network visibility from the worker to master server and vice versa.
 - `local-address` - Hostname URL to the worker server from the master server point of network view.
+- `spark-executable` - Path to the `spark-submit` script on the filesystem.
+- `hadoop-default-fs` - URL locator of the HDFS filesystem.
 - `max-jobs` - Maximum count of jobs that this worker allows to be run concurrently. Note that Spark execution manager
 (e.g. YARN) can have additional restrictions to the count of jobs/resources requirement.
 - `description` - Description of this UWS worker.
-- `spark-executable` - Path to the `spark-submit` script on the filesystem.
-- `hadoop-default-fs` - URL locator of the HDFS filesystem.
+- `environment` [optional] - The sequence of optional tags settings the environment variables to be passed
+to the `spark-submit` script. For this current instance the `HADOOP_CONF_DIR` variable is set to be able to use
+`--master yarn` parameter properly.
 - `submit-params` [optional] - This complex tag can be either in the root `uws-settings` tag or in the `worker` tag (see later).
 It specifies implicit parameters to be passed to the `spark-submit`. Parameters from the root tag can be overriden
 by the parameters specified in the `worker` tag and both parameter specification can be overridden by the parameters
@@ -175,6 +181,7 @@ The following JSON is an example of the spark job configuration.
     "copy_output": [
         {
             "path": "/user/workflow-test/output/lof_kepler-out.csv",
+            "output_name": "preprocessed.csv",
             "merge_parts": true
         }
     ]
@@ -204,6 +211,10 @@ mandatory items:
     is directly visible on the network.
     - `folder` - Target path on hdfs where the files specified in the `urls` part should be saved.
     Save fails if the path already exists.
+    
+    Note: In order to be able to download files into the HDFS it is necessary that the worker application has properly
+    setup write permission to the HDFS. This is usually done by adding user under which the worker application is started
+    to the `supergroup` group.
 - `spark_params` - Allows user to override parameters passed to the `spark-submit` script. It contains
 JSON object where each item `"name": "value"` is translated to the parameter `--name value`. The only exception
 is an item named `conf` that if present must contain additional JSON object where each item `"name": "value"` is
@@ -213,6 +224,8 @@ translated to `--conf name=value`. Parameters here can override the default one 
 - `copy_output` - Allows user to obtain files from the hdfs back to the vocloud. It must contain
 JSON array containing JSON objects containing following items:
     - `path` - Path to the file or folder on the HDFS.
+    - `output_name` [optional] - Name of the copied file or directory. If not present, tries to find out the 
+    file/folder name from the `path` parameter. 
     - `merge_parts` [optional] - Spark jobs usually produce results as folder containing `part_xxx` files.
      If this item is set to `true` the worker merges these parts together to produce a single file.
       This item is optional, default value is set to `false`.

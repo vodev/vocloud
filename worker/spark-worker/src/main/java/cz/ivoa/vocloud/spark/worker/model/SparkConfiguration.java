@@ -1,5 +1,6 @@
 package cz.ivoa.vocloud.spark.worker.model;
 
+import cz.ivoa.vocloud.spark.schema.Environment;
 import cz.ivoa.vocloud.spark.schema.ParamsList;
 import cz.ivoa.vocloud.spark.schema.Worker;
 import cz.ivoa.vocloud.spark.worker.Config;
@@ -22,13 +23,17 @@ import java.util.logging.Logger;
 public class SparkConfiguration implements Serializable {
     private static final Logger LOG = Logger.getLogger(SparkConfiguration.class.getName());
 
+    private final Map<String, String> environment;
     private final Map<String, String> genericParameters;
     private final Map<String, String> confParameters;
 
     public SparkConfiguration(Worker worker, String config) {
         //initialize arrays
+        this.environment = new HashMap<>();
         this.genericParameters = new HashMap<>();
         this.confParameters = new HashMap<>();
+        //parse environment from the configuration
+        importEnvironment(Config.settings.getEnvironment());
         //import implicit parameters from the root element
         importParameters(Config.settings.getSubmitParams());
         importParameters(worker.getSubmitParams());
@@ -36,9 +41,9 @@ public class SparkConfiguration implements Serializable {
         importJsonParameters(config);
     }
 
-    private String getStringValue(JsonValue value){
-        if (value.getValueType().equals(JsonValue.ValueType.STRING)){
-            return ((JsonString)value).getString();
+    private String getStringValue(JsonValue value) {
+        if (value.getValueType().equals(JsonValue.ValueType.STRING)) {
+            return ((JsonString) value).getString();
         } else {
             return value.toString();
         }
@@ -88,27 +93,42 @@ public class SparkConfiguration implements Serializable {
             //detect conf element
             if (elem.getTagName().equals("conf")) {
                 String name = elem.getAttribute("name");
-                String value = elem.getTextContent();
+                String value = elem.getTextContent().trim();
                 confParameters.put(name, value);
             } else {
                 //any other element
                 String name = elem.getTagName();
-                String value = elem.getTextContent();
+                String value = elem.getTextContent().trim();
                 genericParameters.put(name, value);
             }
         }
+    }
+
+    private void importEnvironment(Environment environment) {
+        for (Element elem : environment.getAny()) {
+            String name = elem.getTagName();
+            String value = elem.getTextContent().trim();
+            this.environment.put(name, value);
+        }
+
     }
 
     public List<String> commandsList() {
         List<String> commands = new ArrayList<>();
         //add generic parameters
         for (Map.Entry<String, String> i : genericParameters.entrySet()) {
-            commands.add(String.format("--%s %s", i.getKey(), i.getValue()));
+            commands.add("--" + i.getKey());
+            commands.add(i.getValue());
         }
         //add conf parameters
         for (Map.Entry<String, String> i : confParameters.entrySet()) {
-            commands.add(String.format("--conf %s=%s", i.getKey(), i.getValue()));
+            commands.add("--conf");
+            commands.add(String.format("%s=%s", i.getKey(), i.getValue()));
         }
         return commands;
+    }
+
+    public Map<String, String> getEnvironment() {
+        return environment;
     }
 }

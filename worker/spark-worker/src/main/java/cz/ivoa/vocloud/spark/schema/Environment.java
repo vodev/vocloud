@@ -18,12 +18,12 @@ import org.w3c.dom.Element;
 
 
 /**
- * <p>Java class for params-list complex type.
+ * <p>Java class for environment complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="params-list">
+ * &lt;complexType name="environment">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
@@ -37,10 +37,10 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "params-list", propOrder = {
+@XmlType(name = "environment", propOrder = {
     "any"
 })
-public class ParamsList {
+public class Environment {
 
     @XmlAnyElement
     protected List<Element> any;
