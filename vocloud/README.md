@@ -152,4 +152,4 @@ For instance I will use Debian amd64 with Wildfly 8.2 application server, JDK 8 
     - Click Register
     - Register a new account with username `admin`
     
-    This account now have administrator privileges.
+    This account now has administrator privileges.
