@@ -1,5 +1,8 @@
+VO-CLOUD Master server
+======================
+
 Requirements
-============
+------------
 
 - JDK 7+
 - Application server supporting Java EE 7 with EJB container support (Wildfly, Glassfish, ...)
@@ -7,7 +10,7 @@ Requirements
 - Maven tool for project building
 
 Install guide
-=============
+-------------
 For instance I will use Debian amd64 with Wildfly 8.2 application server, JDK 8 and PostgreSQL 8.4
 
 1. Install JDK 8
