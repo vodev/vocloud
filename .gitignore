@@ -23,4 +23,5 @@ Thumbs.db
 .svn/
 nbproject/
 out
-
+*.NavData
+nb-configuration.xml
