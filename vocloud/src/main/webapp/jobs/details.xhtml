@@ -87,11 +87,11 @@
                             <h:outputText value="#{node.size}" />
                         </p:column>
                         <p:column headerText="Operations">
-                            <p:commandButton rendered="#{not node.folder}" ajax="false" icon="ui-icon-arrowthick-1-s" title="Download #{node.name}">
+                            <p:commandButton rendered="#{not node.folder}" ajax="false" icon="ui-icon-arrowthick-1-s" title="Download #{node.name}" value="Download">
                                 <p:fileDownload value="#{jobDetailsBean.downloadFile(node.targetFile)}" />
                             </p:commandButton>
                             <p:commandButton rendered="#{not node.folder}" title="View file"  icon="ui-icon-newwin"
-                                             update=":dialogForm" oncomplete="PF('fileView').show()">
+                                             update=":dialogForm" oncomplete="PF('fileView').show()" value="View">
                                 <f:setPropertyActionListener value="#{node.targetFile}" target="#{jobDetailsBean.selectedFile}" />  
                             </p:commandButton>
                         </p:column>
